@@ -3,6 +3,7 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import Menu from './components/Menu'
 import HowItWorks from './components/HowItWorks'
+import Testimonials from './components/Testimonials'
 import Footer from './components/Footer'
 import CartDrawer from './components/CartDrawer'
 import Checkout from './components/Checkout'
@@ -37,6 +38,7 @@ export default function App() {
         <Hero />
         <Menu />
         <HowItWorks />
+        <Testimonials />
       </main>
       <Footer />
       <CartBar />

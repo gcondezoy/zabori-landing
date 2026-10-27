@@ -5,6 +5,7 @@ import { useMenu } from '../context/MenuContext'
 import { money } from '../config/site'
 import { useCart } from '../context/CartContext'
 import Reveal from './Reveal'
+import TodayBadge from './TodayBadge'
 
 function Card({ item, index }) {
   const { qty, add, dec } = useCart()
@@ -44,6 +45,7 @@ export default function Menu() {
     <section className="section" id="menu">
       <div className="wrap">
         <Reveal>
+          <TodayBadge />
           <h2>La carta de hoy</h2>
           <p className="sub">Los platos cambian cada día. Ejemplo de menú, se actualizará con el real.</p>
         </Reveal>
