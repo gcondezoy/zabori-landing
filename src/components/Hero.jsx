@@ -1,5 +1,6 @@
 import { ArrowRight, Clock, Motorcycle } from '@phosphor-icons/react'
 import { site } from '../config/site'
+import PlateCarousel from './PlateCarousel'
 
 export default function Hero() {
   return (
@@ -22,9 +23,7 @@ export default function Hero() {
           </ul>
         </div>
         <div className="hero-art">
-          <div className="plate">
-            <img src="/img/platos/hero.webp" alt="Causa limeña servida en plato" width="820" height="820" fetchpriority="high" />
-          </div>
+          <PlateCarousel />
         </div>
       </div>
     </section>
