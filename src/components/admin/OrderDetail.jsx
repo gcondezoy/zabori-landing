@@ -1,0 +1,118 @@
+import { useEffect, useState } from 'react'
+import { X, Phone, WhatsappLogo, EnvelopeSimple, MapPin, CheckCircle, Circle, UserCircle } from '@phosphor-icons/react'
+import { STATUS, PAYMENT, nextStatus, updateOrder, whatsappLink } from '../../lib/admin'
+import { fmtDateTime } from '../../lib/stats'
+import { money } from '../../config/site'
+import { StatusPill, PayPill } from './ui'
+
+export default function OrderDetail({ order: o, onClose, refresh }) {
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  const [notify, setNotify] = useState(false) // tras cambiar el estado, sugerir avisar al cliente
+  const next = nextStatus(o)
+  const closed = o.status === 'entregado' || o.status === 'cancelado'
+
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  const act = async (fields) => {
+    setBusy(true); setErr('')
+    try {
+      await updateOrder(o, fields)
+      await refresh()
+      if (fields.status) setNotify(true)
+    } catch (e) {
+      setErr(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const history = [...(o.history || [])].sort((a, b) => new Date(a.at) - new Date(b.at))
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <aside className="drawer detail" role="dialog" aria-label={`Pedido ${o.code}`} onClick={(e) => e.stopPropagation()}>
+        <div className="drawer-head">
+          <div>
+            <h3>{o.code}</h3>
+            <span className="muted">{fmtDateTime(o.createdAt)} · {o.mode === 'delivery' ? 'Delivery' : 'Recojo en local'}</span>
+          </div>
+          <button className="icon-btn" onClick={onClose} aria-label="Cerrar"><X size={22} /></button>
+        </div>
+
+        <div className="detail-body">
+          <div className="pills-row"><StatusPill status={o.status} /><PayPill payment={o.payment} /></div>
+
+          {!closed && (
+            <div className="o-actions">
+              {next && <button className="btn primary small" disabled={busy} onClick={() => act({ status: next })}>Pasar a: {STATUS[next]}</button>}
+              {o.payment !== 'pagado' && <button className="btn ghost small" disabled={busy} onClick={() => act({ payment: 'pagado' })}>Marcar pagado</button>}
+              <button className="btn ghost small danger" disabled={busy}
+                onClick={() => window.confirm(`¿Cancelar el pedido ${o.code}?`) && act({ status: 'cancelado' })}>Cancelar</button>
+            </div>
+          )}
+          {err && <p className="form-err" role="alert">{err}</p>}
+          {notify && (
+            <a className="notify" href={whatsappLink(o)} target="_blank" rel="noreferrer" onClick={() => setNotify(false)}>
+              <WhatsappLogo size={18} weight="fill" /> Avisar al cliente: “{STATUS[o.status]}”
+            </a>
+          )}
+
+          <section className="d-block">
+            <h4>Cliente</h4>
+            <p className="d-name"><UserCircle size={18} /> {o.name} <span className="muted">{o.userId ? '· con cuenta' : '· invitado'}</span></p>
+            <p><a href={`tel:${o.phone}`}><Phone size={16} /> {o.phone}</a></p>
+            <p><a href={whatsappLink(o)} target="_blank" rel="noreferrer"><WhatsappLogo size={16} /> Escribir por WhatsApp</a></p>
+            {o.email && <p><a href={`mailto:${o.email}`}><EnvelopeSimple size={16} /> {o.email}</a></p>}
+            {o.mode === 'delivery' && (
+              <p><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address + ', Lima')}`} target="_blank" rel="noreferrer">
+                <MapPin size={16} /> {o.address}
+              </a></p>
+            )}
+            {o.notes && <p className="note">“{o.notes}”</p>}
+          </section>
+
+          <section className="d-block">
+            <h4>Detalle del pedido</h4>
+            <table className="d-items">
+              <thead><tr><th>Plato</th><th className="num">Cant.</th><th className="num">P. unit.</th><th className="num">Importe</th></tr></thead>
+              <tbody>
+                {o.items.map((i, k) => (
+                  <tr key={k}><td>{i.name}</td><td className="num">{i.qty}</td><td className="num">{money(i.price || 0)}</td><td className="num">{money((i.price || 0) * i.qty)}</td></tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr><td colSpan={3}>Subtotal</td><td className="num">{money(o.subtotal ?? o.total - (o.fee || 0))}</td></tr>
+                {o.mode === 'delivery' && <tr><td colSpan={3}>Delivery</td><td className="num">{o.fee ? money(o.fee) : 'Gratis'}</td></tr>}
+                <tr className="tot"><td colSpan={3}>Total</td><td className="num">{money(o.total)}</td></tr>
+              </tfoot>
+            </table>
+            <p className="muted">
+              Pago: {PAYMENT[o.payment] || o.payment}
+              {o.paymentRef && ` · ${o.paymentRef === 'manual' ? 'marcado a mano' : `Culqi ${o.paymentRef}`}`}
+            </p>
+          </section>
+
+          <section className="d-block">
+            <h4>Historial</h4>
+            {history.length === 0 ? <p className="muted">Sin historial registrado.</p> : (
+              <ol className="timeline">
+                {history.map((h, k) => (
+                  <li key={k} className={k === history.length - 1 ? 'last' : ''}>
+                    {k === history.length - 1 ? <CheckCircle size={18} weight="fill" /> : <Circle size={18} />}
+                    <span>{h.type === 'payment' ? `Pago: ${PAYMENT[h.value] || h.value}` : STATUS[h.value] || h.value}</span>
+                    <time>{fmtDateTime(h.at)}</time>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        </div>
+      </aside>
+    </div>
+  )
+}
