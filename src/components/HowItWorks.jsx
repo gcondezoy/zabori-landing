@@ -1,4 +1,5 @@
 import { ListChecks, CreditCard, Package } from '@phosphor-icons/react'
+import Reveal from './Reveal'
 
 const steps = [
   { icon: ListChecks, t: 'Elige tu menú', d: 'Agrega los platos al carrito y escoge delivery o recojo.' },
@@ -10,15 +11,15 @@ export default function HowItWorks() {
   return (
     <section className="section alt" id="como">
       <div className="wrap">
-        <h2>Pedir es simple</h2>
+        <Reveal as="h2">Pedir es simple</Reveal>
         <ol className="steps">
           {steps.map(({ icon: Icon, t, d }, i) => (
-            <li key={t}>
+            <Reveal as="li" key={t} delay={i * 110}>
               <span className="step-n">{i + 1}</span>
               <Icon size={30} weight="duotone" />
               <h3>{t}</h3>
               <p>{d}</p>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </div>

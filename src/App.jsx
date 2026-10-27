@@ -7,6 +7,7 @@ import Footer from './components/Footer'
 import CartDrawer from './components/CartDrawer'
 import Checkout from './components/Checkout'
 import AuthModal from './components/AuthModal'
+import CartBar from './components/CartBar'
 import Admin from './components/admin/AdminApp'
 
 const isAdminRoute = () => window.location.hash.startsWith('#/admin')
@@ -38,6 +39,7 @@ export default function App() {
         <HowItWorks />
       </main>
       <Footer />
+      <CartBar />
       <CartDrawer />
       <Checkout />
       <AuthModal />

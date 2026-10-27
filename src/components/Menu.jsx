@@ -4,12 +4,13 @@ import { categories } from '../data/menu'
 import { useMenu } from '../context/MenuContext'
 import { money } from '../config/site'
 import { useCart } from '../context/CartContext'
+import Reveal from './Reveal'
 
-function Card({ item }) {
+function Card({ item, index }) {
   const { qty, add, dec } = useCart()
   const n = qty[item.id] || 0
   return (
-    <article className="card">
+    <Reveal as="article" className="card" delay={Math.min(index, 5) * 70}>
       <div className="card-img" style={{ background: item.tone }}>
         {item.img
           ? <img src={item.img} alt={item.name} loading="lazy" width="720" height="540" />
@@ -32,7 +33,7 @@ function Card({ item }) {
           )}
         </div>
       </div>
-    </article>
+    </Reveal>
   )
 }
 
@@ -42,8 +43,10 @@ export default function Menu() {
   return (
     <section className="section" id="menu">
       <div className="wrap">
-        <h2>La carta de hoy</h2>
-        <p className="sub">Los platos cambian cada día. Ejemplo de menú, se actualizará con el real.</p>
+        <Reveal>
+          <h2>La carta de hoy</h2>
+          <p className="sub">Los platos cambian cada día. Ejemplo de menú, se actualizará con el real.</p>
+        </Reveal>
         <div className="tabs" role="tablist">
           {categories.map((c) => (
             <button key={c.id} role="tab" aria-selected={cat === c.id}
@@ -53,7 +56,7 @@ export default function Menu() {
           ))}
         </div>
         <div className="grid">
-          {items.filter((i) => i.cat === cat).map((i) => <Card key={i.id} item={i} />)}
+          {items.filter((i) => i.cat === cat).map((i, k) => <Card key={cat + i.id} item={i} index={k} />)}
         </div>
       </div>
     </section>
