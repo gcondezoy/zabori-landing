@@ -25,3 +25,8 @@ solo en el navegador, y el panel se abre con el PIN de `src/config/site.js`.
 - Datos del negocio (WhatsApp, dirección, horario, delivery): `src/config/site.js`
 - Carta de ejemplo: `src/data/menu.js` (con Supabase se edita desde el panel)
 - Base de datos: `supabase/setup.sql`
+
+## Fotos
+
+Las fotos de `public/img/platos/` son de referencia, de Unsplash (licencia libre de Unsplash, sin atribución obligatoria).
+Reemplázalas por fotos reales de Zabori con el mismo nombre de archivo (proporción 4:3; `hero.webp` cuadrada).

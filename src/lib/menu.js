@@ -14,10 +14,13 @@ const toneFor = (id) => {
   return TONES[h % TONES.length]
 }
 
+// Foto de ejemplo de los platos de la carta inicial (los platos nuevos no tienen foto aún)
+const imgFor = (id) => seed.find((s) => s.id === id)?.img || ''
+
 // Fila de la base -> plato de la interfaz
 const fromRow = (r) => ({
   id: r.id, cat: r.cat, name: r.name, desc: r.descr, price: Number(r.price),
-  active: r.active, tag: r.tag || '', sort: r.sort ?? 0, tone: toneFor(r.id),
+  active: r.active, tag: r.tag || '', sort: r.sort ?? 0, tone: toneFor(r.id), img: imgFor(r.id),
 })
 
 const readLocal = () => {
@@ -41,7 +44,7 @@ export async function loadMenu({ includeInactive = false } = {}) {
 }
 
 const localMenuFallback = (includeInactive) =>
-  localMenu().map((i) => ({ ...i, tone: toneFor(i.id) })).filter((i) => includeInactive || i.active)
+  localMenu().map((i) => ({ ...i, tone: toneFor(i.id), img: imgFor(i.id) })).filter((i) => includeInactive || i.active)
 
 // item = { id?, cat, name, desc, price, active, tag }
 export async function saveMenuItem(item) {

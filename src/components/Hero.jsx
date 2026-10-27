@@ -21,9 +21,9 @@ export default function Hero() {
             <li><Motorcycle size={18} weight="bold" /> Delivery y recojo</li>
           </ul>
         </div>
-        <div className="hero-art" aria-hidden="true">
+        <div className="hero-art">
           <div className="plate">
-            <span>Foto del plato</span>
+            <img src="/img/platos/hero.webp" alt="Causa limeña servida en plato" width="820" height="820" fetchpriority="high" />
           </div>
         </div>
       </div>

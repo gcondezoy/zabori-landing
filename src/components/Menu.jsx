@@ -11,7 +11,9 @@ function Card({ item }) {
   return (
     <article className="card">
       <div className="card-img" style={{ background: item.tone }}>
-        <ForkKnife size={34} weight="duotone" />
+        {item.img
+          ? <img src={item.img} alt={item.name} loading="lazy" width="720" height="540" />
+          : <ForkKnife size={34} weight="duotone" />}
         {item.tag && <span className="tag">{item.tag}</span>}
       </div>
       <div className="card-body">
