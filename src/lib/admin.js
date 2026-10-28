@@ -60,7 +60,7 @@ export async function listOrders() {
     const since = new Date(Date.now() - 120 * 864e5).toISOString() // últimos 120 días
     const { data, error } = await supabase
       .from('orders')
-      .select('id, code, user_id, customer_name, phone, email, mode, address, notes, subtotal, delivery_fee, total, status, payment_status, payment_ref, history, created_at, order_items(name, qty, price)')
+      .select('id, code, user_id, customer_name, phone, email, mode, address, notes, subtotal, delivery_fee, total, status, payment_status, payment_ref, history, created_at, order_items(name, detail, qty, price)')
       .gte('created_at', since)
       .order('created_at', { ascending: false })
       .limit(2000)
@@ -70,7 +70,7 @@ export async function listOrders() {
       mode: o.mode, address: o.address, notes: o.notes, subtotal: Number(o.subtotal),
       fee: Number(o.delivery_fee), total: Number(o.total), status: o.status, payment: o.payment_status,
       paymentRef: o.payment_ref, createdAt: o.created_at, history: o.history || [],
-      items: o.order_items.map((i) => ({ name: i.name, qty: i.qty, price: Number(i.price) })),
+      items: o.order_items.map((i) => ({ name: i.name, detail: i.detail || '', qty: i.qty, price: Number(i.price) })),
     }))
   }
   return readLocal().map((o) => ({

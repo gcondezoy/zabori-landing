@@ -16,6 +16,7 @@ Sin esto la web funciona en **modo demo** (cuentas y pedidos solo en el navegado
 ## Cómo funciona la seguridad
 - El navegador **nunca manda precios**: la función `create_order()` los lee de `menu_items` y calcula subtotal, delivery y total.
 - Invitados y clientes registrados usan la misma función; si hay sesión, el pedido queda ligado a `user_id`.
+- **Arma tu plato:** el navegador solo manda las opciones elegidas. `create_order()` comprueba que existan y estén disponibles, que se cumplan los mínimos/máximos de cada grupo (`build_groups`) y calcula precio base (`menu_items` 'arma') + adicionales (`build_options`). La composición queda en `order_items.detail`.
 - RLS: cada cliente solo ve su perfil y sus pedidos. Nadie inserta pedidos directamente.
 - Si cambias la tarifa de delivery en `src/config/site.js`, cámbiala también en `create_order()` (constantes al inicio).
 - Si cambias platos o precios en `src/data/menu.js`, actualiza `menu_items` (la etapa 4 traerá un panel para esto).
@@ -70,6 +71,7 @@ Entrar en `https://TU-SITIO/#/admin`.
   Al tocar un pedido se abre su ficha: cliente (con cuenta o invitado), llamada, WhatsApp, dirección en Google Maps, notas, platos con precio unitario e importe, subtotal, delivery, total, referencia del pago y **historial con la hora de cada cambio**. Desde ahí se avanza el estado, se marca pagado o se cancela, y aparece un botón para **avisar al cliente por WhatsApp** con el mensaje ya escrito.
 - **Clientes:** agrupados por celular, con número de pedidos, total gastado, plato favorito y último pedido; al abrir uno se ven todos sus pedidos.
 - **Carta:** editar nombre, descripción (entrada y segundo), categoría, precio y etiqueta; ocultar o agregar platos; cada plato muestra cuántos se vendieron en 7 y 30 días.
+- **Carta → Arma tu plato:** precio base y, por grupo (proteína, carbohidrato, acompañamientos, cremas), cada opción con su adicional, "Disponible" sí/no y cuántas veces se eligió en 30 días; también se agregan opciones nuevas.
 - **Avisos:** se actualiza solo cada 15 s; si entra un pedido nuevo suena un pitido y el título de la pestaña muestra `(n) Nuevo pedido`. Hay que dejar la pestaña abierta.
 
 ## Seguridad

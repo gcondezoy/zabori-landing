@@ -82,7 +82,7 @@ export default function OrderDetail({ order: o, onClose, refresh }) {
               <thead><tr><th>Plato</th><th className="num">Cant.</th><th className="num">P. unit.</th><th className="num">Importe</th></tr></thead>
               <tbody>
                 {o.items.map((i, k) => (
-                  <tr key={k}><td>{i.name}</td><td className="num">{i.qty}</td><td className="num">{money(i.price || 0)}</td><td className="num">{money((i.price || 0) * i.qty)}</td></tr>
+                  <tr key={k}><td>{i.name}{i.detail && <small className="line-detail">{i.detail}</small>}</td><td className="num">{i.qty}</td><td className="num">{money(i.price || 0)}</td><td className="num">{money((i.price || 0) * i.qty)}</td></tr>
                 ))}
               </tbody>
               <tfoot>

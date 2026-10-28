@@ -18,7 +18,12 @@ export async function createOrder(form, lines, userId) {
 
   if (supabaseConfigurado) {
     const { data, error } = await supabase.rpc('create_order', {
-      p: { ...form, items: lines.map((l) => ({ id: l.item.id, qty: l.n })) },
+      p: {
+        ...form,
+        items: lines.map((l) => (l.item.isCustom
+          ? { id: 'arma', qty: l.n, options: l.item.options } // el servidor recalcula el precio
+          : { id: l.item.id, qty: l.n })),
+      },
     })
     if (error) throw new Error(error.message)
     return { code: data, total: subtotal + fee }
@@ -29,7 +34,7 @@ export async function createOrder(form, lines, userId) {
     code, userId: userId || null, ...form, subtotal, fee, total: subtotal + fee,
     status: 'pendiente', payment: 'pendiente', createdAt: new Date().toISOString(),
     history: [{ type: 'status', value: 'pendiente', at: new Date().toISOString() }],
-    items: lines.map((l) => ({ name: l.item.name, price: l.item.price, qty: l.n })),
+    items: lines.map((l) => ({ name: l.item.name, detail: l.item.detail || '', price: l.item.price, qty: l.n })),
   }
   writeLocal([order, ...readLocal()])
   return { code, total: order.total }

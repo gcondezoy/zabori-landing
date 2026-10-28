@@ -1,5 +1,6 @@
 // Pedidos de ejemplo para mostrar el panel en modo demo (solo se guardan en este navegador).
 import { site } from '../config/site'
+import { buildSeed } from '../data/build'
 
 const KEY = 'zabori-orders'
 
@@ -11,9 +12,23 @@ const PEOPLE = [
 const STREETS = ['Av. Universitaria', 'Jr. Las Begonias', 'Av. Carlos Izaguirre', 'Calle Los Pinos', 'Av. Naranjal']
 const NOTES = ['Sin ají, por favor', 'Tocar el timbre 2 veces', 'Cubiertos descartables', 'Dejar en portería']
 
+// Un "Arma tu plato" al azar: 1 proteína, 1 carbohidrato, 0-2 acompañamientos, 0-1 crema
+function demoBuiltPlate(pick) {
+  const of = (grp) => buildSeed.options.filter((o) => o.grp === grp)
+  const opts = [pick(of('proteina')), pick(of('carbo'))]
+  const acomp = of('acomp').sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 3))
+  if (Math.random() > 0.4) opts.push(...acomp, pick(of('crema')))
+  return {
+    name: 'Arma tu plato',
+    detail: opts.map((o) => o.name).join(' · '),
+    price: buildSeed.basePrice + opts.reduce((s, o) => s + o.price, 0),
+    qty: 1,
+  }
+}
+
 export function seedDemoOrders(menu, days = 14) {
   const mains = menu.filter((i) => i.cat === 'menu' && i.active !== false)
-  const extras = menu.filter((i) => i.cat !== 'menu' && i.active !== false)
+  const extras = menu.filter((i) => i.cat !== 'menu' && i.cat !== 'arma' && i.active !== false)
   if (!mains.length) return 0
 
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)]
@@ -31,7 +46,9 @@ export function seedDemoOrders(menu, days = 14) {
 
       const [name, phone] = pick(PEOPLE)
       const main = pick(mains)
-      const items = [{ name: main.name, price: main.price, qty: 1 + (Math.random() > 0.7 ? 1 : 0) }]
+      const items = Math.random() < 0.3
+        ? [demoBuiltPlate(pick)]
+        : [{ name: main.name, price: main.price, qty: 1 + (Math.random() > 0.7 ? 1 : 0) }]
       if (extras.length && Math.random() > 0.45) { const x = pick(extras); items.push({ name: x.name, price: x.price, qty: 1 }) }
       const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0)
       const mode = Math.random() > 0.35 ? 'delivery' : 'recojo'

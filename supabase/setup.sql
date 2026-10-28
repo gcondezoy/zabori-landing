@@ -23,8 +23,7 @@ insert into public.menu_items (id, cat, name, descr, price) values
   ('m2','menu','Menú Marino','Entrada del día, arroz con mariscos, refresco.',16),
   ('m3','menu','Menú Casero','Entrada del día, seco de res con frejoles, refresco.',13),
   ('m4','menu','Menú Ligero','Ensalada fresca, pollo a la plancha con puré, refresco.',13),
-  ('e1','extras','Entrada extra','Sopa o ensalada del día.',5),
-  ('e2','extras','Postre del día','Mazamorra, gelatina o fruta.',4),
+  ('arma','arma','Arma tu plato','Elige proteína, carbohidrato, acompañamientos y cremas.',12),
   ('b1','bebidas','Chicha morada 500 ml','Hecha en casa.',4),
   ('b2','bebidas','Limonada frozen','Con hierbabuena.',5)
 on conflict (id) do nothing;
@@ -83,6 +82,45 @@ create table if not exists public.order_items (
   price    numeric(10,2) not null,
   qty      int not null check (qty > 0)
 );
+-- Composición del plato armado ("Pollo · Arroz · ..."); vacío para platos normales
+alter table public.order_items add column if not exists detail text not null default '';
+
+-- ---------- Arma tu plato ----------
+-- Precio base = menu_items('arma').price; cada opción suma su "price" (0 = incluido).
+create table if not exists public.build_groups (
+  id      text primary key,
+  label   text not null,
+  min_sel int  not null default 0,
+  max_sel int  not null default 1,
+  sort    int  not null default 0
+);
+create table if not exists public.build_options (
+  id     text primary key,
+  grp    text not null references public.build_groups(id),
+  name   text not null,
+  price  numeric(10,2) not null default 0 check (price >= 0),
+  active boolean not null default true,
+  sort   int not null default 0
+);
+
+insert into public.build_groups (id, label, min_sel, max_sel, sort) values
+  ('proteina','Proteína',1,1,1), ('carbo','Carbohidrato',1,1,2),
+  ('acomp','Acompañamientos',0,2,3), ('crema','Cremas',0,2,4)
+on conflict (id) do nothing;
+
+insert into public.build_options (id, grp, name, price, sort) values
+  ('p-pollo','proteina','Pollo a la plancha',0,1), ('p-res','proteina','Lomo de res',3,2),
+  ('p-pescado','proteina','Pescado frito',2,3), ('p-cerdo','proteina','Chicharrón de cerdo',2,4),
+  ('p-tortilla','proteina','Tortilla de verduras',0,5),
+  ('c-arroz','carbo','Arroz blanco',0,1), ('c-chaufa','carbo','Arroz chaufa',1,2),
+  ('c-fritas','carbo','Papas fritas',1,3), ('c-sancochada','carbo','Papa sancochada',0,4),
+  ('c-quinua','carbo','Quinua',1.5,5),
+  ('a-menestra','acomp','Menestra del día',0,1), ('a-ensalada','acomp','Ensalada fresca',0,2),
+  ('a-platano','acomp','Plátano frito',1,3), ('a-camote','acomp','Camote frito',1,4),
+  ('a-choclo','acomp','Choclo',0,5),
+  ('k-aji','crema','Ají',0,1), ('k-huancaina','crema','Huancaína',0,2),
+  ('k-criolla','crema','Salsa criolla',0,3), ('k-tartara','crema','Tártara',0,4)
+on conflict (id) do nothing;
 
 -- Si la tabla ya existía de la etapa 2, ampliar los estados de pago permitidos
 alter table public.orders drop constraint if exists orders_payment_status_check;
@@ -97,6 +135,13 @@ alter table public.menu_items  enable row level security;
 alter table public.profiles    enable row level security;
 alter table public.orders      enable row level security;
 alter table public.order_items enable row level security;
+alter table public.build_groups  enable row level security;
+alter table public.build_options enable row level security;
+
+drop policy if exists "grupos publicos" on public.build_groups;
+create policy "grupos publicos" on public.build_groups for select using (true);
+drop policy if exists "opciones publicas" on public.build_options;
+create policy "opciones publicas" on public.build_options for select using (active);
 
 drop policy if exists "carta publica" on public.menu_items;
 create policy "carta publica" on public.menu_items for select using (active);
@@ -114,8 +159,9 @@ create policy "lineas propias" on public.order_items for select
   using (exists (select 1 from public.orders o where o.id = order_id and o.user_id = auth.uid()));
 
 -- ---------- Crear pedido (invitado o registrado) ----------
--- Los precios SIEMPRE se leen de menu_items: el navegador nunca manda precios.
+-- Los precios SIEMPRE se leen de la base: el navegador nunca manda precios.
 -- p = { name, phone, email, mode, address, notes, items: [{id, qty}] }
+-- Plato armado: { id: 'arma', qty, options: ['p-pollo','c-arroz',...] } (se validan los mínimos/máximos de cada grupo)
 create or replace function public.create_order(p jsonb) returns text
 language plpgsql security definer set search_path = public as $$
 declare
@@ -126,6 +172,14 @@ declare
   v_fee numeric := 0;
   v_code text;
   v_order uuid;
+  v_lines jsonb := '[]'::jsonb;
+  v_qty int;
+  v_price numeric;
+  v_detail text;
+  v_opts text[];
+  v_n int;
+  it jsonb;
+  g record;
   r record;
 begin
   if coalesce(trim(p->>'name'), '') = '' or coalesce(trim(p->>'phone'), '') = '' then
@@ -141,10 +195,39 @@ begin
     raise exception 'El pedido está vacío';
   end if;
 
-  select coalesce(sum(m.price * i.qty), 0) into v_subtotal
-  from jsonb_to_recordset(p->'items') as i(id text, qty int)
-  join public.menu_items m on m.id = i.id and m.active
-  where i.qty > 0 and i.qty <= 50;
+  -- Cada línea se valida y se le pone precio desde la base
+  for it in select * from jsonb_array_elements(p->'items') loop
+    v_qty := nullif(it->>'qty', '')::int;
+    if v_qty is null or v_qty < 1 or v_qty > 50 then raise exception 'Cantidad inválida'; end if;
+
+    if it->>'id' = 'arma' then
+      select price into v_price from public.menu_items where id = 'arma' and active;
+      if not found then raise exception 'Arma tu plato no está disponible'; end if;
+
+      v_opts := array(select distinct jsonb_array_elements_text(coalesce(it->'options', '[]'::jsonb)));
+      if (select count(*) from public.build_options where id = any(v_opts) and active) <> cardinality(v_opts) then
+        raise exception 'Alguna opción de tu plato ya no está disponible';
+      end if;
+      for g in select * from public.build_groups loop
+        select count(*) into v_n from public.build_options where id = any(v_opts) and grp = g.id;
+        if v_n < g.min_sel or v_n > g.max_sel then raise exception 'Revisa tu plato: %', g.label; end if;
+      end loop;
+
+      select v_price + coalesce(sum(o.price), 0), coalesce(string_agg(o.name, ' · ' order by bg.sort, o.sort), '')
+        into v_price, v_detail
+      from public.build_options o join public.build_groups bg on bg.id = o.grp
+      where o.id = any(v_opts);
+
+      v_lines := v_lines || jsonb_build_object('item_id', 'arma', 'name', 'Arma tu plato', 'detail', v_detail, 'price', v_price, 'qty', v_qty);
+    else
+      select id, name, price into r from public.menu_items where id = it->>'id' and active and cat <> 'arma';
+      if not found then raise exception 'Un producto de tu pedido ya no está disponible'; end if;
+      v_price := r.price;
+      v_lines := v_lines || jsonb_build_object('item_id', r.id, 'name', r.name, 'detail', '', 'price', v_price, 'qty', v_qty);
+    end if;
+
+    v_subtotal := v_subtotal + v_price * v_qty;
+  end loop;
 
   if v_subtotal <= 0 then raise exception 'Productos inválidos'; end if;
   if v_mode = 'delivery' and v_subtotal < v_free_from then v_fee := v_fee_amount; end if;
@@ -161,11 +244,9 @@ begin
           v_subtotal, v_fee, v_subtotal + v_fee)
   returning id into v_order;
 
-  insert into public.order_items (order_id, item_id, name, price, qty)
-  select v_order, m.id, m.name, m.price, i.qty
-  from jsonb_to_recordset(p->'items') as i(id text, qty int)
-  join public.menu_items m on m.id = i.id and m.active
-  where i.qty > 0 and i.qty <= 50;
+  insert into public.order_items (order_id, item_id, name, detail, price, qty)
+  select v_order, l.item_id, l.name, l.detail, l.price, l.qty
+  from jsonb_to_recordset(v_lines) as l(item_id text, name text, detail text, price numeric, qty int);
 
   return v_code;
 end $$;
@@ -179,7 +260,7 @@ grant execute on function public.create_order(jsonb) to anon, authenticated;
 -- Orden y etiquetas de la carta de ejemplo
 update public.menu_items set sort = v.s, tag = v.t
 from (values ('m1',1,'Más pedido'),('m2',2,''),('m3',3,''),('m4',4,'Saludable'),
-             ('e1',5,''),('e2',6,''),('b1',7,''),('b2',8,'')) as v(id,s,t)
+             ('arma',5,''),('b1',7,''),('b2',8,'')) as v(id,s,t)
 where public.menu_items.id = v.id and public.menu_items.sort = 0;
 
 create table if not exists public.admins (
@@ -234,3 +315,11 @@ end $$;
 drop trigger if exists orders_history_trg on public.orders;
 create trigger orders_history_trg before insert or update on public.orders
   for each row execute function public.orders_history();
+
+-- =============================================================
+--  Arma tu plato · el panel administra opciones y precios
+-- =============================================================
+drop policy if exists "admin gestiona grupos" on public.build_groups;
+create policy "admin gestiona grupos" on public.build_groups for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin gestiona opciones" on public.build_options;
+create policy "admin gestiona opciones" on public.build_options for all using (public.is_admin()) with check (public.is_admin());

@@ -6,6 +6,7 @@ import { money } from '../config/site'
 import { useCart } from '../context/CartContext'
 import Reveal from './Reveal'
 import TodayBadge from './TodayBadge'
+import BuildPlate from './BuildPlate'
 
 function Card({ item, index }) {
   const { qty, add, dec } = useCart()
@@ -57,9 +58,11 @@ export default function Menu() {
             </button>
           ))}
         </div>
-        <div className="grid">
-          {items.filter((i) => i.cat === cat).map((i, k) => <Card key={cat + i.id} item={i} index={k} />)}
-        </div>
+        {cat === 'arma' ? <BuildPlate /> : (
+          <div className="grid">
+            {items.filter((i) => i.cat === cat).map((i, k) => <Card key={cat + i.id} item={i} index={k} />)}
+          </div>
+        )}
       </div>
     </section>
   )

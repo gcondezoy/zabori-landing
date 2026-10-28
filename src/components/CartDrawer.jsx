@@ -22,6 +22,7 @@ export default function CartDrawer() {
                 <li key={item.id}>
                   <div>
                     <strong>{item.name}</strong>
+                    {item.detail && <small className="line-detail">{item.detail}</small>}
                     <span>{money(item.price * n)}</span>
                   </div>
                   <div className="stepper">

@@ -3,7 +3,11 @@ import { Plus } from '@phosphor-icons/react'
 import { useMenu } from '../../context/MenuContext'
 import { loadMenu, saveMenuItem } from '../../lib/menu'
 import { inRange, unitsByName } from '../../lib/stats'
-import { categories } from '../../data/menu'
+import { categories as allCategories } from '../../data/menu'
+import BuildAdmin from './BuildAdmin'
+
+// "Arma tu plato" se administra en su propia pestaña, no como un plato más
+const categories = allCategories.filter((c) => c.id !== 'arma')
 import { money } from '../../config/site'
 
 const empty = { name: '', desc: '', cat: 'menu', price: '', active: true, tag: '' }
@@ -54,7 +58,7 @@ export default function MenuAdmin({ orders }) {
   const [err, setErr] = useState('')
 
   const refresh = useCallback(async () => {
-    setList(await loadMenu({ includeInactive: true }))
+    setList((await loadMenu({ includeInactive: true })).filter((i) => i.cat !== 'arma'))
     await reload() // la web pública muestra los cambios al instante
   }, [reload])
   useEffect(() => { refresh() }, [refresh])
@@ -111,14 +115,14 @@ export default function MenuAdmin({ orders }) {
       )}
 
       <div className="tabs">
-        {[{ id: 'todas', label: 'Todas' }, ...categories].map((c) => (
+        {[{ id: 'todas', label: 'Todas' }, ...categories, { id: 'arma', label: 'Arma tu plato' }].map((c) => (
           <button key={c.id} className={cat === c.id ? 'tab on' : 'tab'} onClick={() => setCat(c.id)}>
-            {c.label} ({(list || []).filter((i) => c.id === 'todas' || i.cat === c.id).length})
+            {c.label}{c.id !== 'arma' && ` (${(list || []).filter((i) => c.id === 'todas' || i.cat === c.id).length})`}
           </button>
         ))}
       </div>
 
-      {list === null ? <p className="muted">Cargando…</p> : shown.map((i) => (
+      {cat === 'arma' ? <BuildAdmin orders={orders} /> : list === null ? <p className="muted">Cargando…</p> : shown.map((i) => (
         <ItemCard key={i.id + JSON.stringify(i)} item={i} onSaved={refresh}
           sold={{ d7: sold.d7[i.name] || 0, d30: sold.d30[i.name] || 0 }} />
       ))}
