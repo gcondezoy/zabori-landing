@@ -520,21 +520,6 @@ h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 900; }
 .today-status.open i { background: #22a050; box-shadow: 0 0 0 0 rgba(34, 160, 80, .5); animation: pulse 2s infinite; }
 @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(34, 160, 80, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 160, 80, 0); } }
 
-/* Opiniones */
-.op-head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
-.op-example { display: inline-block; margin-top: 8px; font-size: .75rem; font-weight: 700; color: #7a5a14; background: #fff1c4; border: 1px dashed #d9b64a; padding: 3px 10px; border-radius: 999px; }
-.op-score { display: flex; align-items: center; gap: 10px; }
-.op-score strong { font-family: 'Nunito Variable', sans-serif; font-size: 2.6rem; font-weight: 900; color: var(--red); line-height: 1; }
-.stars { display: inline-flex; gap: 2px; color: #e9ad0c; }
-.op-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
-.op-card { margin: 0; position: relative; display: grid; gap: 16px; align-content: space-between; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 26px 22px 20px; transition: box-shadow .25s; }
-.op-card:hover { box-shadow: 0 14px 30px rgba(3, 50, 60, .1); }
-.op-quote { color: var(--yellow); }
-.op-card blockquote { margin: 0; font-size: 1.02rem; line-height: 1.55; color: var(--ink); }
-.op-card figcaption { display: flex; align-items: center; gap: 10px; }
-.op-card figcaption > span:nth-child(2) { display: grid; flex: 1; line-height: 1.25; }
-.op-card figcaption small { color: var(--muted); font-size: .82rem; }
-.op-avatar { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--red); color: var(--yellow); font-family: 'Nunito Variable', sans-serif; font-weight: 900; }
 @media (prefers-reduced-motion: reduce) { .today-status.open i { animation: none; } }
 
 /* Arma tu plato */
