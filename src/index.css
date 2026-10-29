@@ -640,3 +640,17 @@ h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 900; }
 .bo-thumb.empty { display: block; border: 1.5px dashed var(--line); }
 .bo-img { grid-column: 2 / -1; font-size: .82rem; }
 @media (max-width: 860px) { .bo-row.with-img { grid-template-columns: 64px 1fr auto; } .bo-row.with-img .bo-img { grid-column: 1 / -1; } }
+
+/* Ventana de táper */
+.taper-modal { width: min(560px, 100%); display: grid; gap: 18px; }
+.tp-head { display: flex; align-items: center; gap: 14px; padding-right: 30px; }
+.tp-head img { width: 72px; height: 54px; object-fit: cover; border-radius: 12px; flex: none; }
+.tp-head small { font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--red); }
+.tp-head h3 { font-size: 1.35rem; }
+.tp-options { grid-template-columns: repeat(3, 1fr) !important; }
+.tp-foot { display: flex; gap: 10px; align-items: center; }
+.tp-add { flex: 1; }
+.tp-add:disabled { opacity: .6; cursor: not-allowed; }
+@media (max-width: 480px) { .tp-options { grid-template-columns: 1fr 1fr !important; } }
+.card-add { display: inline-flex; align-items: center; gap: 8px; }
+.in-cart { font-size: .75rem; font-weight: 700; color: var(--red); background: #e1f0f2; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }

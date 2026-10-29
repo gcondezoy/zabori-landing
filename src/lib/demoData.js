@@ -49,7 +49,10 @@ export function seedDemoOrders(menu, days = 14) {
       const main = pick(mains)
       const items = Math.random() < 0.3
         ? [demoBuiltPlate(pick)]
-        : [{ name: main.name, price: main.price, qty: 1 + (Math.random() > 0.7 ? 1 : 0) }]
+        : [(() => {
+          const taper = pick(buildSeed.options.filter((o) => o.grp === 'taper'))
+          return { name: main.name, detail: taper.name, price: main.price + taper.price, qty: 1 + (Math.random() > 0.7 ? 1 : 0) }
+        })()]
       if (extras.length && Math.random() > 0.45) { const x = pick(extras); items.push({ name: x.name, price: x.price, qty: 1 }) }
       const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0)
       const mode = Math.random() > 0.35 ? 'delivery' : 'recojo'

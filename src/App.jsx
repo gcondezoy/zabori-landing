@@ -9,6 +9,7 @@ import CartDrawer from './components/CartDrawer'
 import Checkout from './components/Checkout'
 import AuthModal from './components/AuthModal'
 import CartBar from './components/CartBar'
+import TaperPicker from './components/TaperPicker'
 import Admin from './components/admin/AdminApp'
 
 const isAdminRoute = () => window.location.hash.startsWith('#/admin')
@@ -42,6 +43,7 @@ export default function App() {
       </main>
       <Footer />
       <CartBar />
+      <TaperPicker />
       <CartDrawer />
       <Checkout />
       <AuthModal />

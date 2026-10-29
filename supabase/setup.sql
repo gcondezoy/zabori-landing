@@ -171,6 +171,7 @@ create policy "lineas propias" on public.order_items for select
 -- Los precios SIEMPRE se leen de la base: el navegador nunca manda precios.
 -- p = { name, phone, email, mode, address, notes, items: [{id, qty}] }
 -- Plato armado: { id: 'arma', qty, options: ['p-pollo','c-arroz',...] } (se validan los mínimos/máximos de cada grupo)
+-- Menú del día: { id: 'm1', qty, taper: 't-kraft' } (el táper es obligatorio y suma su precio)
 create or replace function public.create_order(p jsonb) returns text
 language plpgsql security definer set search_path = public as $$
 declare
@@ -229,10 +230,20 @@ begin
 
       v_lines := v_lines || jsonb_build_object('item_id', 'arma', 'name', 'Arma tu plato', 'detail', v_detail, 'price', v_price, 'qty', v_qty);
     else
-      select id, name, price into r from public.menu_items where id = it->>'id' and active and cat <> 'arma';
+      select id, name, price, cat into r from public.menu_items where id = it->>'id' and active and cat <> 'arma';
       if not found then raise exception 'Un producto de tu pedido ya no está disponible'; end if;
       v_price := r.price;
-      v_lines := v_lines || jsonb_build_object('item_id', r.id, 'name', r.name, 'detail', '', 'price', v_price, 'qty', v_qty);
+      v_detail := '';
+
+      -- Los menús del día van con táper (si hay alguno disponible): se suma su precio
+      if r.cat = 'menu' and exists (select 1 from public.build_options where grp = 'taper' and active) then
+        select name, price into g from public.build_options where id = it->>'taper' and grp = 'taper' and active;
+        if not found then raise exception 'Elige el táper de tu %', r.name; end if;
+        v_price := v_price + g.price;
+        v_detail := g.name;
+      end if;
+
+      v_lines := v_lines || jsonb_build_object('item_id', r.id, 'name', r.name, 'detail', v_detail, 'price', v_price, 'qty', v_qty);
     end if;
 
     v_subtotal := v_subtotal + v_price * v_qty;

@@ -7,10 +7,13 @@ import { useCart } from '../context/CartContext'
 import Reveal from './Reveal'
 import TodayBadge from './TodayBadge'
 import BuildPlate from './BuildPlate'
+import { needsTaper } from '../lib/build'
 
 function Card({ item, index }) {
-  const { qty, add, dec } = useCart()
-  const n = qty[item.id] || 0
+  const { qty, add, dec, requestAdd, countOf } = useCart()
+  const { build } = useMenu()
+  const withTaper = needsTaper(item, build) // los menús del día piden táper al agregar
+  const n = withTaper ? countOf(item.id) : qty[item.id] || 0
   return (
     <Reveal as="article" className="card" delay={Math.min(index, 5) * 70}>
       <div className="card-img" style={{ background: item.tone }}>
@@ -24,7 +27,12 @@ function Card({ item, index }) {
         <p>{item.desc}</p>
         <div className="card-foot">
           <strong>{money(item.price)}</strong>
-          {n === 0 ? (
+          {withTaper ? (
+            <span className="card-add">
+              {n > 0 && <span className="in-cart">{n} en tu pedido</span>}
+              <button className="btn small primary" onClick={() => requestAdd(item)}>Agregar</button>
+            </span>
+          ) : n === 0 ? (
             <button className="btn small primary" onClick={() => add(item.id)}>Agregar</button>
           ) : (
             <div className="stepper">

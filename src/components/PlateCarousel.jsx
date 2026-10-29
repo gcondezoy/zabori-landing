@@ -14,7 +14,7 @@ const reducedMotion = () => {
 // Plato giratorio de la portada: recorre los menús del día que tienen foto
 export default function PlateCarousel() {
   const { items } = useMenu()
-  const { add } = useCart()
+  const { requestAdd } = useCart()
   const slides = items.filter((i) => i.cat === 'menu' && i.img)
   const list = slides.length ? slides : FALLBACK
   const [index, setIndex] = useState(0)
@@ -51,7 +51,8 @@ export default function PlateCarousel() {
     setPaused(false)
   }
 
-  const addCurrent = () => { add(current.id); setAdded(current.id) }
+  // Abre la elección de táper; el check verde se muestra al confirmar en esa ventana
+  const addCurrent = () => requestAdd(current)
 
   return (
     <div className="carousel" role="region" aria-roledescription="carrusel" aria-label="Menús del día"
