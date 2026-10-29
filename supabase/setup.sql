@@ -24,8 +24,9 @@ insert into public.menu_items (id, cat, name, descr, price) values
   ('m3','menu','Menú Casero','Entrada del día, seco de res con frejoles, refresco.',13),
   ('m4','menu','Menú Ligero','Ensalada fresca, pollo a la plancha con puré, refresco.',13),
   ('arma','arma','Arma tu plato','Fit: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y aderezos.',0),
-  ('b1','bebidas','Chicha morada 500 ml','Hecha en casa.',4),
-  ('b2','bebidas','Limonada frozen','Con hierbabuena.',5)
+  ('s1','shots','Shot de jengibre y limón','Jengibre fresco, limón y una pizca de miel.',5),
+  ('s2','shots','Shot verde','Espinaca, manzana verde y apio.',5),
+  ('s3','shots','Shot de cúrcuma y naranja','Cúrcuma, naranja y pimienta negra.',5)
 on conflict (id) do nothing;
 
 -- ---------- Perfiles (clientes registrados) ----------
@@ -342,7 +343,7 @@ grant execute on function public.create_order(jsonb) to anon, authenticated;
 -- Orden y etiquetas de la carta de ejemplo
 update public.menu_items set sort = v.s, tag = v.t
 from (values ('m1',1,'Más pedido'),('m2',2,''),('m3',3,''),('m4',4,'Saludable'),
-             ('arma',5,''),('b1',7,''),('b2',8,'')) as v(id,s,t)
+             ('arma',5,''),('s1',6,''),('s2',7,'Detox'),('s3',8,'')) as v(id,s,t)
 where public.menu_items.id = v.id and public.menu_items.sort = 0;
 
 create table if not exists public.admins (

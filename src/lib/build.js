@@ -133,7 +133,7 @@ export function missingGroup(build, ids) {
 export const TAPER_GROUP = 'taper'
 export const TAPER_SEP = '~'
 export const taperOptions = (build) => build.options.filter((o) => o.grp === TAPER_GROUP && o.active !== false)
-// Los menús del día se piden con táper (si hay alguno disponible); bebidas no
+// Los menús del día se piden con táper (si hay alguno disponible); los shots no
 export const needsTaper = (item, build) => item.cat === 'menu' && taperOptions(build).length > 0
 export const taperKey = (itemId, taperId) => `${itemId}${TAPER_SEP}${taperId}`
 

@@ -3,7 +3,7 @@
 import { supabase, supabaseConfigurado } from './supabase'
 import { items as seed } from '../data/menu'
 
-const KEY = 'zabori-menu'
+const KEY = 'zabori-menu-v2' // v2: Bebidas pasó a Shots
 const TONES = ['#034d5b', '#0b6b7a', '#a87400', '#1f6f5c', '#7a5a14', '#b3541e', '#2c4a7a', '#5f8a1c']
 
 const toneFor = (id) => {
