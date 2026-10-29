@@ -142,9 +142,9 @@ insert into public.build_options (id, grp, name, price, sort, img, sizes, sub) v
   ('k-yogur','crema','Yogur con hierbas',0,2,'/img/arma/yogur.webp','[]',''),
   ('k-huacatay','crema','Crema de huacatay',0,3,'/img/arma/huacatay.webp','[]',''),
   ('k-criolla','crema','Salsa criolla',0,4,'/img/arma/criolla.webp','[]',''),
-  ('t-bagazo','taper','Táper de bagazo (biodegradable)',0.5,1,'/img/taper/bagazo.svg','[]',''),
+  ('t-bagazo','taper','Táper de bagazo (biodegradable)',0.5,1,'/img/taper/bagazo-foto.webp','[]',''),
   ('t-kraft','taper','Bowl kraft con tapa',1,2,'/img/taper/kraft.svg','[]',''),
-  ('t-reutilizable','taper','Táper reutilizable hermético',2,3,'/img/taper/reutilizable.svg','[]','')
+  ('t-reutilizable','taper','Táper reutilizable hermético',2,3,'/img/taper/reutilizable-foto.webp','[]','')
 on conflict (id) do nothing;
 
 -- Ubicación exacta de entrega (opcional, desde el mapa del checkout)

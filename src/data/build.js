@@ -38,8 +38,8 @@ export const buildSeed = {
     { id: 'k-yogur', grp: 'crema', name: 'Yogur con hierbas', price: 0, active: true, sort: 2, img: '/img/arma/yogur.webp' },
     { id: 'k-huacatay', grp: 'crema', name: 'Crema de huacatay', price: 0, active: true, sort: 3, img: '/img/arma/huacatay.webp' },
     { id: 'k-criolla', grp: 'crema', name: 'Salsa criolla', price: 0, active: true, sort: 4, img: '/img/arma/criolla.webp' },
-    { id: 't-bagazo', grp: 'taper', name: 'Táper de bagazo (biodegradable)', price: 0.5, active: true, sort: 1, img: '/img/taper/bagazo.svg' },
+    { id: 't-bagazo', grp: 'taper', name: 'Táper de bagazo (biodegradable)', price: 0.5, active: true, sort: 1, img: '/img/taper/bagazo-foto.webp' },
     { id: 't-kraft', grp: 'taper', name: 'Bowl kraft con tapa', price: 1, active: true, sort: 2, img: '/img/taper/kraft.svg' },
-    { id: 't-reutilizable', grp: 'taper', name: 'Táper reutilizable hermético', price: 2, active: true, sort: 3, img: '/img/taper/reutilizable.svg' },
+    { id: 't-reutilizable', grp: 'taper', name: 'Táper reutilizable hermético', price: 2, active: true, sort: 3, img: '/img/taper/reutilizable-foto.webp' },
   ],
 }
