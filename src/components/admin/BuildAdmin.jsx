@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Plus } from '@phosphor-icons/react'
+import { Plus, X } from '@phosphor-icons/react'
 import { useMenu } from '../../context/MenuContext'
-import { loadBuild, saveBuildOption, saveBasePrice } from '../../lib/build'
+import { loadBuild, saveBuildOption, saveBasePrice, hasSizes } from '../../lib/build'
 import { inRange } from '../../lib/stats'
 import { money } from '../../config/site'
 
@@ -17,7 +17,35 @@ function optionCounts(orders) {
   return counts
 }
 
-function OptionRow({ opt, uses, onSaved, withImg }) {
+const DEFAULT_SIZES = [{ g: 120, price: 15 }, { g: 180, price: 18 }, { g: 250, price: 22 }]
+
+// Veces pedida (30 días). Con porciones se suman todas: "Pechuga de pollo 120 g", "… 180 g"…
+function usesOf(o, counts) {
+  if (!hasSizes(o)) return counts[o.name] || 0
+  return o.sizes.reduce((sum, s) => sum + (counts[`${o.name} ${s.g} g`] || 0), 0)
+}
+
+// Editor de porciones: gramos → precio del plato
+function SizesEditor({ sizes, onChange }) {
+  const set = (i, k, v) => onChange(sizes.map((s, j) => (j === i ? { ...s, [k]: v } : s)))
+  return (
+    <div className="bo-sizes">
+      {sizes.map((s, i) => (
+        <span key={i} className="bo-size">
+          <input type="number" min="1" step="10" value={s.g} onChange={(e) => set(i, 'g', e.target.value)} aria-label="Gramos" />
+          <small>g →</small>
+          <span className="bo-price">S/<input type="number" min="0" step="0.5" value={s.price} onChange={(e) => set(i, 'price', e.target.value)} aria-label="Precio de la porción" /></span>
+          <button type="button" className="icon-btn" onClick={() => onChange(sizes.filter((_, j) => j !== i))} aria-label="Quitar porción" disabled={sizes.length <= 1}><X size={14} /></button>
+        </span>
+      ))}
+      <button type="button" className="btn ghost small" onClick={() => onChange([...sizes, { g: (Number(sizes.at(-1)?.g) || 100) + 50, price: Number(sizes.at(-1)?.price) || 15 }])}>
+        <Plus size={14} weight="bold" /> Porción
+      </button>
+    </div>
+  )
+}
+
+function OptionRow({ opt, uses, onSaved, withImg, sized }) {
   const [f, setF] = useState(opt)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
@@ -31,12 +59,15 @@ function OptionRow({ opt, uses, onSaved, withImg }) {
     <div className={`bo-row${f.active ? '' : ' off'}${withImg ? ' with-img' : ''}`}>
       {withImg && (f.img ? <img className="bo-thumb" src={f.img} alt="" width="64" height="48" /> : <span className="bo-thumb empty" aria-hidden="true" />)}
       <input aria-label="Nombre de la opción" value={f.name} onChange={set('name')} />
-      <label className="bo-price">+ S/<input type="number" min="0" step="0.5" value={f.price} onChange={set('price')} aria-label="Adicional" /></label>
+      {sized
+        ? <span className="bo-uses">Según porción</span>
+        : <label className="bo-price">+ S/<input type="number" min="0" step="0.5" value={f.price} onChange={set('price')} aria-label="Adicional" /></label>}
       <span className="bo-uses" title="Veces elegida en los últimos 30 días">{uses || 0} en 30 días</span>
       <label className="chk"><input type="checkbox" checked={f.active} onChange={set('active')} /> Disponible</label>
       <button className="btn primary small" disabled={!dirty || busy || !f.name.trim()} onClick={save}>{busy ? '…' : 'Guardar'}</button>
+      {sized && <SizesEditor sizes={f.sizes || []} onChange={(sizes) => setF({ ...f, sizes })} />}
       {withImg && (
-        <input className="bo-img" aria-label="Imagen (ruta o enlace)" placeholder="/img/taper/mi-taper.webp"
+        <input className="bo-img" aria-label="Imagen (ruta o enlace)" placeholder="/img/arma/mi-foto.webp"
           value={f.img || ''} onChange={set('img')} />
       )}
       {err && <span className="form-err">{err}</span>}
@@ -44,14 +75,14 @@ function OptionRow({ opt, uses, onSaved, withImg }) {
   )
 }
 
-function NewOption({ grp, sort, onSaved }) {
+function NewOption({ grp, sort, onSaved, sized }) {
   const [f, setF] = useState({ name: '', price: 0 })
   const [err, setErr] = useState('')
   const add = async (e) => {
     e.preventDefault()
     setErr('')
     try {
-      await saveBuildOption({ grp, name: f.name, price: f.price, active: true, sort })
+      await saveBuildOption({ grp, name: f.name, price: sized ? 0 : f.price, active: true, sort, sizes: sized ? DEFAULT_SIZES : [] })
       setF({ name: '', price: 0 })
       await onSaved()
     } catch (error) { setErr(error.message) }
@@ -59,7 +90,9 @@ function NewOption({ grp, sort, onSaved }) {
   return (
     <form className="bo-row bo-new" onSubmit={add}>
       <input required placeholder="Nueva opción" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} aria-label="Nombre de la nueva opción" />
-      <label className="bo-price">+ S/<input type="number" min="0" step="0.5" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} aria-label="Adicional" /></label>
+      {sized
+        ? <span className="bo-uses">Con porciones 120 / 180 / 250 g (editables)</span>
+        : <label className="bo-price">+ S/<input type="number" min="0" step="0.5" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} aria-label="Adicional" /></label>}
       <button className="btn ghost small"><Plus size={14} weight="bold" /> Agregar</button>
       {err && <span className="form-err">{err}</span>}
     </form>
@@ -94,8 +127,8 @@ export default function BuildAdmin({ orders }) {
     <div className="build-admin">
       <div className="panel-card bo-base">
         <div>
-          <h3 className="card-title">Precio base</h3>
-          <p className="muted">Lo que cuesta el plato con opciones incluidas. Cada opción con adicional se suma a este precio.</p>
+          <h3 className="card-title">Adicional fijo (opcional)</h3>
+          <p className="muted">El precio del plato sale de la porción de proteína elegida, más los adicionales. Usa este monto solo si quieres sumar algo fijo a todos los platos (normalmente S/ 0).</p>
         </div>
         <label className="bo-price big">S/<input type="number" min="0" step="0.5" value={base}
           onChange={(e) => { setBase(e.target.value); setSavedBase(false) }} aria-label="Precio base" /></label>
@@ -113,10 +146,10 @@ export default function BuildAdmin({ orders }) {
               <span className="muted">{rule(g)} · {opts.filter((o) => o.active).length} disponibles</span>
             </div>
             {opts.map((o) => (
-              <OptionRow key={o.id + JSON.stringify(o)} opt={{ ...o, img: o.img || '' }} uses={uses[o.name]} onSaved={refresh}
-                withImg={opts.some((x) => x.img)} />
+              <OptionRow key={o.id + JSON.stringify(o)} opt={{ ...o, img: o.img || '', sizes: o.sizes || [] }} uses={usesOf(o, uses)} onSaved={refresh}
+                withImg={opts.some((x) => x.img)} sized={hasSizes(o)} />
             ))}
-            <NewOption grp={g.id} sort={opts.length + 1} onSaved={refresh} />
+            <NewOption grp={g.id} sort={opts.length + 1} onSaved={refresh} sized={opts.some(hasSizes)} />
           </div>
         )
       })}

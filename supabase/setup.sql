@@ -23,7 +23,7 @@ insert into public.menu_items (id, cat, name, descr, price) values
   ('m2','menu','Menú Marino','Entrada del día, arroz con mariscos, refresco.',16),
   ('m3','menu','Menú Casero','Entrada del día, seco de res con frejoles, refresco.',13),
   ('m4','menu','Menú Ligero','Ensalada fresca, pollo a la plancha con puré, refresco.',13),
-  ('arma','arma','Arma tu plato','Elige proteína, carbohidrato, acompañamientos y cremas.',12),
+  ('arma','arma','Arma tu plato','Plato fit: elige proteína por gramos, carbohidrato, verduras y aderezos.',0),
   ('b1','bebidas','Chicha morada 500 ml','Hecha en casa.',4),
   ('b2','bebidas','Limonada frozen','Con hierbabuena.',5)
 on conflict (id) do nothing;
@@ -108,31 +108,38 @@ create table if not exists public.build_options (
   img    text not null default ''
 );
 alter table public.build_options add column if not exists img text not null default '';
+-- Porciones (fit): [{ "g": 120, "price": 15 }, ...]. Si tiene porciones, el precio sale de la porción elegida.
+alter table public.build_options add column if not exists sizes jsonb not null default '[]'::jsonb;
 
 insert into public.build_groups (id, label, min_sel, max_sel, sort) values
   ('proteina','Proteína',1,1,1), ('carbo','Carbohidrato',1,1,2),
-  ('acomp','Acompañamientos',0,2,3), ('crema','Cremas',0,2,4),
+  ('acomp','Verduras y extras',0,2,3), ('crema','Aderezos',0,2,4),
   ('taper','Táper',1,1,5)
 on conflict (id) do nothing;
 
-insert into public.build_options (id, grp, name, price, sort) values
-  ('p-pollo','proteina','Pollo a la plancha',0,1), ('p-res','proteina','Lomo de res',3,2),
-  ('p-pescado','proteina','Pescado frito',2,3), ('p-cerdo','proteina','Chicharrón de cerdo',2,4),
-  ('p-tortilla','proteina','Tortilla de verduras',0,5),
-  ('c-arroz','carbo','Arroz blanco',0,1), ('c-chaufa','carbo','Arroz chaufa',1,2),
-  ('c-fritas','carbo','Papas fritas',1,3), ('c-sancochada','carbo','Papa sancochada',0,4),
-  ('c-quinua','carbo','Quinua',1.5,5),
-  ('a-menestra','acomp','Menestra del día',0,1), ('a-ensalada','acomp','Ensalada fresca',0,2),
-  ('a-platano','acomp','Plátano frito',1,3), ('a-camote','acomp','Camote frito',1,4),
-  ('a-choclo','acomp','Choclo',0,5),
-  ('k-aji','crema','Ají',0,1), ('k-huancaina','crema','Huancaína',0,2),
-  ('k-criolla','crema','Salsa criolla',0,3), ('k-tartara','crema','Tártara',0,4)
-on conflict (id) do nothing;
-
-insert into public.build_options (id, grp, name, price, sort, img) values
-  ('t-bagazo','taper','Táper de bagazo (biodegradable)',0.5,1,'/img/taper/bagazo.svg'),
-  ('t-kraft','taper','Bowl kraft con tapa',1,2,'/img/taper/kraft.svg'),
-  ('t-reutilizable','taper','Táper reutilizable hermético',2,3,'/img/taper/reutilizable.svg')
+-- Opciones fit de EJEMPLO (se editan en el panel). Proteínas con porción en gramos y precio por porción.
+insert into public.build_options (id, grp, name, price, sort, img, sizes) values
+  ('p-pollo','proteina','Pechuga de pollo',0,1,'/img/arma/pollo.webp','[{"g":120,"price":15},{"g":180,"price":18},{"g":250,"price":22}]'),
+  ('p-res','proteina','Lomo fino de res',0,2,'/img/arma/res.webp','[{"g":120,"price":18},{"g":180,"price":22},{"g":250,"price":27}]'),
+  ('p-pescado','proteina','Filete de pescado',0,3,'/img/arma/pescado.webp','[{"g":120,"price":17},{"g":180,"price":21},{"g":250,"price":25}]'),
+  ('p-pavita','proteina','Pavita al horno',0,4,'/img/arma/pavita.webp','[{"g":120,"price":16},{"g":180,"price":19},{"g":250,"price":23}]'),
+  ('c-arroz','carbo','Arroz graneado',0,1,'/img/arma/arroz.webp','[]'),
+  ('c-quinua','carbo','Quinua',1.5,2,'/img/arma/quinua.webp','[]'),
+  ('c-camote','carbo','Camote al horno',1,3,'/img/arma/camote.webp','[]'),
+  ('c-papa','carbo','Papa sancochada',0,4,'/img/arma/papa.webp','[]'),
+  ('c-sin','carbo','Sin carbohidrato (doble ensalada)',0,5,'/img/arma/sin-carbo.webp','[]'),
+  ('a-brocoli','acomp','Brócoli al vapor',0,1,'/img/arma/brocoli.webp','[]'),
+  ('a-ensalada','acomp','Ensalada verde',0,2,'/img/arma/ensalada.webp','[]'),
+  ('a-vainitas','acomp','Vainitas salteadas',0,3,'/img/arma/vainitas.webp','[]'),
+  ('a-palta','acomp','Palta',2,4,'/img/arma/palta.webp','[]'),
+  ('a-choclo','acomp','Choclo',0,5,'/img/arma/choclo.webp','[]'),
+  ('k-vinagreta','crema','Vinagreta de limón',0,1,'/img/arma/vinagreta.webp','[]'),
+  ('k-yogur','crema','Yogur con hierbas',0,2,'/img/arma/yogur.webp','[]'),
+  ('k-huacatay','crema','Crema de huacatay',0,3,'/img/arma/huacatay.webp','[]'),
+  ('k-criolla','crema','Salsa criolla',0,4,'/img/arma/criolla.webp','[]'),
+  ('t-bagazo','taper','Táper de bagazo (biodegradable)',0.5,1,'/img/taper/bagazo.svg','[]'),
+  ('t-kraft','taper','Bowl kraft con tapa',1,2,'/img/taper/kraft.svg','[]'),
+  ('t-reutilizable','taper','Táper reutilizable hermético',2,3,'/img/taper/reutilizable.svg','[]')
 on conflict (id) do nothing;
 
 -- Ubicación exacta de entrega (opcional, desde el mapa del checkout)
@@ -203,6 +210,12 @@ declare
   v_detail text;
   v_opts text[];
   v_n int;
+  v_ids text[];
+  v_raw text;
+  v_g text;
+  v_sp numeric;
+  v_parts jsonb;
+  ob record;
   it jsonb;
   g record;
   r record;
@@ -229,19 +242,40 @@ begin
       select price into v_price from public.menu_items where id = 'arma' and active;
       if not found then raise exception 'Arma tu plato no está disponible'; end if;
 
+      -- Cada opción llega como "id" o "id@gramos" (porción). Una opción por id.
       v_opts := array(select distinct jsonb_array_elements_text(coalesce(it->'options', '[]'::jsonb)));
-      if (select count(*) from public.build_options where id = any(v_opts) and active) <> cardinality(v_opts) then
-        raise exception 'Alguna opción de tu plato ya no está disponible';
-      end if;
+      v_ids := array(select distinct split_part(x, '@', 1) from unnest(v_opts) x);
+      if cardinality(v_ids) <> cardinality(v_opts) then raise exception 'Revisa tu plato: opción repetida'; end if;
+
+      v_parts := '[]'::jsonb;
+      foreach v_raw in array v_opts loop
+        select o.*, bg.sort as gsort into ob
+        from public.build_options o join public.build_groups bg on bg.id = o.grp
+        where o.id = split_part(v_raw, '@', 1) and o.active;
+        if not found then raise exception 'Alguna opción de tu plato ya no está disponible'; end if;
+
+        v_g := nullif(split_part(v_raw, '@', 2), '');
+        if jsonb_array_length(ob.sizes) > 0 then
+          if v_g is null then raise exception 'Elige la porción de %', ob.name; end if;
+          v_sp := null;
+          select (s->>'price')::numeric into v_sp from jsonb_array_elements(ob.sizes) s where s->>'g' = v_g;
+          if v_sp is null then raise exception 'Porción no disponible: % % g', ob.name, v_g; end if;
+          v_parts := v_parts || jsonb_build_object('gs', ob.gsort, 'os', ob.sort, 'label', ob.name || ' ' || v_g || ' g', 'price', v_sp);
+        else
+          if v_g is not null then raise exception 'Opción inválida: %', ob.name; end if;
+          v_parts := v_parts || jsonb_build_object('gs', ob.gsort, 'os', ob.sort, 'label', ob.name, 'price', ob.price);
+        end if;
+      end loop;
+
       for g in select * from public.build_groups loop
-        select count(*) into v_n from public.build_options where id = any(v_opts) and grp = g.id;
+        select count(*) into v_n from public.build_options where id = any(v_ids) and grp = g.id;
         if v_n < g.min_sel or v_n > g.max_sel then raise exception 'Revisa tu plato: %', g.label; end if;
       end loop;
 
-      select v_price + coalesce(sum(o.price), 0), coalesce(string_agg(o.name, ' · ' order by bg.sort, o.sort), '')
+      select v_price + coalesce(sum((x->>'price')::numeric), 0),
+             coalesce(string_agg(x->>'label', ' · ' order by (x->>'gs')::int, (x->>'os')::int), '')
         into v_price, v_detail
-      from public.build_options o join public.build_groups bg on bg.id = o.grp
-      where o.id = any(v_opts);
+      from jsonb_array_elements(v_parts) x;
 
       v_lines := v_lines || jsonb_build_object('item_id', 'arma', 'name', 'Arma tu plato', 'detail', v_detail, 'price', v_price, 'qty', v_qty);
     else

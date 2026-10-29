@@ -3,7 +3,7 @@
 import { supabase, supabaseConfigurado } from './supabase'
 import { buildSeed } from '../data/build'
 
-const KEY = 'zabori-build'
+const KEY = 'zabori-build-v2' // v2: versión fit con gramajes
 export const BUILD_ID = 'arma'
 export const CART_PREFIX = 'arma|'
 
@@ -38,7 +38,10 @@ export async function loadBuild({ includeInactive = false } = {}) {
         basePrice: Number(base.data?.price ?? buildSeed.basePrice),
         available: base.data ? base.data.active : true,
         groups: g.data.map((x) => ({ id: x.id, label: x.label, min: x.min_sel, max: x.max_sel, sort: x.sort })),
-        options: o.data.map((x) => ({ id: x.id, grp: x.grp, name: x.name, price: Number(x.price), active: x.active, sort: x.sort, img: x.img || '' })),
+        options: o.data.map((x) => ({
+          id: x.id, grp: x.grp, name: x.name, price: Number(x.price), active: x.active, sort: x.sort, img: x.img || '',
+          sizes: (x.sizes || []).map((s) => ({ g: Number(s.g), price: Number(s.price) })),
+        })),
       }
     }
   }
@@ -52,7 +55,11 @@ export async function loadBuild({ includeInactive = false } = {}) {
 
 export async function saveBuildOption(opt) {
   const id = opt.id || `${opt.grp.charAt(0)}-${Date.now().toString(36)}`
-  const row = { id, grp: opt.grp, name: opt.name.trim(), price: Math.max(0, Number(opt.price) || 0), active: opt.active, sort: opt.sort ?? 99, img: (opt.img || '').trim() }
+  const sizes = (opt.sizes || [])
+    .map((s) => ({ g: Math.round(Number(s.g) || 0), price: Math.max(0, Number(s.price) || 0) }))
+    .filter((s) => s.g > 0)
+    .sort((a, b) => a.g - b.g)
+  const row = { id, grp: opt.grp, name: opt.name.trim(), price: Math.max(0, Number(opt.price) || 0), active: opt.active, sort: opt.sort ?? 99, img: (opt.img || '').trim(), sizes }
   if (supabaseConfigurado) {
     const { error } = await supabase.from('build_options').upsert(row)
     if (error) throw new Error(error.message)
@@ -77,11 +84,40 @@ export async function saveBasePrice(price) {
 
 const optionMap = (build) => Object.fromEntries(build.options.map((o) => [o.id, o]))
 
-// Opciones elegidas ordenadas por grupo
+// Una opción con porciones se elige como "p-pollo@180" (id @ gramos)
+export const SIZE_SEP = '@'
+export const sizeId = (id, g) => `${id}${SIZE_SEP}${g}`
+export const parseId = (full) => {
+  const [id, g] = full.split(SIZE_SEP)
+  return { id, g: g ? Number(g) : null }
+}
+export const hasSizes = (o) => Array.isArray(o.sizes) && o.sizes.length > 0
+export const sizeLabel = (name, g) => `${name} ${g} g`
+
+// Opciones elegidas ordenadas por grupo. Las de porción vuelven con su precio y nombre con gramos.
+// Si un id no es válido (opción oculta, porción inexistente), se omite: la línea queda inválida.
 export function chosen(build, ids) {
   const map = optionMap(build)
   const gsort = Object.fromEntries(build.groups.map((g) => [g.id, g.sort]))
-  return ids.map((id) => map[id]).filter(Boolean).sort((a, b) => gsort[a.grp] - gsort[b.grp] || bySort(a, b))
+  return ids.map((full) => {
+    const { id, g } = parseId(full)
+    const o = map[id]
+    if (!o) return null
+    if (hasSizes(o)) {
+      const s = o.sizes.find((x) => x.g === g)
+      return s ? { ...o, id: full, baseId: o.id, g, price: s.price, name: sizeLabel(o.name, g), baseName: o.name } : null
+    }
+    return g == null ? { ...o, baseId: o.id, baseName: o.name } : null
+  }).filter(Boolean).sort((a, b) => gsort[a.grp] - gsort[b.grp] || bySort(a, b))
+}
+
+// Precio más bajo posible del plato (sin contar el táper): para mostrar "Desde S/ …"
+export function fromPrice(build) {
+  return build.basePrice + build.groups.filter((g) => g.min > 0 && g.id !== 'taper').reduce((sum, g) => {
+    const prices = build.options.filter((o) => o.grp === g.id)
+      .flatMap((o) => (hasSizes(o) ? o.sizes.map((s) => s.price) : [o.price]))
+    return sum + (prices.length ? Math.min(...prices) : 0)
+  }, 0)
 }
 
 export const buildPrice = (build, ids) => build.basePrice + chosen(build, ids).reduce((s, o) => s + o.price, 0)

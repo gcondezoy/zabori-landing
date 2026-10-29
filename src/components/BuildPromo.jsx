@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CookingPot, Grains, Carrot, Drop, Package, Shuffle, ArrowRight } from '@phosphor-icons/react'
 import { useMenu } from '../context/MenuContext'
-import { chosen, buildPrice } from '../lib/build'
+import { chosen, buildPrice, hasSizes, sizeId, fromPrice } from '../lib/build'
+import PlateCollage from './PlateCollage'
 import { money, site } from '../config/site'
 import Reveal from './Reveal'
 
@@ -21,7 +22,8 @@ function randomCombo(build) {
   build.groups.forEach((g) => {
     const opts = build.options.filter((o) => o.grp === g.id).sort(() => Math.random() - 0.5)
     const n = g.min + Math.floor(Math.random() * (Math.min(g.max, opts.length) - g.min + 1))
-    ids.push(...opts.slice(0, n).map((o) => o.id))
+    // Las opciones con porción se eligen con un gramaje al azar ("p-pollo@180")
+    ids.push(...opts.slice(0, n).map((o) => (hasSizes(o) ? sizeId(o.id, o.sizes[Math.floor(Math.random() * o.sizes.length)].g) : o.id)))
   })
   return ids
 }
@@ -43,8 +45,7 @@ export default function BuildPromo() {
   }, [tick, paused, shuffle])
 
   const picked = useMemo(() => chosen(build, combo), [build, combo])
-  const taper = picked.find((o) => o.img)
-  const food = picked.filter((o) => !o.img)
+  const protein = picked.find((o) => o.grp === 'proteina')
 
   const openBuilder = (e) => {
     e.preventDefault()
@@ -58,11 +59,11 @@ export default function BuildPromo() {
     <section className="promo" id="arma-tu-plato" aria-labelledby="promo-title">
       <div className="wrap promo-in">
         <Reveal className="promo-copy">
-          <p className="eyebrow">Arma tu plato</p>
+          <p className="eyebrow">Arma tu plato fit</p>
           <h2 id="promo-title">Tú eliges, nosotros lo cocinamos.</h2>
           <p className="promo-lead">
-            {site.slogan}: escoge cada parte de tu almuerzo y hasta el táper en que te llega.
-            Desde <strong>{money(build.basePrice)}</strong>.
+            {site.slogan}: elige tu proteína por gramos, tu carbohidrato, verduras y aderezos.
+            Pagas según tu porción, desde <strong>{money(fromPrice(build))}</strong>.
           </p>
           <ol className="promo-steps">
             {build.groups.map((g, i) => {
@@ -82,17 +83,11 @@ export default function BuildPromo() {
         <Reveal className="promo-demo" delay={150}>
           <div className="combo" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
             <span className="combo-label">Por ejemplo…</span>
-            <div className="combo-plate" key={tick}>
-              <ul>
-                {food.map((o, i) => (
-                  <li key={o.id} className={`g-${o.grp}`} style={{ animationDelay: `${i * 70}ms` }}>{o.name}</li>
-                ))}
-              </ul>
-              {taper && <img className="combo-pack" src={taper.img} alt={`En ${taper.name}`} width="160" height="120" />}
-            </div>
+            <PlateCollage key={tick} picked={picked} className="combo-collage" />
+            <p className="combo-list">{picked.filter((o) => o.grp !== 'taper').map((o) => o.name).join(' · ')}</p>
             <div className="combo-foot">
               <span className="combo-price" aria-live="polite">
-                <small>{taper ? taper.name : 'Tu combinación'}</small>
+                <small>{protein ? `${protein.baseName} ${protein.g} g` : 'Tu combinación'}</small>
                 <strong>{money(buildPrice(build, combo))}</strong>
               </span>
               <button type="button" className="combo-shuffle" onClick={shuffle}>

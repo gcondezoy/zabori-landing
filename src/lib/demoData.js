@@ -15,7 +15,9 @@ const NOTES = ['Sin ají, por favor', 'Tocar el timbre 2 veces', 'Cubiertos desc
 // Un "Arma tu plato" al azar: 1 proteína, 1 carbohidrato, 0-2 acompañamientos, 0-1 crema y su táper
 function demoBuiltPlate(pick) {
   const of = (grp) => buildSeed.options.filter((o) => o.grp === grp)
-  const opts = [pick(of('proteina')), pick(of('carbo'))]
+  const prot = pick(of('proteina'))
+  const size = pick(prot.sizes || [{ g: 0, price: prot.price }])
+  const opts = [{ ...prot, name: size.g ? `${prot.name} ${size.g} g` : prot.name, price: size.price }, pick(of('carbo'))]
   const acomp = of('acomp').sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 3))
   if (Math.random() > 0.4) opts.push(...acomp, pick(of('crema')))
   opts.push(pick(of('taper')))

@@ -1,14 +1,37 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Plus, Minus, ShoppingBag, ArrowCounterClockwise } from '@phosphor-icons/react'
+import { Check, Plus, Minus, ShoppingBag, ArrowCounterClockwise, Barbell } from '@phosphor-icons/react'
 import { useMenu } from '../context/MenuContext'
 import { useCart } from '../context/CartContext'
-import { chosen, buildPrice, missingGroup, cartKey } from '../lib/build'
+import { chosen, buildPrice, missingGroup, cartKey, parseId, sizeId, hasSizes, fromPrice } from '../lib/build'
 import { money } from '../config/site'
 import Reveal from './Reveal'
+import PlateCollage from './PlateCollage'
 
-const hint = (g) => (g.min === 1 && g.max === 1 ? 'Elige 1' : g.min === 0 ? `Opcional · hasta ${g.max}` : `Elige de ${g.min} a ${g.max}`)
+const hint = (g, sized) =>
+  g.min === 1 && g.max === 1 ? (sized ? 'Elige 1 y su porción' : 'Elige 1') : g.min === 0 ? `Opcional · hasta ${g.max}` : `Elige de ${g.min} a ${g.max}`
 
-// Arma tu plato: proteína, carbohidrato, acompañamientos y cremas, con precio en vivo
+// Proteína con porciones: la tarjeta muestra la foto y un botón por gramaje con su precio
+function SizedOption({ o, selected, onPick }) {
+  const current = selected ? parseId(selected).g : null
+  return (
+    <div className={`b-opt has-img has-sizes${current ? ' on' : ''}`}>
+      {o.img && <img className="b-thumb" src={o.img} alt="" width="160" height="120" loading="lazy" />}
+      <span className="b-name">{o.name}</span>
+      <div className="b-sizes" role="group" aria-label={`Porción de ${o.name}`}>
+        {o.sizes.map((s) => {
+          const on = current === s.g
+          return (
+            <button key={s.g} type="button" className={on ? 'on' : ''} aria-pressed={on} onClick={() => onPick(sizeId(o.id, s.g))}>
+              <b>{s.g} g</b><small>{money(s.price)}</small>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// Arma tu plato (fit): proteína por gramos, carbohidrato, verduras, aderezos y táper, con precio en vivo
 export default function BuildPlate() {
   const { build } = useMenu()
   const { add, setOpen } = useCart()
@@ -16,10 +39,12 @@ export default function BuildPlate() {
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
 
-  // Si el panel oculta una opción elegida, se quita de la selección
+  const optionOf = (full) => build.options.find((o) => o.id === parseId(full).id)
+
+  // Si el panel oculta una opción o porción elegida, se quita de la selección
   useEffect(() => {
-    setSel((s) => s.filter((id) => build.options.some((o) => o.id === id)))
-  }, [build.options])
+    setSel((s) => s.filter((full) => chosen(build, [full]).length === 1))
+  }, [build])
 
   useEffect(() => {
     if (!added) return
@@ -30,15 +55,16 @@ export default function BuildPlate() {
   const picked = useMemo(() => chosen(build, sel), [build, sel])
   const price = buildPrice(build, sel)
   const missing = missingGroup(build, sel)
+  const protein = picked.find((o) => o.grp === 'proteina')
 
-  const toggle = (g, id) => {
+  const toggle = (g, full) => {
     setAdded(false)
     setSel((s) => {
-      const inGroup = s.filter((x) => build.options.find((o) => o.id === x)?.grp === g.id)
-      if (s.includes(id)) return s.filter((x) => x !== id)
-      if (g.max === 1) return [...s.filter((x) => !inGroup.includes(x)), id] // reemplaza
+      const inGroup = s.filter((x) => optionOf(x)?.grp === g.id)
+      if (s.includes(full)) return s.filter((x) => x !== full)
+      if (g.max === 1) return [...s.filter((x) => !inGroup.includes(x)), full] // reemplaza (también otra porción)
       if (inGroup.length >= g.max) return s // límite alcanzado
-      return [...s, id]
+      return [...s, full]
     })
   }
 
@@ -55,9 +81,11 @@ export default function BuildPlate() {
   return (
     <div className="builder">
       <div className="b-steps">
+        <p className="b-intro"><Barbell size={18} weight="duotone" /><span>Plato fit: tú eliges la porción de proteína en gramos. Desde <b>{money(fromPrice(build))}</b>.</span></p>
         {build.groups.map((g, gi) => {
           const opts = build.options.filter((o) => o.grp === g.id)
           if (!opts.length) return null
+          const sized = opts.some(hasSizes)
           const count = picked.filter((o) => o.grp === g.id).length
           const full = g.max > 1 && count >= g.max
           return (
@@ -67,10 +95,13 @@ export default function BuildPlate() {
                   {count >= Math.max(1, g.min) ? <Check size={14} weight="bold" /> : gi + 1}
                 </span>
                 <span className="b-title">{g.label}</span>
-                <span className="b-hint">{hint(g)}{g.max > 1 ? ` · ${count}/${g.max}` : ''}</span>
+                <span className="b-hint">{hint(g, sized)}{g.max > 1 ? ` · ${count}/${g.max}` : ''}</span>
               </legend>
-              <div className={`b-options${opts.some((o) => o.img) ? ' with-img' : ''}`}>
+              <div className={`b-options${opts.some((o) => o.img) ? ' with-img' : ''}${sized ? ' sized' : ''}`}>
                 {opts.map((o) => {
+                  if (hasSizes(o)) {
+                    return <SizedOption key={o.id} o={o} selected={sel.find((x) => parseId(x).id === o.id)} onPick={(full) => toggle(g, full)} />
+                  }
                   const on = sel.includes(o.id)
                   return (
                     <button key={o.id} type="button" className={`b-opt${on ? ' on' : ''}${o.img ? ' has-img' : ''}`}
@@ -89,21 +120,14 @@ export default function BuildPlate() {
       </div>
 
       <aside className="b-summary" aria-live="polite">
-        <div className="b-plate">
-          {picked.length === 0 ? (
-            <span className="b-empty">Tu plato está vacío.<br />Empieza por la proteína.</span>
-          ) : (
-            <ul>
-              {picked.filter((o) => !o.img).map((o) => <li key={o.id} className={`g-${o.grp}`}>{o.name}</li>)}
-            </ul>
-          )}
-          {picked.filter((o) => o.img).map((o) => (
-            <img key={o.id} className="b-plate-pack" src={o.img} alt={`Envase: ${o.name}`} width="160" height="120" />
-          ))}
-        </div>
+        <PlateCollage picked={picked} className="b-collage" />
+        <PlateCollage picked={picked} small className="b-collage-sm" />
+        {picked.length === 0
+          ? <p className="b-empty-note">Tu plato está vacío. Empieza por la proteína.</p>
+          : <p className="b-picked">{picked.map((o) => o.name).join(' · ')}</p>}
 
         <div className="b-total">
-          <span>Precio base {money(build.basePrice)}{price > build.basePrice ? ` + adicionales ${money(price - build.basePrice)}` : ''}</span>
+          <span>{protein ? `${protein.baseName} ${protein.g} g · ${money(protein.price)}${price > protein.price ? ` + extras ${money(price - protein.price)}` : ''}` : `Desde ${money(fromPrice(build))}`}</span>
           <strong>{money(price * qty)}</strong>
         </div>
 
