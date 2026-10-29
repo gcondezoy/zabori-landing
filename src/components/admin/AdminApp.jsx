@@ -79,7 +79,7 @@ export default function AdminApp() {
 
   useEffect(() => {
     document.title = data.fresh ? `(${data.fresh}) Nuevo pedido | Zabori` : 'Panel | Zabori'
-    return () => { document.title = 'Zabori | Menú del día' }
+    return () => { document.title = 'Zabori | El sabor de elegir bien' }
   }, [data.fresh])
 
   const exit = async () => {

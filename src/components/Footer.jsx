@@ -7,6 +7,7 @@ export default function Footer() {
       <div className="wrap footer-in">
         <div>
           <div className="brand light"><img src="/logo-zabori-amarillo.png" alt="Zabori" width="130" height="37" /></div>
+          <p className="footer-slogan">{site.slogan}</p>
           <p>{site.tagline}</p>
         </div>
         <ul>

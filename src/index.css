@@ -654,3 +654,5 @@ h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 900; }
 @media (max-width: 480px) { .tp-options { grid-template-columns: 1fr 1fr !important; } }
 .card-add { display: inline-flex; align-items: center; gap: 8px; }
 .in-cart { font-size: .75rem; font-weight: 700; color: var(--red); background: #e1f0f2; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.footer-slogan { font-family: "Nunito Variable", sans-serif; font-weight: 800; font-size: 1.15rem; color: var(--yellow); margin: 6px 0 2px; }
+h1, h2 { text-wrap: balance; }

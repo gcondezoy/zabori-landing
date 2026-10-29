@@ -1,6 +1,7 @@
 // Datos del negocio. Reemplazar los placeholders cuando el cliente los entregue.
 export const site = {
   name: 'Zabori',
+  slogan: 'El sabor de elegir bien',
   tagline: 'Menú casero del día',
   whatsapp: '51900000000', // PLACEHOLDER
   whatsappLabel: '900 000 000', // PLACEHOLDER

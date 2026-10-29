@@ -8,10 +8,10 @@ export default function Hero() {
       <div className="wrap hero-in">
         <div>
           <p className="eyebrow">{site.tagline}</p>
-          <h1>Comida casera, lista para tu hora de almuerzo.</h1>
+          <h1>{site.slogan}.</h1>
           <p className="lead">
-            Elige tu menú, paga en línea y recíbelo en tu puerta o recógelo caliente.
-            Sin crear cuenta si no quieres.
+            Elige tu menú del día o arma tu plato a tu gusto, hasta el táper.
+            Paga en línea y recíbelo caliente en tu puerta, sin crear cuenta si no quieres.
           </p>
           <div className="cta-row">
             <a href="#menu" className="btn primary">Ver el menú de hoy <ArrowRight weight="bold" /></a>
