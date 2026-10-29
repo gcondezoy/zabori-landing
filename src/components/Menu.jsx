@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Plus, Minus, ForkKnife } from '@phosphor-icons/react'
 import { categories } from '../data/menu'
 import { useMenu } from '../context/MenuContext'
@@ -8,6 +8,7 @@ import Reveal from './Reveal'
 import TodayBadge from './TodayBadge'
 import BuildPlate from './BuildPlate'
 import { needsTaper } from '../lib/build'
+import { OPEN_BUILD_EVENT } from './BuildPromo'
 
 function Card({ item, index }) {
   const { qty, add, dec, requestAdd, countOf } = useCart()
@@ -50,6 +51,12 @@ function Card({ item, index }) {
 export default function Menu() {
   const [cat, setCat] = useState('menu')
   const { items } = useMenu()
+
+  useEffect(() => {
+    const open = () => setCat('arma')
+    window.addEventListener(OPEN_BUILD_EVENT, open)
+    return () => window.removeEventListener(OPEN_BUILD_EVENT, open)
+  }, [])
   return (
     <section className="section" id="menu">
       <div className="wrap">

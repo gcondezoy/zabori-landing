@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import Menu from './components/Menu'
+import BuildPromo from './components/BuildPromo'
 import HowItWorks from './components/HowItWorks'
 import Testimonials from './components/Testimonials'
 import Footer from './components/Footer'
@@ -37,6 +38,7 @@ export default function App() {
       <Header />
       <main>
         <Hero />
+        <BuildPromo />
         <Menu />
         <HowItWorks />
         <Testimonials />
