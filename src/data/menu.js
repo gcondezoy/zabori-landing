@@ -11,7 +11,7 @@ export const items = [
   { id: 'm2', img: '/img/platos/m2.webp', cat: 'menu', name: 'Menú Marino', desc: 'Entrada del día, arroz con mariscos, refresco.', price: 16, tone: '#0b6b7a' },
   { id: 'm3', img: '/img/platos/m3.webp', cat: 'menu', name: 'Menú Casero', desc: 'Entrada del día, seco de res con frejoles, refresco.', price: 13, tone: '#a87400' },
   { id: 'm4', img: '/img/platos/m4.webp', cat: 'menu', name: 'Menú Ligero', desc: 'Ensalada fresca, pollo a la plancha con puré, refresco.', price: 13, tone: '#1f6f5c', tag: 'Saludable' },
-  { id: 'arma', cat: 'arma', name: 'Arma tu plato', desc: 'Plato fit: proteína por gramos, carbohidrato, verduras y aderezos.', price: 0, tone: '#034d5b' },
+  { id: 'arma', cat: 'arma', name: 'Arma tu plato', desc: 'Fit: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y aderezos.', price: 0, tone: '#034d5b' },
   { id: 'b1', img: '/img/platos/b1.webp', cat: 'bebidas', name: 'Chicha morada 500 ml', desc: 'Hecha en casa.', price: 4, tone: '#2c4a7a' },
   { id: 'b2', img: '/img/platos/b2.webp', cat: 'bebidas', name: 'Limonada frozen', desc: 'Con hierbabuena.', price: 5, tone: '#5f8a1c' },
 ]

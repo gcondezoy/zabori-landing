@@ -19,7 +19,8 @@ function demoBuiltPlate(pick) {
   const size = pick(prot.sizes || [{ g: 0, price: prot.price }])
   const opts = [{ ...prot, name: size.g ? `${prot.name} ${size.g} g` : prot.name, price: size.price }, pick(of('carbo'))]
   const acomp = of('acomp').sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 3))
-  if (Math.random() > 0.4) opts.push(...acomp, pick(of('crema')))
+  const fresh = of('fresco').sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 2))
+  if (Math.random() > 0.4) opts.push(...acomp, ...fresh, pick(of('crema')))
   opts.push(pick(of('taper')))
   return {
     name: 'Arma tu plato',

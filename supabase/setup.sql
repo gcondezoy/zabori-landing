@@ -23,7 +23,7 @@ insert into public.menu_items (id, cat, name, descr, price) values
   ('m2','menu','Menú Marino','Entrada del día, arroz con mariscos, refresco.',16),
   ('m3','menu','Menú Casero','Entrada del día, seco de res con frejoles, refresco.',13),
   ('m4','menu','Menú Ligero','Ensalada fresca, pollo a la plancha con puré, refresco.',13),
-  ('arma','arma','Arma tu plato','Plato fit: elige proteína por gramos, carbohidrato, verduras y aderezos.',0),
+  ('arma','arma','Arma tu plato','Fit: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y aderezos.',0),
   ('b1','bebidas','Chicha morada 500 ml','Hecha en casa.',4),
   ('b2','bebidas','Limonada frozen','Con hierbabuena.',5)
 on conflict (id) do nothing;
@@ -113,8 +113,8 @@ alter table public.build_options add column if not exists sizes jsonb not null d
 
 insert into public.build_groups (id, label, min_sel, max_sel, sort) values
   ('proteina','Proteína',1,1,1), ('carbo','Carbohidrato',1,1,2),
-  ('acomp','Verduras y extras',0,2,3), ('crema','Aderezos',0,2,4),
-  ('taper','Táper',1,1,5)
+  ('acomp','Vegetales cocidos',0,2,3), ('fresco','Vegetales frescos',0,2,4),
+  ('crema','Aderezos',0,2,5), ('taper','Táper',1,1,6)
 on conflict (id) do nothing;
 
 -- Opciones fit de EJEMPLO (se editan en el panel). Proteínas con porción en gramos y precio por porción.
@@ -129,10 +129,12 @@ insert into public.build_options (id, grp, name, price, sort, img, sizes) values
   ('c-papa','carbo','Papa sancochada',0,4,'/img/arma/papa.webp','[]'),
   ('c-sin','carbo','Sin carbohidrato (doble ensalada)',0,5,'/img/arma/sin-carbo.webp','[]'),
   ('a-brocoli','acomp','Brócoli al vapor',0,1,'/img/arma/brocoli.webp','[]'),
-  ('a-ensalada','acomp','Ensalada verde',0,2,'/img/arma/ensalada.webp','[]'),
-  ('a-vainitas','acomp','Vainitas salteadas',0,3,'/img/arma/vainitas.webp','[]'),
-  ('a-palta','acomp','Palta',2,4,'/img/arma/palta.webp','[]'),
-  ('a-choclo','acomp','Choclo',0,5,'/img/arma/choclo.webp','[]'),
+  ('a-vainitas','acomp','Vainitas salteadas',0,2,'/img/arma/vainitas.webp','[]'),
+  ('a-zanahoria','acomp','Zanahoria salteada',0,3,'/img/arma/zanahoria.webp','[]'),
+  ('a-choclo','acomp','Choclo',0,4,'/img/arma/choclo.webp','[]'),
+  ('f-ensalada','fresco','Ensalada verde',0,1,'/img/arma/ensalada.webp','[]'),
+  ('f-tomate','fresco','Tomate y pepino',0,2,'/img/arma/tomate-pepino.webp','[]'),
+  ('f-palta','fresco','Palta',2,3,'/img/arma/palta.webp','[]'),
   ('k-vinagreta','crema','Vinagreta de limón',0,1,'/img/arma/vinagreta.webp','[]'),
   ('k-yogur','crema','Yogur con hierbas',0,2,'/img/arma/yogur.webp','[]'),
   ('k-huacatay','crema','Crema de huacatay',0,3,'/img/arma/huacatay.webp','[]'),
@@ -245,7 +247,7 @@ begin
       -- Cada opción llega como "id" o "id@gramos" (porción). Una opción por id.
       v_opts := array(select distinct jsonb_array_elements_text(coalesce(it->'options', '[]'::jsonb)));
       v_ids := array(select distinct split_part(x, '@', 1) from unnest(v_opts) x);
-      if cardinality(v_ids) <> cardinality(v_opts) then raise exception 'Revisa tu plato: opción repetida'; end if;
+      if cardinality(v_ids) <> cardinality(v_opts) then raise exception 'Revisa tu táper: opción repetida'; end if;
 
       v_parts := '[]'::jsonb;
       foreach v_raw in array v_opts loop
@@ -269,7 +271,7 @@ begin
 
       for g in select * from public.build_groups loop
         select count(*) into v_n from public.build_options where id = any(v_ids) and grp = g.id;
-        if v_n < g.min_sel or v_n > g.max_sel then raise exception 'Revisa tu plato: %', g.label; end if;
+        if v_n < g.min_sel or v_n > g.max_sel then raise exception 'Revisa tu táper: %', g.label; end if;
       end loop;
 
       select v_price + coalesce(sum((x->>'price')::numeric), 0),

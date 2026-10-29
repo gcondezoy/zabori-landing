@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CookingPot, Grains, Carrot, Drop, Package, Shuffle, ArrowRight } from '@phosphor-icons/react'
+import { CookingPot, Grains, Carrot, Leaf, Drop, Package, Shuffle, ArrowRight } from '@phosphor-icons/react'
 import { useMenu } from '../context/MenuContext'
 import { chosen, buildPrice, hasSizes, sizeId, fromPrice } from '../lib/build'
-import PlateCollage from './PlateCollage'
+import TaperView from './TaperView'
 import { money, site } from '../config/site'
 import Reveal from './Reveal'
 
-const ICONS = { proteina: CookingPot, carbo: Grains, acomp: Carrot, crema: Drop, taper: Package }
+const ICONS = { proteina: CookingPot, carbo: Grains, acomp: Carrot, fresco: Leaf, crema: Drop, taper: Package }
 const INTERVAL = 3200
 
 // Evento para que la carta abra la pestaña "Arma tu plato"
@@ -21,7 +21,9 @@ function randomCombo(build) {
   const ids = []
   build.groups.forEach((g) => {
     const opts = build.options.filter((o) => o.grp === g.id).sort(() => Math.random() - 0.5)
-    const n = g.min + Math.floor(Math.random() * (Math.min(g.max, opts.length) - g.min + 1))
+    // En el ejemplo siempre hay al menos una opción por grupo (para que el táper no luzca vacío)
+    const lo = Math.max(g.min, 1)
+    const n = lo + Math.floor(Math.random() * (Math.min(g.max, opts.length) - lo + 1))
     // Las opciones con porción se eligen con un gramaje al azar ("p-pollo@180")
     ids.push(...opts.slice(0, n).map((o) => (hasSizes(o) ? sizeId(o.id, o.sizes[Math.floor(Math.random() * o.sizes.length)].g) : o.id)))
   })
@@ -62,7 +64,7 @@ export default function BuildPromo() {
           <p className="eyebrow">Arma tu plato fit</p>
           <h2 id="promo-title">Tú eliges, nosotros lo cocinamos.</h2>
           <p className="promo-lead">
-            {site.slogan}: elige tu proteína por gramos, tu carbohidrato, verduras y aderezos.
+            {site.slogan}: elige tu proteína por gramos, tu carbohidrato, vegetales cocidos y frescos, y aderezos.
             Pagas según tu porción, desde <strong>{money(fromPrice(build))}</strong>.
           </p>
           <ol className="promo-steps">
@@ -82,8 +84,8 @@ export default function BuildPromo() {
 
         <Reveal className="promo-demo" delay={150}>
           <div className="combo" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-            <span className="combo-label">Por ejemplo…</span>
-            <PlateCollage key={tick} picked={picked} className="combo-collage" />
+            <span className="combo-label">Así llega tu táper, por ejemplo…</span>
+            <TaperView key={tick} picked={picked} className="combo-collage" />
             <p className="combo-list">{picked.filter((o) => o.grp !== 'taper').map((o) => o.name).join(' · ')}</p>
             <div className="combo-foot">
               <span className="combo-price" aria-live="polite">

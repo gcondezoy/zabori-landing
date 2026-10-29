@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext'
 import { chosen, buildPrice, missingGroup, cartKey, parseId, sizeId, hasSizes, fromPrice } from '../lib/build'
 import { money } from '../config/site'
 import Reveal from './Reveal'
-import PlateCollage from './PlateCollage'
+import TaperView from './TaperView'
 
 const hint = (g, sized) =>
   g.min === 1 && g.max === 1 ? (sized ? 'Elige 1 y su porción' : 'Elige 1') : g.min === 0 ? `Opcional · hasta ${g.max}` : `Elige de ${g.min} a ${g.max}`
@@ -81,7 +81,7 @@ export default function BuildPlate() {
   return (
     <div className="builder">
       <div className="b-steps">
-        <p className="b-intro"><Barbell size={18} weight="duotone" /><span>Plato fit: tú eliges la porción de proteína en gramos. Desde <b>{money(fromPrice(build))}</b>.</span></p>
+        <p className="b-intro"><Barbell size={18} weight="duotone" /><span>Fit y a tu medida: eliges la porción de proteína en gramos y todo llega en tu táper. Desde <b>{money(fromPrice(build))}</b>.</span></p>
         {build.groups.map((g, gi) => {
           const opts = build.options.filter((o) => o.grp === g.id)
           if (!opts.length) return null
@@ -120,10 +120,10 @@ export default function BuildPlate() {
       </div>
 
       <aside className="b-summary" aria-live="polite">
-        <PlateCollage picked={picked} className="b-collage" />
-        <PlateCollage picked={picked} small className="b-collage-sm" />
+        <TaperView picked={picked} className="b-collage" />
+        <TaperView picked={picked} small className="b-collage-sm" />
         {picked.length === 0
-          ? <p className="b-empty-note">Tu plato está vacío. Empieza por la proteína.</p>
+          ? <p className="b-empty-note">Tu táper está vacío. Empieza por la proteína.</p>
           : <p className="b-picked">{picked.map((o) => o.name).join(' · ')}</p>}
 
         <div className="b-total">
@@ -149,7 +149,7 @@ export default function BuildPlate() {
         )}
         {added && (
           <p className="b-added" role="status">
-            <Check size={16} weight="bold" /> ¡Plato agregado!
+            <Check size={16} weight="bold" /> ¡Listo, va a tu carrito!
             <button type="button" className="link" onClick={() => setOpen(true)}><ShoppingBag size={14} /> Ver carrito</button>
           </p>
         )}

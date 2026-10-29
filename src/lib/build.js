@@ -3,7 +3,7 @@
 import { supabase, supabaseConfigurado } from './supabase'
 import { buildSeed } from '../data/build'
 
-const KEY = 'zabori-build-v2' // v2: versión fit con gramajes
+const KEY = 'zabori-build-v3' // v3: fit con gramajes y vegetales cocidos/frescos
 export const BUILD_ID = 'arma'
 export const CART_PREFIX = 'arma|'
 
