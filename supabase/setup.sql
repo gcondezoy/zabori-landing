@@ -100,12 +100,15 @@ create table if not exists public.build_options (
   name   text not null,
   price  numeric(10,2) not null default 0 check (price >= 0),
   active boolean not null default true,
-  sort   int not null default 0
+  sort   int not null default 0,
+  img    text not null default ''
 );
+alter table public.build_options add column if not exists img text not null default '';
 
 insert into public.build_groups (id, label, min_sel, max_sel, sort) values
   ('proteina','Proteína',1,1,1), ('carbo','Carbohidrato',1,1,2),
-  ('acomp','Acompañamientos',0,2,3), ('crema','Cremas',0,2,4)
+  ('acomp','Acompañamientos',0,2,3), ('crema','Cremas',0,2,4),
+  ('taper','Táper',1,1,5)
 on conflict (id) do nothing;
 
 insert into public.build_options (id, grp, name, price, sort) values
@@ -120,6 +123,12 @@ insert into public.build_options (id, grp, name, price, sort) values
   ('a-choclo','acomp','Choclo',0,5),
   ('k-aji','crema','Ají',0,1), ('k-huancaina','crema','Huancaína',0,2),
   ('k-criolla','crema','Salsa criolla',0,3), ('k-tartara','crema','Tártara',0,4)
+on conflict (id) do nothing;
+
+insert into public.build_options (id, grp, name, price, sort, img) values
+  ('t-bagazo','taper','Táper de bagazo (biodegradable)',0.5,1,'/img/taper/bagazo.svg'),
+  ('t-kraft','taper','Bowl kraft con tapa',1,2,'/img/taper/kraft.svg'),
+  ('t-reutilizable','taper','Táper reutilizable hermético',2,3,'/img/taper/reutilizable.svg')
 on conflict (id) do nothing;
 
 -- Si la tabla ya existía de la etapa 2, ampliar los estados de pago permitidos

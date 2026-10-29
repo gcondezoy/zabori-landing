@@ -30,3 +30,5 @@ solo en el navegador, y el panel se abre con el PIN de `src/config/site.js`.
 
 Las fotos de `public/img/platos/` son de referencia, de Unsplash (licencia libre de Unsplash, sin atribución obligatoria).
 Reemplázalas por fotos reales de Zabori con el mismo nombre de archivo (proporción 4:3; `hero.webp` cuadrada).
+
+Las miniaturas de los tápers (`public/img/taper/*.svg`) son ilustraciones de referencia. Para usar fotos reales, sube la imagen a `public/img/taper/` y cambia su ruta en el panel (Carta → Arma tu plato → Táper).

@@ -1,5 +1,5 @@
 // "Arma tu plato": opciones de EJEMPLO (nombres y precios se editan en el panel → Carta).
-// price = adicional sobre el precio base (0 = incluido).
+// price = adicional sobre el precio base (0 = incluido). img = miniatura opcional (se muestra como tarjeta).
 export const buildSeed = {
   basePrice: 12,
   img: '/img/platos/m4.webp',
@@ -8,6 +8,7 @@ export const buildSeed = {
     { id: 'carbo', label: 'Carbohidrato', min: 1, max: 1, sort: 2 },
     { id: 'acomp', label: 'Acompañamientos', min: 0, max: 2, sort: 3 },
     { id: 'crema', label: 'Cremas', min: 0, max: 2, sort: 4 },
+    { id: 'taper', label: 'Táper', min: 1, max: 1, sort: 5 },
   ],
   options: [
     { id: 'p-pollo', grp: 'proteina', name: 'Pollo a la plancha', price: 0, active: true, sort: 1 },
@@ -29,5 +30,8 @@ export const buildSeed = {
     { id: 'k-huancaina', grp: 'crema', name: 'Huancaína', price: 0, active: true, sort: 2 },
     { id: 'k-criolla', grp: 'crema', name: 'Salsa criolla', price: 0, active: true, sort: 3 },
     { id: 'k-tartara', grp: 'crema', name: 'Tártara', price: 0, active: true, sort: 4 },
+    { id: 't-bagazo', grp: 'taper', name: 'Táper de bagazo (biodegradable)', price: 0.5, active: true, sort: 1, img: '/img/taper/bagazo.svg' },
+    { id: 't-kraft', grp: 'taper', name: 'Bowl kraft con tapa', price: 1, active: true, sort: 2, img: '/img/taper/kraft.svg' },
+    { id: 't-reutilizable', grp: 'taper', name: 'Táper reutilizable hermético', price: 2, active: true, sort: 3, img: '/img/taper/reutilizable.svg' },
   ],
 }

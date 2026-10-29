@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Táper reutilizable hermético">
+  <ellipse cx="80" cy="106" rx="60" ry="6" fill="#04323c" opacity=".12"/>
+  <!-- cuerpo translúcido -->
+  <path d="M28 52 L132 52 L126 98 Q125 104 118 104 L42 104 Q35 104 34 98 Z" fill="#dbe9ec" fill-opacity=".9" stroke="#7fa4ab" stroke-width="2" stroke-linejoin="round"/>
+  <!-- comida y divisiones -->
+  <path d="M64 56 L66 100 M98 56 L96 100" stroke="#a9c4c9" stroke-width="2"/>
+  <rect x="40" y="70" width="20" height="26" rx="5" fill="#fde7b0"/>
+  <rect x="70" y="66" width="22" height="30" rx="6" fill="#f4c6a8"/>
+  <rect x="102" y="72" width="18" height="24" rx="5" fill="#9cc98d"/>
+  <path d="M40 60 L44 96" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+  <!-- tapa con broches -->
+  <rect x="22" y="38" width="116" height="16" rx="6" fill="#034d5b"/>
+  <rect x="30" y="41" width="100" height="4" rx="2" fill="#0b6b7a"/>
+  <rect x="18" y="44" width="10" height="20" rx="3" fill="#fdc52a"/>
+  <rect x="132" y="44" width="10" height="20" rx="3" fill="#fdc52a"/>
+  <rect x="75" y="30" width="10" height="12" rx="3" fill="#fdc52a"/>
+</svg>

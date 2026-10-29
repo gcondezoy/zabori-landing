@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Bowl kraft con tapa">
+  <ellipse cx="80" cy="106" rx="50" ry="6" fill="#04323c" opacity=".12"/>
+  <!-- cuerpo del bowl -->
+  <path d="M30 50 L40 98 Q41 104 48 104 L112 104 Q119 104 120 98 L130 50 Z" fill="#c08a52" stroke="#8f6232" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M36 66 L124 66" stroke="#a87443" stroke-width="2"/>
+  <!-- etiqueta Zabori -->
+  <rect x="58" y="74" width="44" height="16" rx="8" fill="#fdc52a"/>
+  <rect x="64" y="80" width="32" height="4" rx="2" fill="#034d5b"/>
+  <!-- tapa transparente -->
+  <ellipse cx="80" cy="50" rx="52" ry="11" fill="#e8f2f4" stroke="#8fb3ba" stroke-width="2"/>
+  <path d="M34 48 Q80 14 126 48" fill="#e8f2f4" fill-opacity=".85" stroke="#8fb3ba" stroke-width="2"/>
+  <path d="M52 36 Q66 28 80 27" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".9"/>
+  <!-- comida que se ve a través de la tapa -->
+  <circle cx="68" cy="45" r="6" fill="#f4c6a8" opacity=".9"/>
+  <circle cx="86" cy="43" r="7" fill="#fde7b0" opacity=".9"/>
+  <circle cx="100" cy="47" r="5" fill="#9cc98d" opacity=".9"/>
+</svg>

@@ -12,12 +12,13 @@ const PEOPLE = [
 const STREETS = ['Av. Universitaria', 'Jr. Las Begonias', 'Av. Carlos Izaguirre', 'Calle Los Pinos', 'Av. Naranjal']
 const NOTES = ['Sin ají, por favor', 'Tocar el timbre 2 veces', 'Cubiertos descartables', 'Dejar en portería']
 
-// Un "Arma tu plato" al azar: 1 proteína, 1 carbohidrato, 0-2 acompañamientos, 0-1 crema
+// Un "Arma tu plato" al azar: 1 proteína, 1 carbohidrato, 0-2 acompañamientos, 0-1 crema y su táper
 function demoBuiltPlate(pick) {
   const of = (grp) => buildSeed.options.filter((o) => o.grp === grp)
   const opts = [pick(of('proteina')), pick(of('carbo'))]
   const acomp = of('acomp').sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 3))
   if (Math.random() > 0.4) opts.push(...acomp, pick(of('crema')))
+  opts.push(pick(of('taper')))
   return {
     name: 'Arma tu plato',
     detail: opts.map((o) => o.name).join(' · '),

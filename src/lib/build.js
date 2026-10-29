@@ -15,7 +15,10 @@ const writeLocal = (b) => {
 }
 const localBuild = () => {
   const saved = readLocal()
-  return { ...buildSeed, ...(saved || {}) }
+  if (!saved) return { ...buildSeed }
+  // Opciones nuevas del ejemplo (p. ej. un grupo agregado después) que aún no estaban guardadas
+  const missing = buildSeed.options.filter((o) => !saved.options?.some((x) => x.id === o.id))
+  return { ...buildSeed, ...saved, options: [...(saved.options || []), ...missing] }
 }
 
 const bySort = (a, b) => (a.sort ?? 0) - (b.sort ?? 0) || a.name.localeCompare(b.name)
@@ -35,7 +38,7 @@ export async function loadBuild({ includeInactive = false } = {}) {
         basePrice: Number(base.data?.price ?? buildSeed.basePrice),
         available: base.data ? base.data.active : true,
         groups: g.data.map((x) => ({ id: x.id, label: x.label, min: x.min_sel, max: x.max_sel, sort: x.sort })),
-        options: o.data.map((x) => ({ id: x.id, grp: x.grp, name: x.name, price: Number(x.price), active: x.active, sort: x.sort })),
+        options: o.data.map((x) => ({ id: x.id, grp: x.grp, name: x.name, price: Number(x.price), active: x.active, sort: x.sort, img: x.img || '' })),
       }
     }
   }
@@ -49,7 +52,7 @@ export async function loadBuild({ includeInactive = false } = {}) {
 
 export async function saveBuildOption(opt) {
   const id = opt.id || `${opt.grp.charAt(0)}-${Date.now().toString(36)}`
-  const row = { id, grp: opt.grp, name: opt.name.trim(), price: Math.max(0, Number(opt.price) || 0), active: opt.active, sort: opt.sort ?? 99 }
+  const row = { id, grp: opt.grp, name: opt.name.trim(), price: Math.max(0, Number(opt.price) || 0), active: opt.active, sort: opt.sort ?? 99, img: (opt.img || '').trim() }
   if (supabaseConfigurado) {
     const { error } = await supabase.from('build_options').upsert(row)
     if (error) throw new Error(error.message)

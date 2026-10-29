@@ -17,7 +17,7 @@ function optionCounts(orders) {
   return counts
 }
 
-function OptionRow({ opt, uses, onSaved }) {
+function OptionRow({ opt, uses, onSaved, withImg }) {
   const [f, setF] = useState(opt)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
@@ -28,12 +28,17 @@ function OptionRow({ opt, uses, onSaved }) {
     try { await saveBuildOption(f); await onSaved() } catch (e) { setErr(e.message) } finally { setBusy(false) }
   }
   return (
-    <div className={`bo-row${f.active ? '' : ' off'}`}>
+    <div className={`bo-row${f.active ? '' : ' off'}${withImg ? ' with-img' : ''}`}>
+      {withImg && (f.img ? <img className="bo-thumb" src={f.img} alt="" width="64" height="48" /> : <span className="bo-thumb empty" aria-hidden="true" />)}
       <input aria-label="Nombre de la opción" value={f.name} onChange={set('name')} />
       <label className="bo-price">+ S/<input type="number" min="0" step="0.5" value={f.price} onChange={set('price')} aria-label="Adicional" /></label>
       <span className="bo-uses" title="Veces elegida en los últimos 30 días">{uses || 0} en 30 días</span>
       <label className="chk"><input type="checkbox" checked={f.active} onChange={set('active')} /> Disponible</label>
       <button className="btn primary small" disabled={!dirty || busy || !f.name.trim()} onClick={save}>{busy ? '…' : 'Guardar'}</button>
+      {withImg && (
+        <input className="bo-img" aria-label="Imagen (ruta o enlace)" placeholder="/img/taper/mi-taper.webp"
+          value={f.img || ''} onChange={set('img')} />
+      )}
       {err && <span className="form-err">{err}</span>}
     </div>
   )
@@ -107,7 +112,10 @@ export default function BuildAdmin({ orders }) {
               <h3 className="card-title">{g.label}</h3>
               <span className="muted">{rule(g)} · {opts.filter((o) => o.active).length} disponibles</span>
             </div>
-            {opts.map((o) => <OptionRow key={o.id + JSON.stringify(o)} opt={o} uses={uses[o.name]} onSaved={refresh} />)}
+            {opts.map((o) => (
+              <OptionRow key={o.id + JSON.stringify(o)} opt={{ ...o, img: o.img || '' }} uses={uses[o.name]} onSaved={refresh}
+                withImg={opts.some((x) => x.img)} />
+            ))}
             <NewOption grp={g.id} sort={opts.length + 1} onSaved={refresh} />
           </div>
         )

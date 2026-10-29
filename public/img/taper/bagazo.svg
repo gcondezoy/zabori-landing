@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Táper de bagazo">
+  <ellipse cx="80" cy="104" rx="58" ry="7" fill="#04323c" opacity=".12"/>
+  <!-- base -->
+  <path d="M26 62 L134 62 L126 98 Q125 102 120 102 L40 102 Q35 102 34 98 Z" fill="#e9dcc0" stroke="#bfae86" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M36 74 H124 M38 86 H122" stroke="#d6c7a3" stroke-width="2" stroke-linecap="round"/>
+  <!-- tapa -->
+  <path d="M30 60 Q28 30 52 26 L108 26 Q132 30 130 60 Z" fill="#f4ecda" stroke="#bfae86" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="24" y="56" width="112" height="9" rx="4.5" fill="#f4ecda" stroke="#bfae86" stroke-width="2"/>
+  <path d="M50 38 Q80 31 110 38" stroke="#ddcfae" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- hoja (biodegradable) -->
+  <path d="M80 50 C72 50 68 43 70 36 C77 36 83 41 80 50 Z" fill="#5f8a1c"/>
+  <path d="M80 50 C88 50 92 43 90 36 C83 36 77 41 80 50 Z" fill="#7aa82a"/>
+</svg>

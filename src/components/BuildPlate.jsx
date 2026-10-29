@@ -69,12 +69,13 @@ export default function BuildPlate() {
                 <span className="b-title">{g.label}</span>
                 <span className="b-hint">{hint(g)}{g.max > 1 ? ` · ${count}/${g.max}` : ''}</span>
               </legend>
-              <div className="b-options">
+              <div className={`b-options${opts.some((o) => o.img) ? ' with-img' : ''}`}>
                 {opts.map((o) => {
                   const on = sel.includes(o.id)
                   return (
-                    <button key={o.id} type="button" className={`b-opt${on ? ' on' : ''}`}
+                    <button key={o.id} type="button" className={`b-opt${on ? ' on' : ''}${o.img ? ' has-img' : ''}`}
                       aria-pressed={on} disabled={!on && full} onClick={() => toggle(g, o.id)}>
+                      {o.img && <img className="b-thumb" src={o.img} alt="" width="160" height="120" loading="lazy" />}
                       <span className="b-check" aria-hidden="true">{on && <Check size={12} weight="bold" />}</span>
                       <span className="b-name">{o.name}</span>
                       <span className="b-price">{o.price ? `+${money(o.price)}` : 'Incluido'}</span>
@@ -93,9 +94,12 @@ export default function BuildPlate() {
             <span className="b-empty">Tu plato está vacío.<br />Empieza por la proteína.</span>
           ) : (
             <ul>
-              {picked.map((o) => <li key={o.id} className={`g-${o.grp}`}>{o.name}</li>)}
+              {picked.filter((o) => !o.img).map((o) => <li key={o.id} className={`g-${o.grp}`}>{o.name}</li>)}
             </ul>
           )}
+          {picked.filter((o) => o.img).map((o) => (
+            <img key={o.id} className="b-plate-pack" src={o.img} alt={`Envase: ${o.name}`} width="160" height="120" />
+          ))}
         </div>
 
         <div className="b-total">
