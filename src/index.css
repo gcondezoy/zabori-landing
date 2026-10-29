@@ -924,3 +924,10 @@ h1, h2 { text-wrap: balance; }
 .bo-size .bo-price input { width: 64px !important; padding: 6px 8px !important; }
 @media (max-width: 860px) { .bo-sizes { grid-column: 1 / -1; } }
 @media (max-width: 900px) { body:has(.builder) .wa-fab { bottom: 192px; } body:has(.builder):has(.cart-bar.show) .wa-fab { bottom: 276px; } }
+.b-subnote { font-size: .85rem; color: var(--muted); margin: -4px 0 10px; }
+.b-sub + .b-sub { margin-top: 14px; }
+.b-subtitle { font-family: "Nunito Variable", sans-serif; font-size: .92rem; font-weight: 800; color: var(--red); margin: 0 0 8px; text-transform: uppercase; letter-spacing: .06em; }
+.bo-sub { padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; font-size: .85rem; }
+.bo-row:has(.bo-sub) { grid-template-columns: 64px minmax(0, 1fr) 110px 120px 110px auto auto; }
+.bo-new:has(.bo-sub) { grid-template-columns: minmax(0, 1fr) 110px 120px auto; }
+@media (max-width: 860px) { .bo-row:has(.bo-sub), .bo-new:has(.bo-sub) { grid-template-columns: 1fr auto; } }

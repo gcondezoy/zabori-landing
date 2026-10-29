@@ -88,6 +88,24 @@ export default function BuildPlate() {
           const sized = opts.some(hasSizes)
           const count = picked.filter((o) => o.grp === g.id).length
           const full = g.max > 1 && count >= g.max
+          // Subgrupos (ej. vegetales Cocidos / Frescos): se muestran por separado, el máximo es del paso entero
+          const subs = [...new Set(opts.map((o) => o.sub || ''))]
+          const renderOpt = (o) => {
+            if (hasSizes(o)) {
+              return <SizedOption key={o.id} o={o} selected={sel.find((x) => parseId(x).id === o.id)} onPick={(f) => toggle(g, f)} />
+            }
+            const on = sel.includes(o.id)
+            return (
+              <button key={o.id} type="button" className={`b-opt${on ? ' on' : ''}${o.img ? ' has-img' : ''}`}
+                aria-pressed={on} disabled={!on && full} onClick={() => toggle(g, o.id)}>
+                {o.img && <img className="b-thumb" src={o.img} alt="" width="160" height="120" loading="lazy" />}
+                <span className="b-check" aria-hidden="true">{on && <Check size={12} weight="bold" />}</span>
+                <span className="b-name">{o.name}</span>
+                <span className="b-price">{o.price ? `+${money(o.price)}` : 'Incluido'}</span>
+              </button>
+            )
+          }
+          const gridClass = `b-options${opts.some((o) => o.img) ? ' with-img' : ''}${sized ? ' sized' : ''}`
           return (
             <Reveal as="fieldset" key={g.id} className="b-step" delay={gi * 80}>
               <legend>
@@ -97,23 +115,13 @@ export default function BuildPlate() {
                 <span className="b-title">{g.label}</span>
                 <span className="b-hint">{hint(g, sized)}{g.max > 1 ? ` · ${count}/${g.max}` : ''}</span>
               </legend>
-              <div className={`b-options${opts.some((o) => o.img) ? ' with-img' : ''}${sized ? ' sized' : ''}`}>
-                {opts.map((o) => {
-                  if (hasSizes(o)) {
-                    return <SizedOption key={o.id} o={o} selected={sel.find((x) => parseId(x).id === o.id)} onPick={(full) => toggle(g, full)} />
-                  }
-                  const on = sel.includes(o.id)
-                  return (
-                    <button key={o.id} type="button" className={`b-opt${on ? ' on' : ''}${o.img ? ' has-img' : ''}`}
-                      aria-pressed={on} disabled={!on && full} onClick={() => toggle(g, o.id)}>
-                      {o.img && <img className="b-thumb" src={o.img} alt="" width="160" height="120" loading="lazy" />}
-                      <span className="b-check" aria-hidden="true">{on && <Check size={12} weight="bold" />}</span>
-                      <span className="b-name">{o.name}</span>
-                      <span className="b-price">{o.price ? `+${money(o.price)}` : 'Incluido'}</span>
-                    </button>
-                  )
-                })}
-              </div>
+              {subs.length > 1 && <p className="b-subnote">Puedes combinar: hasta {g.max} en total entre {subs.join(' y ').toLowerCase()}.</p>}
+              {subs.length > 1 ? subs.map((sub) => (
+                <div key={sub} className="b-sub">
+                  <h4 className="b-subtitle">{sub}</h4>
+                  <div className={gridClass}>{opts.filter((o) => (o.sub || '') === sub).map(renderOpt)}</div>
+                </div>
+              )) : <div className={gridClass}>{opts.map(renderOpt)}</div>}
             </Reveal>
           )
         })}
@@ -128,7 +136,7 @@ export default function BuildPlate() {
 
         <div className="b-total">
           <span>{protein ? `${protein.baseName} ${protein.g} g · ${money(protein.price)}${price > protein.price ? ` + extras ${money(price - protein.price)}` : ''}` : `Desde ${money(fromPrice(build))}`}</span>
-          <strong>{money(price * qty)}</strong>
+          <strong>{protein ? money(price * qty) : "—"}</strong>
         </div>
 
         <div className="b-actions">

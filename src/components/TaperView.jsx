@@ -71,7 +71,7 @@ export default function TaperView({ picked, small = false, className = '' }) {
 
   const main = useLeaving(protein ? [protein] : [])
   const carb = useLeaving(by('carbo').slice(0, 1))
-  const veg = useLeaving(by('acomp', 'fresco').slice(0, 4))
+  const veg = useLeaving(by('acomp').slice(0, 4))
   const dips = useLeaving(by('crema'))
 
   const slots = (

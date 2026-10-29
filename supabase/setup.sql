@@ -111,38 +111,40 @@ create table if not exists public.build_options (
 alter table public.build_options add column if not exists img text not null default '';
 -- Porciones (fit): [{ "g": 120, "price": 15 }, ...]. Si tiene porciones, el precio sale de la porción elegida.
 alter table public.build_options add column if not exists sizes jsonb not null default '[]'::jsonb;
+-- Subgrupo dentro de un paso (ej. vegetales "Cocidos" / "Frescos"); el máximo del paso cuenta todos juntos
+alter table public.build_options add column if not exists sub text not null default '';
 
 insert into public.build_groups (id, label, min_sel, max_sel, sort) values
   ('proteina','Proteína',1,1,1), ('carbo','Carbohidrato',1,1,2),
-  ('acomp','Vegetales cocidos',0,2,3), ('fresco','Vegetales frescos',0,2,4),
-  ('crema','Aderezos',0,2,5), ('taper','Táper',1,1,6)
+  ('acomp','Vegetales',0,2,3), ('crema','Aderezos',0,2,4),
+  ('taper','Táper',1,1,5)
 on conflict (id) do nothing;
 
 -- Opciones fit de EJEMPLO (se editan en el panel). Proteínas con porción en gramos y precio por porción.
-insert into public.build_options (id, grp, name, price, sort, img, sizes) values
-  ('p-pollo','proteina','Pechuga de pollo',0,1,'/img/arma/pollo.webp','[{"g":120,"price":15},{"g":180,"price":18},{"g":250,"price":22}]'),
-  ('p-res','proteina','Lomo fino de res',0,2,'/img/arma/res.webp','[{"g":120,"price":18},{"g":180,"price":22},{"g":250,"price":27}]'),
-  ('p-pescado','proteina','Filete de pescado',0,3,'/img/arma/pescado.webp','[{"g":120,"price":17},{"g":180,"price":21},{"g":250,"price":25}]'),
-  ('p-pavita','proteina','Pavita al horno',0,4,'/img/arma/pavita.webp','[{"g":120,"price":16},{"g":180,"price":19},{"g":250,"price":23}]'),
-  ('c-arroz','carbo','Arroz graneado',0,1,'/img/arma/arroz.webp','[]'),
-  ('c-quinua','carbo','Quinua',1.5,2,'/img/arma/quinua.webp','[]'),
-  ('c-camote','carbo','Camote al horno',1,3,'/img/arma/camote.webp','[]'),
-  ('c-papa','carbo','Papa sancochada',0,4,'/img/arma/papa.webp','[]'),
-  ('c-sin','carbo','Sin carbohidrato (doble ensalada)',0,5,'/img/arma/sin-carbo.webp','[]'),
-  ('a-brocoli','acomp','Brócoli al vapor',0,1,'/img/arma/brocoli.webp','[]'),
-  ('a-vainitas','acomp','Vainitas salteadas',0,2,'/img/arma/vainitas.webp','[]'),
-  ('a-zanahoria','acomp','Zanahoria salteada',0,3,'/img/arma/zanahoria.webp','[]'),
-  ('a-choclo','acomp','Choclo',0,4,'/img/arma/choclo.webp','[]'),
-  ('f-ensalada','fresco','Ensalada verde',0,1,'/img/arma/ensalada.webp','[]'),
-  ('f-tomate','fresco','Tomate y pepino',0,2,'/img/arma/tomate-pepino.webp','[]'),
-  ('f-palta','fresco','Palta',2,3,'/img/arma/palta.webp','[]'),
-  ('k-vinagreta','crema','Vinagreta de limón',0,1,'/img/arma/vinagreta.webp','[]'),
-  ('k-yogur','crema','Yogur con hierbas',0,2,'/img/arma/yogur.webp','[]'),
-  ('k-huacatay','crema','Crema de huacatay',0,3,'/img/arma/huacatay.webp','[]'),
-  ('k-criolla','crema','Salsa criolla',0,4,'/img/arma/criolla.webp','[]'),
-  ('t-bagazo','taper','Táper de bagazo (biodegradable)',0.5,1,'/img/taper/bagazo.svg','[]'),
-  ('t-kraft','taper','Bowl kraft con tapa',1,2,'/img/taper/kraft.svg','[]'),
-  ('t-reutilizable','taper','Táper reutilizable hermético',2,3,'/img/taper/reutilizable.svg','[]')
+insert into public.build_options (id, grp, name, price, sort, img, sizes, sub) values
+  ('p-pollo','proteina','Pechuga de pollo',0,1,'/img/arma/pollo.webp','[{"g":120,"price":15},{"g":180,"price":18},{"g":250,"price":22}]',''),
+  ('p-res','proteina','Lomo fino de res',0,2,'/img/arma/res.webp','[{"g":120,"price":18},{"g":180,"price":22},{"g":250,"price":27}]',''),
+  ('p-pescado','proteina','Filete de pescado',0,3,'/img/arma/pescado.webp','[{"g":120,"price":17},{"g":180,"price":21},{"g":250,"price":25}]',''),
+  ('p-pavita','proteina','Pavita al horno',0,4,'/img/arma/pavita.webp','[{"g":120,"price":16},{"g":180,"price":19},{"g":250,"price":23}]',''),
+  ('c-arroz','carbo','Arroz graneado',0,1,'/img/arma/arroz.webp','[]',''),
+  ('c-quinua','carbo','Quinua',1.5,2,'/img/arma/quinua.webp','[]',''),
+  ('c-camote','carbo','Camote al horno',1,3,'/img/arma/camote.webp','[]',''),
+  ('c-papa','carbo','Papa sancochada',0,4,'/img/arma/papa.webp','[]',''),
+  ('c-sin','carbo','Sin carbohidrato (doble ensalada)',0,5,'/img/arma/sin-carbo.webp','[]',''),
+  ('a-brocoli','acomp','Brócoli al vapor',0,1,'/img/arma/brocoli.webp','[]','Cocidos'),
+  ('a-vainitas','acomp','Vainitas salteadas',0,2,'/img/arma/vainitas.webp','[]','Cocidos'),
+  ('a-zanahoria','acomp','Zanahoria salteada',0,3,'/img/arma/zanahoria.webp','[]','Cocidos'),
+  ('a-choclo','acomp','Choclo',0,4,'/img/arma/choclo.webp','[]','Cocidos'),
+  ('f-ensalada','acomp','Ensalada verde',0,5,'/img/arma/ensalada.webp','[]','Frescos'),
+  ('f-tomate','acomp','Tomate y pepino',0,6,'/img/arma/tomate-pepino.webp','[]','Frescos'),
+  ('f-palta','acomp','Palta',2,7,'/img/arma/palta.webp','[]','Frescos'),
+  ('k-vinagreta','crema','Vinagreta de limón',0,1,'/img/arma/vinagreta.webp','[]',''),
+  ('k-yogur','crema','Yogur con hierbas',0,2,'/img/arma/yogur.webp','[]',''),
+  ('k-huacatay','crema','Crema de huacatay',0,3,'/img/arma/huacatay.webp','[]',''),
+  ('k-criolla','crema','Salsa criolla',0,4,'/img/arma/criolla.webp','[]',''),
+  ('t-bagazo','taper','Táper de bagazo (biodegradable)',0.5,1,'/img/taper/bagazo.svg','[]',''),
+  ('t-kraft','taper','Bowl kraft con tapa',1,2,'/img/taper/kraft.svg','[]',''),
+  ('t-reutilizable','taper','Táper reutilizable hermético',2,3,'/img/taper/reutilizable.svg','[]','')
 on conflict (id) do nothing;
 
 -- Ubicación exacta de entrega (opcional, desde el mapa del checkout)

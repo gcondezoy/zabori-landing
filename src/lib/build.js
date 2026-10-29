@@ -3,7 +3,7 @@
 import { supabase, supabaseConfigurado } from './supabase'
 import { buildSeed } from '../data/build'
 
-const KEY = 'zabori-build-v3' // v3: fit con gramajes y vegetales cocidos/frescos
+const KEY = 'zabori-build-v4' // v4: vegetales cocidos y frescos en un solo paso (máx. 2 en total)
 export const BUILD_ID = 'arma'
 export const CART_PREFIX = 'arma|'
 
@@ -39,7 +39,7 @@ export async function loadBuild({ includeInactive = false } = {}) {
         available: base.data ? base.data.active : true,
         groups: g.data.map((x) => ({ id: x.id, label: x.label, min: x.min_sel, max: x.max_sel, sort: x.sort })),
         options: o.data.map((x) => ({
-          id: x.id, grp: x.grp, name: x.name, price: Number(x.price), active: x.active, sort: x.sort, img: x.img || '',
+          id: x.id, grp: x.grp, sub: x.sub || '', name: x.name, price: Number(x.price), active: x.active, sort: x.sort, img: x.img || '',
           sizes: (x.sizes || []).map((s) => ({ g: Number(s.g), price: Number(s.price) })),
         })),
       }
@@ -59,7 +59,7 @@ export async function saveBuildOption(opt) {
     .map((s) => ({ g: Math.round(Number(s.g) || 0), price: Math.max(0, Number(s.price) || 0) }))
     .filter((s) => s.g > 0)
     .sort((a, b) => a.g - b.g)
-  const row = { id, grp: opt.grp, name: opt.name.trim(), price: Math.max(0, Number(opt.price) || 0), active: opt.active, sort: opt.sort ?? 99, img: (opt.img || '').trim(), sizes }
+  const row = { id, grp: opt.grp, sub: (opt.sub || '').trim(), name: opt.name.trim(), price: Math.max(0, Number(opt.price) || 0), active: opt.active, sort: opt.sort ?? 99, img: (opt.img || '').trim(), sizes }
   if (supabaseConfigurado) {
     const { error } = await supabase.from('build_options').upsert(row)
     if (error) throw new Error(error.message)

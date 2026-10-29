@@ -45,7 +45,7 @@ function SizesEditor({ sizes, onChange }) {
   )
 }
 
-function OptionRow({ opt, uses, onSaved, withImg, sized }) {
+function OptionRow({ opt, uses, onSaved, withImg, sized, subs }) {
   const [f, setF] = useState(opt)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
@@ -59,6 +59,11 @@ function OptionRow({ opt, uses, onSaved, withImg, sized }) {
     <div className={`bo-row${f.active ? '' : ' off'}${withImg ? ' with-img' : ''}`}>
       {withImg && (f.img ? <img className="bo-thumb" src={f.img} alt="" width="64" height="48" /> : <span className="bo-thumb empty" aria-hidden="true" />)}
       <input aria-label="Nombre de la opción" value={f.name} onChange={set('name')} />
+      {subs && (
+        <select className="bo-sub" value={f.sub || subs[0]} onChange={set('sub')} aria-label="Subgrupo">
+          {subs.map((x) => <option key={x} value={x}>{x}</option>)}
+        </select>
+      )}
       {sized
         ? <span className="bo-uses">Según porción</span>
         : <label className="bo-price">+ S/<input type="number" min="0" step="0.5" value={f.price} onChange={set('price')} aria-label="Adicional" /></label>}
@@ -75,21 +80,26 @@ function OptionRow({ opt, uses, onSaved, withImg, sized }) {
   )
 }
 
-function NewOption({ grp, sort, onSaved, sized }) {
-  const [f, setF] = useState({ name: '', price: 0 })
+function NewOption({ grp, sort, onSaved, sized, subs }) {
+  const [f, setF] = useState({ name: '', price: 0, sub: subs ? subs[0] : '' })
   const [err, setErr] = useState('')
   const add = async (e) => {
     e.preventDefault()
     setErr('')
     try {
-      await saveBuildOption({ grp, name: f.name, price: sized ? 0 : f.price, active: true, sort, sizes: sized ? DEFAULT_SIZES : [] })
-      setF({ name: '', price: 0 })
+      await saveBuildOption({ grp, name: f.name, sub: f.sub, price: sized ? 0 : f.price, active: true, sort, sizes: sized ? DEFAULT_SIZES : [] })
+      setF({ name: '', price: 0, sub: f.sub })
       await onSaved()
     } catch (error) { setErr(error.message) }
   }
   return (
     <form className="bo-row bo-new" onSubmit={add}>
       <input required placeholder="Nueva opción" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} aria-label="Nombre de la nueva opción" />
+      {subs && (
+        <select className="bo-sub" value={f.sub} onChange={(e) => setF({ ...f, sub: e.target.value })} aria-label="Subgrupo">
+          {subs.map((x) => <option key={x} value={x}>{x}</option>)}
+        </select>
+      )}
       {sized
         ? <span className="bo-uses">Con porciones 120 / 180 / 250 g (editables)</span>
         : <label className="bo-price">+ S/<input type="number" min="0" step="0.5" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} aria-label="Adicional" /></label>}
@@ -139,6 +149,8 @@ export default function BuildAdmin({ orders }) {
 
       {build.groups.map((g) => {
         const opts = build.options.filter((o) => o.grp === g.id)
+        const subList = [...new Set(opts.map((o) => o.sub).filter(Boolean))]
+        const subs = subList.length ? subList : null // ej. vegetales: Cocidos / Frescos
         return (
           <div key={g.id} className="panel-card bo-group">
             <div className="bo-head">
@@ -147,9 +159,9 @@ export default function BuildAdmin({ orders }) {
             </div>
             {opts.map((o) => (
               <OptionRow key={o.id + JSON.stringify(o)} opt={{ ...o, img: o.img || '', sizes: o.sizes || [] }} uses={usesOf(o, uses)} onSaved={refresh}
-                withImg={opts.some((x) => x.img)} sized={hasSizes(o)} />
+                withImg={opts.some((x) => x.img)} sized={hasSizes(o)} subs={subs} />
             ))}
-            <NewOption grp={g.id} sort={opts.length + 1} onSaved={refresh} sized={opts.some(hasSizes)} />
+            <NewOption grp={g.id} sort={opts.length + 1} onSaved={refresh} sized={opts.some(hasSizes)} subs={subs} />
           </div>
         )
       })}

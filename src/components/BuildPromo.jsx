@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CookingPot, Grains, Carrot, Leaf, Drop, Package, Shuffle, ArrowRight } from '@phosphor-icons/react'
+import { CookingPot, Grains, Carrot, Drop, Package, Shuffle, ArrowRight } from '@phosphor-icons/react'
 import { useMenu } from '../context/MenuContext'
 import { chosen, buildPrice, hasSizes, sizeId, fromPrice } from '../lib/build'
 import TaperView from './TaperView'
 import { money, site } from '../config/site'
 import Reveal from './Reveal'
 
-const ICONS = { proteina: CookingPot, carbo: Grains, acomp: Carrot, fresco: Leaf, crema: Drop, taper: Package }
+const ICONS = { proteina: CookingPot, carbo: Grains, acomp: Carrot, crema: Drop, taper: Package }
 const INTERVAL = 3200
 
 // Evento para que la carta abra la pestaña "Arma tu plato"
