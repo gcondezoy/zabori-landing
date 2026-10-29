@@ -35,6 +35,9 @@ create table if not exists public.profiles (
   phone   text not null default '',
   address text not null default ''
 );
+-- Ubicación de entrega guardada (para autocompletar el mapa del checkout)
+alter table public.profiles add column if not exists lat numeric(9,6);
+alter table public.profiles add column if not exists lng numeric(9,6);
 
 -- Crea el perfil automáticamente al registrarse
 create or replace function public.handle_new_user() returns trigger

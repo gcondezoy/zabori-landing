@@ -64,6 +64,8 @@ export default function Checkout() {
       phone: cur.phone || user.phone || '',
       email: cur.email || user.email || '',
       address: cur.address || user.address || '',
+      lat: cur.address ? cur.lat : user.lat ?? null,
+      lng: cur.address ? cur.lng : user.lng ?? null,
     }))
   }, [checkout, user])
 
@@ -112,7 +114,7 @@ export default function Checkout() {
       const form = { ...f, address: deliver ? f.address : '', lat: deliver ? f.lat : null, lng: deliver ? f.lng : null, email: card ? f.email : '', payment_method: method }
       const res = await createOrder(form, lines, user?.id)
       if (user && f.mode === 'delivery' && f.address && f.address !== user.address) {
-        saveProfile({ address: f.address }).catch(() => {})
+        saveProfile({ address: f.address, lat: f.lat, lng: f.lng }).catch(() => {})
       }
       const order = { code: res.code, total: res.total, mode: f.mode, email: f.email, phone: f.phone, method }
       if (!card || !culqiConfigurado) {

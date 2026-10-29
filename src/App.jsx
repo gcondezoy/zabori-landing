@@ -10,13 +10,18 @@ import CartDrawer from './components/CartDrawer'
 import Checkout from './components/Checkout'
 import AuthModal from './components/AuthModal'
 import CartBar from './components/CartBar'
+import WhatsAppFab from './components/WhatsAppFab'
 import TaperPicker from './components/TaperPicker'
 import Admin from './components/admin/AdminApp'
 import TrackOrder from './components/TrackOrder'
+import AccountPage from './components/AccountPage'
 
 const routeOf = () => {
   const h = window.location.hash
-  return h.startsWith('#/admin') ? 'admin' : h.startsWith('#/seguir') ? 'seguir' : 'home'
+  if (h.startsWith('#/admin')) return 'admin'
+  if (h.startsWith('#/seguir')) return 'seguir'
+  if (h.startsWith('#/cuenta')) return 'cuenta'
+  return 'home'
 }
 
 export default function App() {
@@ -51,7 +56,7 @@ export default function App() {
   return (
     <>
       <Header />
-      {route === 'seguir' ? <TrackOrder /> : (
+      {route === 'seguir' ? <TrackOrder /> : route === 'cuenta' ? <AccountPage /> : (
         <main>
           <Hero />
           <BuildPromo />
@@ -62,6 +67,7 @@ export default function App() {
       )}
       <Footer />
       <CartBar />
+      <WhatsAppFab />
       <TaperPicker />
       <CartDrawer />
       <Checkout />

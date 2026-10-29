@@ -14,9 +14,11 @@ const write = (k, v) => {
 
 // Usuario normalizado: { id, email, name, phone, address }
 async function fetchProfile(authUser) {
-  const base = { id: authUser.id, email: authUser.email, name: '', phone: '', address: '' }
-  const { data } = await supabase.from('profiles').select('name, phone, address').eq('id', authUser.id).maybeSingle()
-  return data ? { ...base, ...data } : base
+  const base = { id: authUser.id, email: authUser.email, name: '', phone: '', address: '', lat: null, lng: null }
+  const { data } = await supabase.from('profiles').select('name, phone, address, lat, lng').eq('id', authUser.id).maybeSingle()
+  if (!data) return base
+  // numeric llega como texto desde Supabase
+  return { ...base, ...data, lat: data.lat != null ? Number(data.lat) : null, lng: data.lng != null ? Number(data.lng) : null }
 }
 
 export function AuthProvider({ children }) {
@@ -50,7 +52,7 @@ export function AuthProvider({ children }) {
     }
     const users = read(DEMO_USERS, [])
     if (users.some((u) => u.email === email)) throw new Error('Ese correo ya está registrado.')
-    const u = { id: 'u' + Date.now(), email, password, name, phone, address: '' }
+    const u = { id: 'u' + Date.now(), email, password, name, phone, address: '', lat: null, lng: null }
     write(DEMO_USERS, [...users, u])
     write(DEMO_SESSION, u.id)
     setUser(u)

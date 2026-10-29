@@ -17,7 +17,7 @@ export default function Header() {
           <a href="#contacto">Contacto</a>
         </nav>
         <div className="header-actions">
-          <button className="acct-btn" onClick={() => setModal(user ? 'cuenta' : 'login')}
+          <button className="acct-btn" onClick={() => (user ? (window.location.hash = '#/cuenta') : setModal('login'))}
             aria-label={user ? 'Mi cuenta' : 'Iniciar sesión'}>
             <User size={20} weight="bold" />
             <span>{user ? (user.name || 'Mi cuenta').split(' ')[0] : 'Ingresar'}</span>
