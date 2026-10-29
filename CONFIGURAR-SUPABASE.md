@@ -83,3 +83,11 @@ Las políticas RLS (`is_admin()`) permiten ver/actualizar pedidos y editar la ca
 - **Tarjeta (Culqi):** se confirma sola; el pedido llega al panel ya como **Pagado · Tarjeta**.
 - **WhatsApp:** `site.whatsapp` es el número de Zabori (con 51 delante). La confirmación del pedido abre ese chat con el código ya escrito, y el panel tiene "Avisar al cliente" con mensajes listos por estado.
 - **Sigue tu pedido (`/#/seguir`):** el cliente pone su código y los últimos 4 dígitos de su celular. Usa la función `track_order()`, que solo devuelve estado, platos y total (nunca nombre, celular ni dirección). La página se actualiza sola cada 20 s.
+
+# Dirección con mapa (OpenStreetMap)
+
+- El buscador de direcciones usa **Photon** (OpenStreetMap): gratis y sin llave, con uso razonable. Solo consulta cuando el cliente deja de escribir.
+- El mapa (Leaflet + OpenStreetMap) aparece solo si el cliente elige una sugerencia o toca "Usar mi ubicación"; el pin se puede mover. Si no lo usa, igual puede pedir escribiendo su dirección.
+- "Usar mi ubicación" necesita HTTPS (funciona en Vercel y en localhost).
+- Las coordenadas se guardan en `orders.lat` / `orders.lng` (solo si están dentro del Perú) y el panel abre el punto exacto en Google Maps.
+- Si más adelante se quiere Google Maps (mejores resultados en Lima), solo se cambia `src/lib/geo.js` y el mapa; el resto queda igual.

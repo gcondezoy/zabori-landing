@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { X, Phone, WhatsappLogo, EnvelopeSimple, MapPin, CheckCircle, Circle, UserCircle } from '@phosphor-icons/react'
+import { X, Phone, WhatsappLogo, EnvelopeSimple, MapPin, CheckCircle, Circle, UserCircle, MapTrifold } from '@phosphor-icons/react'
 import { STATUS, PAYMENT, nextStatus, updateOrder, whatsappLink } from '../../lib/admin'
 import { fmtDateTime } from '../../lib/stats'
+import { mapsLink } from '../../lib/geo'
 import { money } from '../../config/site'
 import { StatusPill, PayPill } from './ui'
 
@@ -71,9 +72,14 @@ export default function OrderDetail({ order: o, onClose, refresh }) {
             <p><a href={whatsappLink(o)} target="_blank" rel="noreferrer"><WhatsappLogo size={16} /> Escribir por WhatsApp</a></p>
             {o.email && <p><a href={`mailto:${o.email}`}><EnvelopeSimple size={16} /> {o.email}</a></p>}
             {o.mode === 'delivery' && (
-              <p><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address + ', Lima')}`} target="_blank" rel="noreferrer">
-                <MapPin size={16} /> {o.address}
-              </a></p>
+              <>
+                <p><MapPin size={16} /> {o.address}</p>
+                {/* Con ubicación marcada en el mapa, el enlace lleva al punto exacto; si no, se busca por texto */}
+                <p><a href={o.lat != null ? mapsLink(o.lat, o.lng) : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address + ', Lima')}`}
+                  target="_blank" rel="noreferrer">
+                  <MapTrifold size={16} /> {o.lat != null ? 'Abrir ubicación exacta en Google Maps' : 'Buscar dirección en Google Maps'}
+                </a></p>
+              </>
             )}
             {o.notes && <p className="note">“{o.notes}”</p>}
           </section>

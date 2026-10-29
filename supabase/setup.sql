@@ -132,6 +132,10 @@ insert into public.build_options (id, grp, name, price, sort, img) values
   ('t-reutilizable','taper','Táper reutilizable hermético',2,3,'/img/taper/reutilizable.svg')
 on conflict (id) do nothing;
 
+-- Ubicación exacta de entrega (opcional, desde el mapa del checkout)
+alter table public.orders add column if not exists lat numeric(9,6);
+alter table public.orders add column if not exists lng numeric(9,6);
+
 -- Medio de pago (Yape/Plin se confirman a mano desde el panel)
 alter table public.orders add column if not exists payment_method text not null default 'tarjeta';
 alter table public.orders drop constraint if exists orders_payment_method_check;
@@ -189,6 +193,8 @@ declare
   v_code text;
   v_order uuid;
   v_lines jsonb := '[]'::jsonb;
+  v_lat numeric;
+  v_lng numeric;
   v_qty int;
   v_price numeric;
   v_detail text;
@@ -263,15 +269,22 @@ begin
     exit when not exists (select 1 from public.orders where code = v_code);
   end loop;
 
+  -- Coordenadas solo si son válidas y están en el Perú (si no, se ignoran)
+  if v_mode = 'delivery' and jsonb_typeof(p->'lat') = 'number' and jsonb_typeof(p->'lng') = 'number'
+     and (p->>'lat')::numeric between -18.5 and 0 and (p->>'lng')::numeric between -81.5 and -68.5 then
+    v_lat := round((p->>'lat')::numeric, 6);
+    v_lng := round((p->>'lng')::numeric, 6);
+  end if;
+
   if coalesce(p->>'payment_method', 'tarjeta') not in ('tarjeta','yape','plin') then
     raise exception 'Medio de pago inválido';
   end if;
 
   insert into public.orders (code, user_id, customer_name, phone, email, mode, address, notes,
-                             subtotal, delivery_fee, total, payment_method)
+                             subtotal, delivery_fee, total, payment_method, lat, lng)
   values (v_code, auth.uid(), trim(p->>'name'), trim(p->>'phone'), coalesce(trim(p->>'email'), ''),
           v_mode, coalesce(trim(p->>'address'), ''), coalesce(trim(p->>'notes'), ''),
-          v_subtotal, v_fee, v_subtotal + v_fee, coalesce(p->>'payment_method', 'tarjeta'))
+          v_subtotal, v_fee, v_subtotal + v_fee, coalesce(p->>'payment_method', 'tarjeta'), v_lat, v_lng)
   returning id into v_order;
 
   insert into public.order_items (order_id, item_id, name, detail, price, qty)

@@ -7,8 +7,9 @@ import { supabaseConfigurado } from '../lib/supabase'
 import { culqiConfigurado, pedirToken, cobrar } from '../lib/culqi'
 import { zaboriWhatsapp, rememberOrder } from '../lib/whatsapp'
 import { money, site } from '../config/site'
+import AddressPicker from './AddressPicker'
 
-const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', notes: '' }
+const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', lat: null, lng: null, notes: '' }
 
 const PAY_OPTIONS = [
   { id: 'yape', label: 'Yape', icon: DeviceMobile },
@@ -107,7 +108,8 @@ export default function Checkout() {
     setErr('')
     setPaying(true)
     try {
-      const form = { ...f, address: f.mode === 'delivery' ? f.address : '', payment_method: method }
+      const deliver = f.mode === 'delivery'
+      const form = { ...f, address: deliver ? f.address : '', lat: deliver ? f.lat : null, lng: deliver ? f.lng : null, email: card ? f.email : '', payment_method: method }
       const res = await createOrder(form, lines, user?.id)
       if (user && f.mode === 'delivery' && f.address && f.address !== user.address) {
         saveProfile({ address: f.address }).catch(() => {})
@@ -192,11 +194,14 @@ export default function Checkout() {
 
             <label>Nombre<input required value={f.name} onChange={set('name')} autoComplete="name" /></label>
             <label>Celular<input required type="tel" inputMode="tel" value={f.phone} onChange={set('phone')} autoComplete="tel" /></label>
-            <label>Correo{needsEmail ? '' : ' (opcional)'}<input type="email" required={needsEmail} value={f.email} onChange={set('email')} autoComplete="email" /></label>
             {f.mode === 'delivery' && (
-              <label>Dirección de entrega<input required value={f.address} onChange={set('address')} autoComplete="street-address" /></label>
+              <AddressPicker address={f.address} lat={f.lat} lng={f.lng}
+                onChange={(a) => setF((cur) => ({ ...cur, ...a }))} />
             )}
-            <label>Indicaciones (opcional)<textarea rows={2} value={f.notes} onChange={set('notes')} /></label>
+            <label>{f.mode === 'delivery' ? 'Referencia (opcional)' : 'Indicaciones (opcional)'}
+              <textarea rows={2} value={f.notes} onChange={set('notes')}
+                placeholder={f.mode === 'delivery' ? 'Ej. portón negro, 2.º piso, tocar timbre' : ''} />
+            </label>
 
             <fieldset className="paymethod">
               <legend>¿Cómo pagas?</legend>
@@ -209,6 +214,12 @@ export default function Checkout() {
                 ))}
               </div>
             </fieldset>
+
+            {card && (
+              <label>Correo{needsEmail ? '' : ' (opcional)'}
+                <input type="email" required={needsEmail} value={f.email} onChange={set('email')} autoComplete="email" placeholder="Para el comprobante del pago" />
+              </label>
+            )}
 
             <div className="summary">
               <div className="row"><span>Subtotal</span><span>{money(subtotal)}</span></div>
