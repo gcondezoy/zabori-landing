@@ -118,7 +118,7 @@ export function ordersCSV(orders, STATUS, PAYMENT) {
       o.name, o.phone, o.email, o.mode === 'delivery' ? 'Delivery' : 'Recojo', o.address,
       o.items.map((i) => `${i.qty}x ${i.name}`).join(', '),
       o.subtotal?.toFixed(2), o.fee?.toFixed(2), o.total.toFixed(2),
-      PAYMENT[o.payment] || o.payment, STATUS[o.status] || o.status, o.notes,
+      `${PAYMENT[o.payment] || o.payment} (${o.method || 'tarjeta'})`, STATUS[o.status] || o.status, o.notes,
     ].map(esc).join(';')
   })
   return '﻿' + [head.map(esc).join(';'), ...rows].join('\r\n')

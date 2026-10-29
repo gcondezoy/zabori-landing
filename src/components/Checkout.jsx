@@ -1,18 +1,54 @@
 import { useEffect, useState } from 'react'
-import { X, CheckCircle } from '@phosphor-icons/react'
+import { X, CheckCircle, CreditCard, DeviceMobile, WhatsappLogo, Copy, Check, MapTrifold } from '@phosphor-icons/react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { createOrder } from '../lib/orders'
 import { supabaseConfigurado } from '../lib/supabase'
 import { culqiConfigurado, pedirToken, cobrar } from '../lib/culqi'
+import { zaboriWhatsapp, rememberOrder } from '../lib/whatsapp'
 import { money, site } from '../config/site'
 
 const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', notes: '' }
+
+const PAY_OPTIONS = [
+  { id: 'yape', label: 'Yape', icon: DeviceMobile },
+  { id: 'plin', label: 'Plin', icon: DeviceMobile },
+  { id: 'tarjeta', label: 'Tarjeta', icon: CreditCard },
+]
+
+// Datos para pagar con Yape o Plin + botón para enviar la captura
+function WalletPay({ done }) {
+  const w = site.wallets[done.method]
+  const [copied, setCopied] = useState(false)
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(w.number.replace(/\s/g, '')); setCopied(true); setTimeout(() => setCopied(false), 1800) } catch {}
+  }
+  return (
+    <div className="wallet">
+      <p className="wallet-step">Paga <strong>{money(done.total)}</strong> con {w.label}</p>
+      {w.qr
+        ? <img className="wallet-qr" src={w.qr} alt={`QR de ${w.label} de ${site.name}`} width="220" height="220" />
+        : <div className="wallet-qr empty">QR de {w.label}<br /><small>(se agrega con los datos reales)</small></div>}
+      <div className="wallet-number">
+        <span><small>Número {w.label}</small><b>{w.number}</b><small>{w.holder}</small></span>
+        <button type="button" className="icon-btn" onClick={copy} aria-label="Copiar número">
+          {copied ? <Check size={18} weight="bold" /> : <Copy size={18} />}
+        </button>
+      </div>
+      <a className="btn wa block" target="_blank" rel="noreferrer"
+        href={zaboriWhatsapp(`Hola, hice el pedido ${done.code} por ${money(done.total)}. Te envío la captura de mi pago con ${w.label}.`)}>
+        <WhatsappLogo size={20} weight="fill" /> Enviar captura por WhatsApp
+      </a>
+      <p className="demo-note">Preparamos tu pedido apenas confirmemos el pago.</p>
+    </div>
+  )
+}
 
 export default function Checkout() {
   const { checkout, setCheckout, lines, subtotal, deliveryFor, clear } = useCart()
   const { user, setModal, saveProfile } = useAuth()
   const [f, setF] = useState(empty)
+  const [method, setMethod] = useState('yape')
   const [paying, setPaying] = useState(false)
   const [done, setDone] = useState(null)
   const [err, setErr] = useState('')
@@ -35,12 +71,16 @@ export default function Checkout() {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
   const fee = deliveryFor(f.mode)
   const total = subtotal + fee
+  const card = method === 'tarjeta'
+  const needsEmail = card && culqiConfigurado // Culqi exige correo
 
   const close = () => { setCheckout(false); setDone(null); setErr(''); setPending(null) }
   const openAuth = (m) => { setCheckout(false); setModal(m) }
+  const goTrack = () => { close(); window.location.hash = '#/seguir' }
 
   const finish = (order) => {
-    setDone({ code: order.code, total: order.total, mode: order.mode, paid: culqiConfigurado })
+    rememberOrder(order.code, order.phone)
+    setDone({ ...order, paid: order.method === 'tarjeta' && culqiConfigurado })
     setPending(null)
     clear()
     setF(empty)
@@ -67,14 +107,14 @@ export default function Checkout() {
     setErr('')
     setPaying(true)
     try {
-      const form = { ...f, address: f.mode === 'delivery' ? f.address : '' }
+      const form = { ...f, address: f.mode === 'delivery' ? f.address : '', payment_method: method }
       const res = await createOrder(form, lines, user?.id)
       if (user && f.mode === 'delivery' && f.address && f.address !== user.address) {
         saveProfile({ address: f.address }).catch(() => {})
       }
-      const order = { code: res.code, total: res.total, mode: f.mode, email: f.email }
-      if (!culqiConfigurado) {
-        // MODO DEMO: el pedido se guarda, el cobro se simula.
+      const order = { code: res.code, total: res.total, mode: f.mode, email: f.email, phone: f.phone, method }
+      if (!card || !culqiConfigurado) {
+        // Yape/Plin: se paga fuera y se confirma en el panel. Tarjeta sin Culqi: modo demo.
         finish(order)
       } else {
         setPending(order)
@@ -88,6 +128,8 @@ export default function Checkout() {
     }
   }
 
+  const wallet = done && done.method !== 'tarjeta'
+
   return (
     <div className="overlay center" onClick={close}>
       <div className="modal" role="dialog" aria-label="Finalizar pedido" onClick={(e) => e.stopPropagation()}>
@@ -95,14 +137,24 @@ export default function Checkout() {
         {done ? (
           <div className="done">
             <CheckCircle size={56} weight="fill" />
-            <h3>¡Pedido recibido!</h3>
+            <h3>{wallet ? '¡Pedido registrado!' : '¡Pedido recibido!'}</h3>
             <p>Código <strong>{done.code}</strong> · {money(done.total)}</p>
-            <p>{done.mode === 'delivery' ? 'Te avisaremos cuando salga tu delivery.' : 'Te avisaremos cuando esté listo para recoger.'}</p>
-            {!user && <p className="demo-note">Guarda tu código para consultar tu pedido.</p>}
-            {done.paid
-              ? <p className="demo-note">Pago con tarjeta confirmado. Gracias por tu compra.</p>
-              : <p className="demo-note">Pago en modo demo: no se realizó ningún cobro real.</p>}
-            <button className="btn primary" onClick={close}>Listo</button>
+
+            {wallet ? <WalletPay done={done} /> : (
+              <>
+                <p>{done.mode === 'delivery' ? 'Te avisaremos cuando salga tu delivery.' : 'Te avisaremos cuando esté listo para recoger.'}</p>
+                {done.paid
+                  ? <p className="demo-note">Pago con tarjeta confirmado. Gracias por tu compra.</p>
+                  : <p className="demo-note">Pago en modo demo: no se realizó ningún cobro real.</p>}
+                <a className="btn wa block" target="_blank" rel="noreferrer"
+                  href={zaboriWhatsapp(`Hola, acabo de hacer el pedido ${done.code}. ¿Me avisan cuando esté en camino?`)}>
+                  <WhatsappLogo size={20} weight="fill" /> Seguir mi pedido por WhatsApp
+                </a>
+              </>
+            )}
+
+            <button type="button" className="btn ghost block" onClick={goTrack}><MapTrifold size={18} /> Ver el estado de mi pedido</button>
+            <button type="button" className="link" onClick={close}>Volver a la carta</button>
           </div>
         ) : pending ? (
           <div className="done">
@@ -123,7 +175,7 @@ export default function Checkout() {
               <p className="guest">Pides como <strong>{user.name || user.email}</strong>.</p>
             ) : (
               <p className="guest">
-                Pagas como <strong>invitado</strong>, sin crear cuenta.{' '}
+                Pides como <strong>invitado</strong>, sin crear cuenta.{' '}
                 <button type="button" className="link" onClick={() => openAuth('login')}>Iniciar sesión</button>
                 {' · '}
                 <button type="button" className="link" onClick={() => openAuth('registro')}>Crear cuenta</button>
@@ -140,11 +192,23 @@ export default function Checkout() {
 
             <label>Nombre<input required value={f.name} onChange={set('name')} autoComplete="name" /></label>
             <label>Celular<input required type="tel" inputMode="tel" value={f.phone} onChange={set('phone')} autoComplete="tel" /></label>
-            <label>Correo{culqiConfigurado ? '' : ' (opcional)'}<input type="email" required={culqiConfigurado} value={f.email} onChange={set('email')} autoComplete="email" /></label>
+            <label>Correo{needsEmail ? '' : ' (opcional)'}<input type="email" required={needsEmail} value={f.email} onChange={set('email')} autoComplete="email" /></label>
             {f.mode === 'delivery' && (
               <label>Dirección de entrega<input required value={f.address} onChange={set('address')} autoComplete="street-address" /></label>
             )}
             <label>Indicaciones (opcional)<textarea rows={2} value={f.notes} onChange={set('notes')} /></label>
+
+            <fieldset className="paymethod">
+              <legend>¿Cómo pagas?</legend>
+              <div className="pm-options">
+                {PAY_OPTIONS.map(({ id, label, icon: Icon }) => (
+                  <label key={id} className={`pm-${id}${method === id ? ' on' : ''}`}>
+                    <input type="radio" name="method" value={id} checked={method === id} onChange={() => setMethod(id)} />
+                    <Icon size={20} weight={method === id ? 'fill' : 'regular'} /> {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
             <div className="summary">
               <div className="row"><span>Subtotal</span><span>{money(subtotal)}</span></div>
@@ -158,12 +222,16 @@ export default function Checkout() {
             </div>
 
             <div className="card-demo">
-              {culqiConfigurado
-                ? 'Pago seguro con tarjeta a través de Culqi. Tus datos de tarjeta no pasan por Zabori.'
-                : `Modo demo: no se cobra nada.${supabaseConfigurado ? ' Falta la llave de Culqi para cobrar de verdad.' : ' Los pedidos se guardan solo en este navegador.'}`}
+              {!card
+                ? `Al confirmar te mostramos el QR y número de ${site.wallets[method].label} para pagar.`
+                : culqiConfigurado
+                  ? 'Pago seguro con tarjeta a través de Culqi. Tus datos de tarjeta no pasan por Zabori.'
+                  : `Modo demo: no se cobra nada.${supabaseConfigurado ? ' Falta la llave de Culqi para cobrar de verdad.' : ' Los pedidos se guardan solo en este navegador.'}`}
             </div>
             {err && <p className="form-err" role="alert">{err}</p>}
-            <button className="btn primary block" disabled={paying}>{paying ? 'Procesando…' : `Pagar ${money(total)}${culqiConfigurado ? '' : ' (demo)'}`}</button>
+            <button className="btn primary block" disabled={paying}>
+              {paying ? 'Procesando…' : card ? `Pagar ${money(total)}${culqiConfigurado ? '' : ' (demo)'}` : `Confirmar pedido · ${money(total)}`}
+            </button>
           </form>
         )}
       </div>

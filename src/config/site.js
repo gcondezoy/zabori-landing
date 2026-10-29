@@ -6,6 +6,12 @@ export const site = {
   whatsapp: '51900000000', // PLACEHOLDER
   whatsappLabel: '900 000 000', // PLACEHOLDER
   address: 'Lima, Perú (dirección por confirmar)', // PLACEHOLDER
+  // Billeteras: el cliente paga y envía la captura por WhatsApp; se confirma en el panel ("Marcar pagado").
+  // qr = ruta de la imagen del QR (p. ej. '/img/pagos/yape.png'); vacío = se muestra solo el número.
+  wallets: {
+    yape: { label: 'Yape', number: '900 000 000', holder: 'Zabori (titular por confirmar)', qr: '' }, // PLACEHOLDER
+    plin: { label: 'Plin', number: '900 000 000', holder: 'Zabori (titular por confirmar)', qr: '' }, // PLACEHOLDER
+  },
   schedule: 'Lunes a sábado · 11:00 a 15:00',
   openDays: [1, 2, 3, 4, 5, 6], // 0 = domingo
   openHour: 11,

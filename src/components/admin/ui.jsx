@@ -4,7 +4,13 @@ import { RANGES } from '../../lib/stats'
 import { money } from '../../config/site'
 
 export const StatusPill = ({ status }) => <span className={`pill s-${status}`}>{STATUS[status] || status}</span>
-export const PayPill = ({ payment }) => <span className={`pill p-${payment}`}>{PAYMENT[payment] || payment}</span>
+const METHOD_LABEL = { tarjeta: 'Tarjeta', yape: 'Yape', plin: 'Plin' }
+// Estado del pago + medio (Yape/Plin pendientes se confirman a mano: "Por confirmar")
+export const PayPill = ({ payment, method }) => {
+  const wallet = method === 'yape' || method === 'plin'
+  const label = wallet && payment === 'pendiente' ? 'Por confirmar' : PAYMENT[payment] || payment
+  return <span className={`pill p-${payment}`}>{label}{method ? ` · ${METHOD_LABEL[method] || method}` : ''}</span>
+}
 
 export function RangeTabs({ value, onChange }) {
   return (

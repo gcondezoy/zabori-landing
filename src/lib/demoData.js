@@ -76,7 +76,8 @@ export function seedDemoOrders(menu, days = 14) {
         address: mode === 'delivery' ? `${pick(STREETS)} ${100 + Math.floor(Math.random() * 900)}, Los Olivos` : '',
         notes: Math.random() > 0.8 ? pick(NOTES) : '',
         subtotal, fee, total: subtotal + fee, status, payment,
-        paymentRef: payment === 'pagado' ? (Math.random() > 0.5 ? 'chr_test_demo' : 'manual') : null,
+        paymentMethod: pick(['yape', 'yape', 'plin', 'tarjeta']),
+        paymentRef: payment === 'pagado' ? 'manual' : null,
         createdAt: t.toISOString(), history, items,
       })
     }

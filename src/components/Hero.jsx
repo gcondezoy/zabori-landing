@@ -10,8 +10,8 @@ export default function Hero() {
           <p className="eyebrow">{site.tagline}</p>
           <h1>{site.slogan}.</h1>
           <p className="lead">
-            Elige tu menú del día o arma tu plato a tu gusto, hasta el táper.
-            Paga en línea y recíbelo caliente en tu puerta, sin crear cuenta si no quieres.
+            Cada día un menú casero distinto, o tu propio plato con lo que más te gusta.
+            Pide en minutos y paga con Yape, Plin o tarjeta.
           </p>
           <div className="cta-row">
             <a href="#menu" className="btn primary">Ver el menú de hoy <ArrowRight weight="bold" /></a>

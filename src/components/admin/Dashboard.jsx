@@ -52,7 +52,7 @@ export default function Dashboard({ orders, onOpen }) {
                 <li key={o.code}>
                   <button onClick={() => onOpen(o.code)}>
                     <span><b>{o.code}</b> · {o.name}</span>
-                    <span className="mini-meta"><StatusPill status={o.status} />{isUnpaid(o) && <PayPill payment={o.payment} />}<em>{timeAgo(o.createdAt)}</em></span>
+                    <span className="mini-meta"><StatusPill status={o.status} />{isUnpaid(o) && <PayPill payment={o.payment} method={o.method} />}<em>{timeAgo(o.createdAt)}</em></span>
                   </button>
                 </li>
               ))}

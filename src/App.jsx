@@ -12,19 +12,34 @@ import AuthModal from './components/AuthModal'
 import CartBar from './components/CartBar'
 import TaperPicker from './components/TaperPicker'
 import Admin from './components/admin/AdminApp'
+import TrackOrder from './components/TrackOrder'
 
-const isAdminRoute = () => window.location.hash.startsWith('#/admin')
+const routeOf = () => {
+  const h = window.location.hash
+  return h.startsWith('#/admin') ? 'admin' : h.startsWith('#/seguir') ? 'seguir' : 'home'
+}
 
 export default function App() {
-  const [admin, setAdmin] = useState(isAdminRoute)
+  const [route, setRoute] = useState(routeOf)
 
   useEffect(() => {
-    const onHash = () => setAdmin(isAdminRoute())
+    const onHash = () => {
+      const next = routeOf()
+      setRoute((prev) => {
+        if (prev !== next) {
+          // Al cambiar de página: ir a la sección pedida (#menu, #como…) una vez dibujada, o arriba
+          const id = window.location.hash.slice(1)
+          window.scrollTo(0, 0)
+          if (next === 'home' && id && id !== 'top') setTimeout(() => document.getElementById(id)?.scrollIntoView(), 60)
+        }
+        return next
+      })
+    }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  if (admin) {
+  if (route === 'admin') {
     return (
       <>
         <Admin />
@@ -36,13 +51,15 @@ export default function App() {
   return (
     <>
       <Header />
-      <main>
-        <Hero />
-        <BuildPromo />
-        <Menu />
-        <HowItWorks />
-        <Testimonials />
-      </main>
+      {route === 'seguir' ? <TrackOrder /> : (
+        <main>
+          <Hero />
+          <BuildPromo />
+          <Menu />
+          <HowItWorks />
+          <Testimonials />
+        </main>
+      )}
       <Footer />
       <CartBar />
       <TaperPicker />

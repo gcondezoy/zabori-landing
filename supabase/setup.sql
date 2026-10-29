@@ -71,6 +71,7 @@ create table if not exists public.orders (
   payment_status text not null default 'pendiente'
                  check (payment_status in ('pendiente','procesando','pagado','fallido')),
   payment_ref    text,
+  payment_method text not null default 'tarjeta' check (payment_method in ('tarjeta','yape','plin')),
   created_at     timestamptz not null default now()
 );
 
@@ -130,6 +131,11 @@ insert into public.build_options (id, grp, name, price, sort, img) values
   ('t-kraft','taper','Bowl kraft con tapa',1,2,'/img/taper/kraft.svg'),
   ('t-reutilizable','taper','Táper reutilizable hermético',2,3,'/img/taper/reutilizable.svg')
 on conflict (id) do nothing;
+
+-- Medio de pago (Yape/Plin se confirman a mano desde el panel)
+alter table public.orders add column if not exists payment_method text not null default 'tarjeta';
+alter table public.orders drop constraint if exists orders_payment_method_check;
+alter table public.orders add constraint orders_payment_method_check check (payment_method in ('tarjeta','yape','plin'));
 
 -- Si la tabla ya existía de la etapa 2, ampliar los estados de pago permitidos
 alter table public.orders drop constraint if exists orders_payment_status_check;
@@ -257,11 +263,15 @@ begin
     exit when not exists (select 1 from public.orders where code = v_code);
   end loop;
 
+  if coalesce(p->>'payment_method', 'tarjeta') not in ('tarjeta','yape','plin') then
+    raise exception 'Medio de pago inválido';
+  end if;
+
   insert into public.orders (code, user_id, customer_name, phone, email, mode, address, notes,
-                             subtotal, delivery_fee, total)
+                             subtotal, delivery_fee, total, payment_method)
   values (v_code, auth.uid(), trim(p->>'name'), trim(p->>'phone'), coalesce(trim(p->>'email'), ''),
           v_mode, coalesce(trim(p->>'address'), ''), coalesce(trim(p->>'notes'), ''),
-          v_subtotal, v_fee, v_subtotal + v_fee)
+          v_subtotal, v_fee, v_subtotal + v_fee, coalesce(p->>'payment_method', 'tarjeta'))
   returning id into v_order;
 
   insert into public.order_items (order_id, item_id, name, detail, price, qty)
@@ -343,3 +353,27 @@ drop policy if exists "admin gestiona grupos" on public.build_groups;
 create policy "admin gestiona grupos" on public.build_groups for all using (public.is_admin()) with check (public.is_admin());
 drop policy if exists "admin gestiona opciones" on public.build_options;
 create policy "admin gestiona opciones" on public.build_options for all using (public.is_admin()) with check (public.is_admin());
+
+-- =============================================================
+--  "Sigue tu pedido": consulta pública con código + últimos 4 dígitos del celular
+--  (no expone nombre, celular ni dirección; solo estado, platos y total)
+-- =============================================================
+create or replace function public.track_order(p_code text, p_phone text) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare
+  o public.orders;
+  v_last4 text := right(regexp_replace(coalesce(p_phone, ''), '\D', '', 'g'), 4);
+begin
+  if length(v_last4) < 4 then return null; end if;
+  select * into o from public.orders
+  where code = upper(trim(p_code))
+    and right(regexp_replace(phone, '\D', '', 'g'), 4) = v_last4;
+  if not found then return null; end if;
+  return jsonb_build_object(
+    'code', o.code, 'status', o.status, 'payment', o.payment_status, 'method', o.payment_method,
+    'mode', o.mode, 'total', o.total, 'createdAt', o.created_at, 'history', o.history,
+    'items', (select coalesce(jsonb_agg(jsonb_build_object('name', i.name, 'detail', i.detail, 'qty', i.qty) order by i.id), '[]'::jsonb)
+              from public.order_items i where i.order_id = o.id)
+  );
+end $$;
+grant execute on function public.track_order(text, text) to anon, authenticated;

@@ -90,7 +90,7 @@ export default function Orders({ orders, refresh, focusCode, onFocusDone }) {
                   </td>
                   <td data-label="Detalle" className="items-cell">{o.items.map((i) => `${i.qty}× ${i.name}`).join(', ')}</td>
                   <td data-label="Total" className="num"><b>{money(o.total)}</b></td>
-                  <td data-label="Pago"><PayPill payment={o.payment} /></td>
+                  <td data-label="Pago"><PayPill payment={o.payment} method={o.method} /></td>
                   <td data-label="Estado"><StatusPill status={o.status} /></td>
                 </tr>
               ))}

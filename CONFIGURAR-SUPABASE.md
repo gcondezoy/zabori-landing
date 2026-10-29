@@ -76,3 +76,10 @@ Entrar en `https://TU-SITIO/#/admin`.
 
 ## Seguridad
 Las políticas RLS (`is_admin()`) permiten ver/actualizar pedidos y editar la carta solo a los usuarios de `admins`. Un cliente normal que abra `#/admin` no ve nada.
+
+# Pagos con Yape / Plin y "Sigue tu pedido"
+
+- **Yape y Plin (manual):** en `src/config/site.js` → `wallets`, poner número, titular y la ruta del QR (subir la imagen a `public/img/pagos/`, por ejemplo `qr: '/img/pagos/yape.png'`). El cliente paga, envía la captura por WhatsApp y el pedido aparece en el panel como **"Por confirmar · Yape"**. Al verificar el depósito se pulsa **"Confirmar pago Yape"** en la ficha del pedido. Regla para la cocina: preparar solo lo que está **Pagado**.
+- **Tarjeta (Culqi):** se confirma sola; el pedido llega al panel ya como **Pagado · Tarjeta**.
+- **WhatsApp:** `site.whatsapp` es el número de Zabori (con 51 delante). La confirmación del pedido abre ese chat con el código ya escrito, y el panel tiene "Avisar al cliente" con mensajes listos por estado.
+- **Sigue tu pedido (`/#/seguir`):** el cliente pone su código y los últimos 4 dígitos de su celular. Usa la función `track_order()`, que solo devuelve estado, platos y total (nunca nombre, celular ni dirección). La página se actualiza sola cada 20 s.

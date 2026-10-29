@@ -1,4 +1,4 @@
-import { WhatsappLogo, MapPin, Clock } from '@phosphor-icons/react'
+import { WhatsappLogo, MapPin, Clock, MapTrifold } from '@phosphor-icons/react'
 import { site } from '../config/site'
 
 export default function Footer() {
@@ -13,6 +13,7 @@ export default function Footer() {
         <ul>
           <li><MapPin size={18} /> {site.address}</li>
           <li><Clock size={18} /> {site.schedule}</li>
+          <li><MapTrifold size={18} /> <a href="#/seguir">Sigue tu pedido</a></li>
           <li>
             <WhatsappLogo size={18} />
             <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noreferrer">{site.whatsappLabel}</a>

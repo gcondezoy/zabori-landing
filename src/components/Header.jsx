@@ -13,6 +13,7 @@ export default function Header() {
         <nav className="nav" aria-label="Principal">
           <a href="#menu">Menú</a>
           <a href="#como">Cómo pedir</a>
+          <a href="#/seguir">Sigue tu pedido</a>
           <a href="#contacto">Contacto</a>
         </nav>
         <div className="header-actions">

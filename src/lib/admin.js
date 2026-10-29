@@ -60,7 +60,7 @@ export async function listOrders() {
     const since = new Date(Date.now() - 120 * 864e5).toISOString() // últimos 120 días
     const { data, error } = await supabase
       .from('orders')
-      .select('id, code, user_id, customer_name, phone, email, mode, address, notes, subtotal, delivery_fee, total, status, payment_status, payment_ref, history, created_at, order_items(name, detail, qty, price)')
+      .select('id, code, user_id, customer_name, phone, email, mode, address, notes, subtotal, delivery_fee, total, status, payment_status, payment_method, payment_ref, history, created_at, order_items(name, detail, qty, price)')
       .gte('created_at', since)
       .order('created_at', { ascending: false })
       .limit(2000)
@@ -68,7 +68,7 @@ export async function listOrders() {
     return data.map((o) => ({
       id: o.id, code: o.code, userId: o.user_id, name: o.customer_name, phone: o.phone, email: o.email,
       mode: o.mode, address: o.address, notes: o.notes, subtotal: Number(o.subtotal),
-      fee: Number(o.delivery_fee), total: Number(o.total), status: o.status, payment: o.payment_status,
+      fee: Number(o.delivery_fee), total: Number(o.total), status: o.status, payment: o.payment_status, method: o.payment_method || 'tarjeta',
       paymentRef: o.payment_ref, createdAt: o.created_at, history: o.history || [],
       items: o.order_items.map((i) => ({ name: i.name, detail: i.detail || '', qty: i.qty, price: Number(i.price) })),
     }))
@@ -76,7 +76,7 @@ export async function listOrders() {
   return readLocal().map((o) => ({
     id: o.code, code: o.code, userId: o.userId, name: o.name, phone: o.phone, email: o.email,
     mode: o.mode, address: o.address, notes: o.notes, subtotal: o.subtotal, fee: o.fee, total: o.total,
-    status: o.status, payment: o.payment || 'pendiente', paymentRef: o.paymentRef || null,
+    status: o.status, payment: o.payment || 'pendiente', method: o.paymentMethod || 'tarjeta', paymentRef: o.paymentRef || null,
     createdAt: o.createdAt, history: o.history || [], items: o.items,
   }))
 }

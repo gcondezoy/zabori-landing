@@ -704,3 +704,63 @@ h1, h2 { text-wrap: balance; }
   .combo-plate li, .combo-pack { animation: none; }
   .combo-shuffle:hover svg { animation: none; }
 }
+
+/* Medio de pago y pago con billetera */
+.paymethod { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; }
+.paymethod legend { font-size: .9rem; font-weight: 600; margin-bottom: 6px; padding: 0; }
+.pm-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pm-options label { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 4px !important; padding: 10px 6px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; cursor: pointer; font-weight: 700 !important; text-align: center; }
+.pm-options input { position: absolute; opacity: 0; pointer-events: none; }
+.pm-options label:has(input:focus-visible) { outline: 3px solid var(--red); outline-offset: 2px; }
+.pm-options label.on { border-color: var(--red); background: #e1f0f2; color: var(--red); }
+.pm-yape svg { color: #742284; } .pm-plin svg { color: #00a3b5; }
+.done .wa, .btn.wa { background: #1fa855; color: #fff; }
+.btn.wa:hover { background: #178a45; }
+.done .btn.block { width: 100%; }
+.wallet { display: grid; gap: 12px; justify-items: center; width: 100%; color: var(--ink); }
+.wallet-step { font-size: 1.05rem; }
+.wallet-qr { width: 200px; height: 200px; border-radius: 16px; border: 1.5px solid var(--line); background: #fff; object-fit: contain; }
+.wallet-qr.empty { display: grid; place-content: center; text-align: center; font-weight: 700; color: var(--muted); border-style: dashed; padding: 10px; }
+.wallet-number { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 10px 14px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); text-align: left; }
+.wallet-number span { display: grid; line-height: 1.3; }
+.wallet-number b { font-size: 1.2rem; letter-spacing: .03em; }
+.wallet-number small { font-size: .78rem; color: var(--muted); }
+
+/* Sigue tu pedido */
+.track { min-height: 70vh; padding-top: 40px; }
+.track-in { max-width: 720px; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--red); font-weight: 700; text-decoration: none; margin-bottom: 18px; }
+.track h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; color: var(--ink); }
+.track-form { display: grid; grid-template-columns: 1.3fr 1fr auto; gap: 10px; align-items: end; margin: 22px 0 12px; }
+.track-form label { display: grid; gap: 5px; font-size: .85rem; font-weight: 700; }
+.track-form input { padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-size: 1rem; letter-spacing: .03em; }
+.track-form input:focus { outline: 2px solid var(--red); border-color: var(--red); }
+.track-card { margin-top: 18px; background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 22px; display: grid; gap: 18px; box-shadow: 0 12px 30px rgba(3, 50, 60, .08); }
+.track-card header { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.track-card header small { font-size: .78rem; color: var(--muted); font-weight: 600; }
+.track-card h2 { font-size: 1.8rem; letter-spacing: .02em; }
+.track-total { display: grid; text-align: right; }
+.track-total strong { font-family: 'Nunito Variable', sans-serif; font-weight: 900; font-size: 1.6rem; color: var(--red); }
+.track-alert { padding: 12px 14px; border-radius: 12px; background: #fff1c4; color: #6b4a00; font-weight: 600; font-size: .92rem; }
+.track-cancel { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 12px; background: #eadad6; color: #6b2a20; font-weight: 700; }
+.track-steps { list-style: none; padding: 0; margin: 0; display: grid; }
+.track-steps li { position: relative; display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; color: var(--muted); }
+.track-steps li:not(:last-child)::after { content: ''; position: absolute; left: 14px; top: 36px; bottom: -12px; border-left: 2.5px solid var(--line); }
+.track-steps li.is-done::after { border-color: var(--red); }
+.ts-dot { display: grid; place-items: center; background: #fff; position: relative; z-index: 1; }
+.track-steps li.is-done, .track-steps li.is-now { color: var(--ink); }
+.track-steps li.is-done .ts-dot, .track-steps li.is-now .ts-dot { color: var(--red); }
+.track-steps li.is-now .ts-label { font-weight: 800; font-size: 1.08rem; }
+.track-steps li.is-now .ts-dot { animation: pulse-ring 1.8s infinite; border-radius: 50%; }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(3, 77, 91, .35); } 70% { box-shadow: 0 0 0 10px rgba(3, 77, 91, 0); } 100% { box-shadow: 0 0 0 0 rgba(3, 77, 91, 0); } }
+.ts-time { font-size: .85rem; font-weight: 600; }
+.track-items { list-style: none; padding: 14px 0 0; margin: 0; border-top: 1px dashed var(--line); display: grid; gap: 8px; }
+.track-items li { display: grid; }
+.track-items small { color: var(--muted); font-size: .82rem; }
+.track-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 600px) {
+  .track-form { grid-template-columns: 1fr 1fr; }
+  .track-form .btn { grid-column: 1 / -1; }
+  .track-total { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) { .track-steps li.is-now .ts-dot { animation: none; } }

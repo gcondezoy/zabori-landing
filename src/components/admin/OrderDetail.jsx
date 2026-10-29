@@ -45,12 +45,14 @@ export default function OrderDetail({ order: o, onClose, refresh }) {
         </div>
 
         <div className="detail-body">
-          <div className="pills-row"><StatusPill status={o.status} /><PayPill payment={o.payment} /></div>
+          <div className="pills-row"><StatusPill status={o.status} /><PayPill payment={o.payment} method={o.method} /></div>
 
           {!closed && (
             <div className="o-actions">
               {next && <button className="btn primary small" disabled={busy} onClick={() => act({ status: next })}>Pasar a: {STATUS[next]}</button>}
-              {o.payment !== 'pagado' && <button className="btn ghost small" disabled={busy} onClick={() => act({ payment: 'pagado' })}>Marcar pagado</button>}
+              {o.payment !== 'pagado' && <button className="btn ghost small" disabled={busy} onClick={() => act({ payment: 'pagado' })}>
+                {o.method === 'yape' || o.method === 'plin' ? `Confirmar pago ${o.method === 'yape' ? 'Yape' : 'Plin'}` : 'Marcar pagado'}
+              </button>}
               <button className="btn ghost small danger" disabled={busy}
                 onClick={() => window.confirm(`¿Cancelar el pedido ${o.code}?`) && act({ status: 'cancelado' })}>Cancelar</button>
             </div>
@@ -92,7 +94,7 @@ export default function OrderDetail({ order: o, onClose, refresh }) {
               </tfoot>
             </table>
             <p className="muted">
-              Pago: {PAYMENT[o.payment] || o.payment}
+              Pago: {PAYMENT[o.payment] || o.payment} · {{ tarjeta: 'Tarjeta', yape: 'Yape', plin: 'Plin' }[o.method] || 'Tarjeta'}
               {o.paymentRef && ` · ${o.paymentRef === 'manual' ? 'marcado a mano' : `Culqi ${o.paymentRef}`}`}
             </p>
           </section>
