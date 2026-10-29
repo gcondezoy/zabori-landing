@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Táper de bagazo vacío visto desde arriba">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f3ead3"/>
+      <stop offset=".55" stop-color="#e8dcbd"/>
+      <stop offset="1" stop-color="#dccdaa"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbf6e8"/>
+      <stop offset="1" stop-color="#e2d4b2"/>
+    </linearGradient>
+    <linearGradient id="well" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d9c9a2"/>
+      <stop offset=".25" stop-color="#e9ddbf"/>
+      <stop offset="1" stop-color="#efe5cc"/>
+    </linearGradient>
+    <!-- textura de fibra de caña -->
+    <filter id="fiber" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".9 .35" numOctaves="3" seed="7" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 .55  0 0 0 0 .45  0 0 0 0 .3  0 0 0 .22 0"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="drop" x="-10%" y="-10%" width="120%" height="125%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="7"/>
+      <feOffset dy="8"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".28"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- sombra interna de cada compartimento -->
+    <filter id="inner" x="-5%" y="-5%" width="110%" height="110%">
+      <feFlood flood-color="#8a7448" flood-opacity=".55"/>
+      <feComposite in2="SourceAlpha" operator="out"/>
+      <feGaussianBlur stdDeviation="5"/>
+      <feOffset dy="4"/>
+      <feComposite in2="SourceAlpha" operator="in"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode/></feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#drop)">
+    <rect x="8" y="8" width="384" height="284" rx="36" fill="url(#body)"/>
+    <rect x="8" y="8" width="384" height="284" rx="36" fill="#000" filter="url(#fiber)"/>
+    <rect x="8.5" y="8.5" width="383" height="283" rx="35.5" fill="none" stroke="#cbb98f" stroke-width="1.5"/>
+  </g>
+  <!-- borde superior -->
+  <rect x="16" y="16" width="368" height="268" rx="30" fill="none" stroke="url(#rim)" stroke-width="5"/>
+
+  <!-- compartimentos -->
+  <g filter="url(#inner)">
+    <rect x="30" y="30" width="190" height="240" rx="22" fill="url(#well)"/>
+    <rect x="232" y="30" width="138" height="114" rx="20" fill="url(#well)"/>
+    <rect x="232" y="156" width="138" height="114" rx="20" fill="url(#well)"/>
+  </g>
+  <g opacity=".6" filter="url(#fiber)">
+    <rect x="30" y="30" width="190" height="240" rx="22" fill="#000"/>
+    <rect x="232" y="30" width="138" height="114" rx="20" fill="#000"/>
+    <rect x="232" y="156" width="138" height="114" rx="20" fill="#000"/>
+  </g>
+  <!-- brillo de las divisiones -->
+  <path d="M226 34 V266 M236 150 H366" stroke="#fbf6e8" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+</svg>

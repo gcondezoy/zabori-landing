@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Táper reutilizable vacío visto desde arriba">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4f9fa"/>
+      <stop offset=".5" stop-color="#dde9ec"/>
+      <stop offset="1" stop-color="#c9dbdf"/>
+    </linearGradient>
+    <linearGradient id="well" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c3d6db"/>
+      <stop offset=".3" stop-color="#e3eef0"/>
+      <stop offset="1" stop-color="#eef5f6"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="drop" x="-10%" y="-10%" width="120%" height="125%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="7"/>
+      <feOffset dy="8"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="inner" x="-5%" y="-5%" width="110%" height="110%">
+      <feFlood flood-color="#5f8c95" flood-opacity=".45"/>
+      <feComposite in2="SourceAlpha" operator="out"/>
+      <feGaussianBlur stdDeviation="4"/>
+      <feOffset dy="3"/>
+      <feComposite in2="SourceAlpha" operator="in"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode/></feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#drop)">
+    <rect x="8" y="8" width="384" height="284" rx="30" fill="url(#body)"/>
+    <rect x="8.5" y="8.5" width="383" height="283" rx="29.5" fill="none" stroke="#8fb3ba" stroke-width="2"/>
+  </g>
+  <!-- broches de la tapa (abierta) -->
+  <rect x="-2" y="120" width="16" height="60" rx="6" fill="#034d5b"/>
+  <rect x="386" y="120" width="16" height="60" rx="6" fill="#034d5b"/>
+  <rect x="170" y="-1" width="60" height="14" rx="6" fill="#034d5b"/>
+  <rect x="170" y="287" width="60" height="14" rx="6" fill="#034d5b"/>
+  <rect x="16" y="16" width="368" height="268" rx="24" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="3"/>
+
+  <g filter="url(#inner)">
+    <rect x="30" y="30" width="190" height="240" rx="18" fill="url(#well)"/>
+    <rect x="232" y="30" width="138" height="114" rx="16" fill="url(#well)"/>
+    <rect x="232" y="156" width="138" height="114" rx="16" fill="url(#well)"/>
+  </g>
+  <!-- reflejo del plástico -->
+  <path d="M40 40 L120 40 L60 260 L40 260 Z" fill="url(#gloss)" opacity=".55"/>
+  <path d="M226 34 V266 M236 150 H366" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/>
+</svg>

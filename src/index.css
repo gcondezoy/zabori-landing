@@ -852,54 +852,49 @@ h1, h2 { text-wrap: balance; }
 .acc-cta { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 @media (max-width: 600px) { .acc-stats { grid-template-columns: 1fr 1fr; } .acc-stats > div:last-child { grid-column: 1 / -1; } .acc-past-side { justify-items: start; width: 100%; grid-template-columns: auto auto 1fr; align-items: center; } .acc-past-side .btn { justify-self: end; } }
 
-/* ---------- Táper visto desde arriba (TaperView) ---------- */
+/* ---------- Táper real visto desde arriba (TaperView) ---------- */
 .tv { position: relative; width: 100%; display: grid; justify-items: center; gap: 8px; }
-.tv-box { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 22px; padding: 9px; box-shadow: 0 14px 28px rgba(3, 50, 60, .2); transition: border-radius .35s, background .35s, aspect-ratio .35s; }
-.tv-in { width: 100%; height: 100%; display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: 1fr 1fr; gap: 7px; border-radius: 15px; overflow: hidden; }
-.tv-c { position: relative; overflow: hidden; border-radius: 12px; display: grid; place-items: center; }
-.c-main { grid-row: 1 / 3; }
-.tv-c img { width: 100%; height: 100%; object-fit: cover; display: block; animation: tv-in .45s cubic-bezier(.2, .8, .2, 1) both; }
-@keyframes tv-in { from { opacity: 0; transform: scale(1.15); } to { opacity: 1; transform: none; } }
-/* Vegetales: 1 foto entera, 2 lado a lado, 3-4 en cuadrícula */
-.c-veg[data-n="2"] { grid-template-columns: 1fr 1fr; gap: 3px; }
-.c-veg[data-n="3"], .c-veg[data-n="4"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; }
-.c-veg[data-n="3"] img:first-child { grid-row: 1 / 3; }
-.tv-empty { font-size: .7rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; text-align: center; padding: 6px; }
-.tv-txt { font-size: .7rem; font-weight: 700; padding: 6px; text-align: center; }
-.tv-g { position: absolute; left: 18px; top: 18px; z-index: 2; padding: 4px 10px; border-radius: 999px; background: var(--red); color: var(--yellow); font-weight: 900; font-size: .85rem; box-shadow: 0 4px 10px rgba(0, 0, 0, .25); animation: pop .35s cubic-bezier(.2, .8, .2, 1.3) both; }
-.tv-dips { position: absolute; right: -10px; bottom: 26px; z-index: 3; display: flex; flex-direction: column; gap: 6px; }
-.tv-dip { width: 52px; height: 52px; border-radius: 50%; padding: 4px; background: rgba(255, 255, 255, .85); box-shadow: 0 6px 14px rgba(0, 0, 0, .22), inset 0 0 0 2px rgba(143, 179, 186, .7); display: grid; place-items: center; animation: pop .4s cubic-bezier(.2, .8, .2, 1.3) both; }
+.tv-stage { position: relative; width: 100%; }
+.tv-round .tv-stage { width: 86%; }
+.tv-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; animation: tv-fade .45s ease both; }
+@keyframes tv-fade { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+.tv-round-in { position: absolute; border-radius: 50%; overflow: hidden; }
+.tv-slot { position: absolute; overflow: hidden; display: grid; place-items: center; }
+.tv-food { position: absolute; inset: 4%; display: grid; gap: 4%; }
+.tv-food[data-n="2"] { grid-template-columns: 1fr 1fr; }
+.tv-food[data-n="3"], .tv-food[data-n="4"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.tv-food[data-n="3"] .tv-bite:first-child { grid-row: 1 / 3; }
+.tv-round .tv-food { inset: 2%; gap: 3%; }
+
+/* Cada ingrediente: cae dentro del compartimento con un pequeño rebote */
+.tv-bite { position: relative; min-width: 0; min-height: 0; border-radius: 12px; overflow: hidden; animation: tv-drop .55s cubic-bezier(.2, .9, .25, 1.25) both; box-shadow: 0 2px 6px rgba(60, 40, 10, .25); }
+.tv-bite::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 14px rgba(40, 25, 5, .35); pointer-events: none; }
+.tv-bite img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tv-bite small { display: grid; place-items: center; height: 100%; padding: 4px; font-size: .65rem; font-weight: 700; text-align: center; background: #fff; }
+.tv-bite.out { animation: tv-out .32s ease forwards; }
+@keyframes tv-drop {
+  0% { opacity: 0; transform: translateY(-38%) scale(1.12) rotate(-4deg); }
+  60% { opacity: 1; transform: translateY(4%) scale(.98) rotate(1deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes tv-out { to { opacity: 0; transform: scale(.75) translateY(10%); } }
+.tv-round .tv-bite { border-radius: 4px; }
+
+.tv-empty { position: relative; z-index: 1; font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: rgba(95, 75, 35, .55); text-align: center; padding: 6px; }
+.tv-g { position: absolute; z-index: 4; padding: 4px 10px; border-radius: 999px; background: var(--red); color: var(--yellow); font-weight: 900; font-size: .85rem; box-shadow: 0 4px 10px rgba(0, 0, 0, .25); animation: pop .35s .2s cubic-bezier(.2, .8, .2, 1.3) both; }
+
+/* Salseritos de aderezo al costado */
+.tv-dips { position: absolute; right: -12px; bottom: 34px; z-index: 3; display: flex; flex-direction: column; gap: 6px; }
+.tv-dip { width: 50px; height: 50px; border-radius: 50%; padding: 4px; background: rgba(255, 255, 255, .9); box-shadow: 0 6px 14px rgba(0, 0, 0, .22), inset 0 0 0 2px rgba(143, 179, 186, .7); display: grid; place-items: center; animation: tv-drop .5s cubic-bezier(.2, .9, .25, 1.25) both; }
 .tv-dip img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 .tv-dip small { font-size: .55rem; font-weight: 700; text-align: center; }
+.tv-dip.out { animation: tv-out .32s ease forwards; }
 .tv-name { font-size: .78rem; font-weight: 700; color: inherit; opacity: .85; }
 
-/* Bagazo (por defecto): fibra beige con divisiones en relieve */
-.tv-bagazo .tv-box { background: #eadfc4; box-shadow: 0 14px 28px rgba(3, 50, 60, .2), inset 0 0 0 2px #d8c9a3; }
-.tv-bagazo .tv-c { background: #f4ecd9; box-shadow: inset 0 2px 6px rgba(120, 95, 40, .25); }
-.tv-bagazo .tv-empty { color: #a99567; }
-
-/* Reutilizable: plástico transparente con tapa azul de broches */
-.tv-clear .tv-box { background: rgba(219, 233, 236, .92); border: 3px solid #7fa4ab; padding: 7px; }
-.tv-clear .tv-box::before, .tv-clear .tv-box::after { content: ''; position: absolute; top: 50%; width: 12px; height: 34px; margin-top: -17px; border-radius: 4px; background: #034d5b; box-shadow: inset 0 0 0 3px var(--yellow); }
-.tv-clear .tv-box::before { left: -9px; }
-.tv-clear .tv-box::after { right: -9px; }
-.tv-clear .tv-c { background: rgba(255, 255, 255, .65); box-shadow: inset 0 0 0 1.5px rgba(127, 164, 171, .5); }
-.tv-clear .tv-empty { color: #6e9aa2; }
-
-/* Bowl kraft: redondo, el contenido se reparte como un bowl */
-.tv-bowl .tv-box { aspect-ratio: 1; width: 82%; border-radius: 50%; padding: 12px; background: #c08a52; box-shadow: 0 14px 28px rgba(3, 50, 60, .22), inset 0 0 0 4px #a87443; }
-.tv-bowl .tv-in { border-radius: 50%; gap: 3px; background: #a87443; }
-.tv-bowl .tv-c { border-radius: 0; background: #f3e4cc; }
-.tv-bowl .tv-empty { color: #a87443; }
-.tv-bowl .tv-g { left: 22%; top: 22%; }
-.tv-bowl .tv-dips { right: 0; }
-
 /* Versión mini (resumen fijo en celular) */
-.tv-sm .tv-box { padding: 3px; border-radius: 9px; box-shadow: 0 3px 8px rgba(0, 0, 0, .2); }
-.tv-sm .tv-in { gap: 2px; border-radius: 6px; }
-.tv-sm .tv-c { border-radius: 4px; }
-.tv-sm.tv-bowl .tv-box { width: 100%; border-radius: 50%; padding: 4px; }
-.tv-sm.tv-clear .tv-box::before, .tv-sm.tv-clear .tv-box::after { display: none; }
+.tv-sm .tv-bite { border-radius: 3px; box-shadow: none; }
+.tv-sm .tv-bite::after { box-shadow: inset 0 0 4px rgba(40, 25, 5, .3); }
+.tv-sm.tv-round .tv-stage { width: 100%; }
 
 /* En el resumen del armador */
 .b-summary .b-collage { width: min(270px, 100%); justify-self: center; margin: 4px 0 6px; color: #d8ecee; }
@@ -934,8 +929,8 @@ h1, h2 { text-wrap: balance; }
   .b-summary .b-actions { grid-column: 1 / -1; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .tv-c img, .tv-g, .tv-dip { animation: none; }
-  .tv-box { transition: none; }
+  .tv-bg, .tv-bite, .tv-g, .tv-dip { animation: none; }
+  .tv-bite.out, .tv-dip.out { animation: none; opacity: 0; }
 }
 .bo-sizes { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .bo-size { display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px 4px 8px; border: 1px solid var(--line); border-radius: 10px; background: #fffdf5; }

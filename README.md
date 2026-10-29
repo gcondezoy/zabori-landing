@@ -34,3 +34,11 @@ Reemplázalas por fotos reales de Zabori con el mismo nombre de archivo (proporc
 Las fotos de "Arma tu plato" (`public/img/arma/*.webp`, cuadradas de 360 px) también son de referencia (Unsplash); se reemplazan con el mismo nombre o cambiando la ruta en el panel.
 
 Las miniaturas de los tápers (`public/img/taper/*.svg`) son ilustraciones de referencia. Para usar fotos reales, sube la imagen a `public/img/taper/` y cambia su ruta en el panel (Carta → Arma tu plato → Táper).
+
+### Táper de "Arma tu plato" con foto real
+
+El armador muestra el táper **vacío visto desde arriba** (`public/img/taper/top-*.svg`, ilustraciones de referencia) y los ingredientes caen en cada compartimento.
+Para usar una **foto real** del táper del cliente:
+1. Tomar la foto del táper vacío, desde arriba, recto y con buena luz; subirla a `public/img/taper/` (por ejemplo `top-bagazo.webp`).
+2. En `src/data/taperArt.js` cambiar `img` (y `aspect` si la foto no es 4:3).
+3. Ajustar `slots` (posición de cada compartimento en % de la foto: izquierda, arriba, ancho, alto) hasta que la comida caiga dentro de las divisiones.

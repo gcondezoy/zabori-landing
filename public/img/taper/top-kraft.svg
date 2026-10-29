@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" role="img" aria-label="Bowl kraft vacío visto desde arriba">
+  <defs>
+    <radialGradient id="rim" cx=".45" cy=".4" r=".65">
+      <stop offset="0" stop-color="#d9a76e"/>
+      <stop offset=".7" stop-color="#c08a52"/>
+      <stop offset="1" stop-color="#a5723f"/>
+    </radialGradient>
+    <radialGradient id="inside" cx=".5" cy=".45" r=".6">
+      <stop offset="0" stop-color="#f1dcc0"/>
+      <stop offset=".75" stop-color="#e2c49c"/>
+      <stop offset="1" stop-color="#c79c6a"/>
+    </radialGradient>
+    <filter id="paper" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" seed="3" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 .45  0 0 0 0 .3  0 0 0 0 .15  0 0 0 .18 0"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="drop" x="-15%" y="-15%" width="130%" height="135%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="7"/>
+      <feOffset dy="8"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".3"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="inner" x="-5%" y="-5%" width="110%" height="110%">
+      <feFlood flood-color="#7a4f24" flood-opacity=".6"/>
+      <feComposite in2="SourceAlpha" operator="out"/>
+      <feGaussianBlur stdDeviation="7"/>
+      <feOffset dy="5"/>
+      <feComposite in2="SourceAlpha" operator="in"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#drop)">
+    <circle cx="150" cy="150" r="140" fill="url(#rim)"/>
+    <circle cx="150" cy="150" r="140" fill="#000" filter="url(#paper)"/>
+  </g>
+  <circle cx="150" cy="150" r="131" fill="none" stroke="#e8c497" stroke-width="3" opacity=".8"/>
+  <g filter="url(#inner)">
+    <circle cx="150" cy="150" r="120" fill="url(#inside)"/>
+  </g>
+  <circle cx="150" cy="150" r="120" fill="#000" opacity=".7" filter="url(#paper)"/>
+  <!-- logo Zabori impreso en el borde -->
+  <text x="150" y="285" text-anchor="middle" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-weight="700" font-size="11" fill="#034d5b" opacity=".75" letter-spacing="2">ZABORI</text>
+</svg>
