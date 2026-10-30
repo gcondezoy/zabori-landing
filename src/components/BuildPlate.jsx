@@ -10,7 +10,8 @@ import TaperView from './TaperView'
 const hint = (g, sized) =>
   g.min === 1 && g.max === 1 ? (sized ? 'Elige 1 y su porción' : 'Elige 1') : g.min === 0 ? `Opcional · hasta ${g.max}` : `Elige de ${g.min} a ${g.max}`
 
-// Proteína con porciones: la tarjeta muestra la foto y un botón por gramaje con su precio
+// Opción con porciones: la tarjeta muestra la foto y un botón por gramaje con su precio.
+// En la proteína es el precio del plato; en lo demás, un adicional.
 function SizedOption({ o, selected, onPick }) {
   const current = selected ? parseId(selected).g : null
   return (
@@ -22,7 +23,7 @@ function SizedOption({ o, selected, onPick }) {
           const on = current === s.g
           return (
             <button key={s.g} type="button" className={on ? 'on' : ''} aria-pressed={on} onClick={() => onPick(sizeId(o.id, s.g))}>
-              <b>{s.g} g</b><small>{money(s.price)}</small>
+              <b>{s.g} g</b><small>{o.grp === 'proteina' ? money(s.price) : s.price ? `+${money(s.price)}` : 'Incluido'}</small>
             </button>
           )
         })}
@@ -60,11 +61,12 @@ export default function BuildPlate() {
   const toggle = (g, full) => {
     setAdded(false)
     setSel((s) => {
-      const inGroup = s.filter((x) => optionOf(x)?.grp === g.id)
       if (s.includes(full)) return s.filter((x) => x !== full)
-      if (g.max === 1) return [...s.filter((x) => !inGroup.includes(x)), full] // reemplaza (también otra porción)
+      const others = s.filter((x) => parseId(x).id !== parseId(full).id) // otra porción de la misma opción se reemplaza
+      const inGroup = others.filter((x) => optionOf(x)?.grp === g.id)
+      if (g.max === 1) return [...others.filter((x) => !inGroup.includes(x)), full] // reemplaza
       if (inGroup.length >= g.max) return s // límite alcanzado
-      return [...s, full]
+      return [...others, full]
     })
   }
 

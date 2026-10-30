@@ -5,9 +5,8 @@ import { loadMenu, saveMenuItem, saveMenuPrice, menuPrice, uploadMenuPhoto, dele
 import { DAY_NAMES, loadWeek, weekDays } from '../../lib/week'
 import { inRange, unitsByName } from '../../lib/stats'
 import { categories as allCategories } from '../../data/menu'
-import BuildAdmin from './BuildAdmin'
 
-// "Arma tu plato" se administra en su propia pestaña, no como un plato más
+// "Arma tu plato" se administra en su propia sección del panel, no como un plato más
 const categories = [{ id: 'menu', label: 'Segundos' }, { id: 'entrada', label: 'Entradas' }, ...allCategories.filter((c) => c.id === 'shots')]
 import { money } from '../../config/site'
 
@@ -17,7 +16,7 @@ const withPrice = (item, unico) => (item.cat === 'menu' ? { ...item, price: unic
 const empty = { name: '', desc: '', cat: 'menu', price: '', active: true, tag: '', img: '' }
 
 // Foto del plato: se comprime y se sube al elegirla; queda en el plato al pulsar Guardar
-function PhotoField({ value, onChange }) {
+export function PhotoField({ value, onChange, preview = true }) {
   const input = useRef(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
@@ -32,9 +31,9 @@ function PhotoField({ value, onChange }) {
 
   return (
     <div className="m-photo">
-      {value
+      {preview && (value
         ? <img src={value} alt="" width="72" height="54" />
-        : <span className="m-photo-empty" aria-hidden="true"><Camera size={20} /></span>}
+        : <span className="m-photo-empty" aria-hidden="true"><Camera size={20} /></span>)}
       <button type="button" className="btn ghost small" disabled={busy} onClick={() => input.current.click()}>
         {busy ? 'Subiendo…' : value ? 'Cambiar foto' : 'Subir foto'}
       </button>
@@ -206,14 +205,14 @@ export default function MenuAdmin({ orders }) {
       {list && (cat === 'todas' || cat === 'menu') && <MenuPriceBox price={unico} onSaved={refresh} />}
 
       <div className="tabs">
-        {[{ id: 'todas', label: 'Todas' }, ...categories, { id: 'arma', label: 'Arma tu plato' }].map((c) => (
+        {[{ id: 'todas', label: 'Todas' }, ...categories].map((c) => (
           <button key={c.id} className={cat === c.id ? 'tab on' : 'tab'} onClick={() => setCat(c.id)}>
-            {c.label}{c.id !== 'arma' && ` (${(list || []).filter((i) => c.id === 'todas' || i.cat === c.id).length})`}
+            {c.label} ({(list || []).filter((i) => c.id === 'todas' || i.cat === c.id).length})
           </button>
         ))}
       </div>
 
-      {cat === 'arma' ? <BuildAdmin orders={orders} /> : list === null ? <p className="muted">Cargando…</p> : shown.map((i) => (
+      {list === null ? <p className="muted">Cargando…</p> : shown.map((i) => (
         <ItemCard key={i.id + JSON.stringify(i)} item={i} unico={unico} days={daysOf(i.id)} onSaved={refresh}
           sold={{ d7: sold.d7[i.name] || 0, d30: sold.d30[i.name] || 0 }} />
       ))}

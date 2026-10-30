@@ -11,13 +11,13 @@ const readLocal = () => {
   try { return JSON.parse(localStorage.getItem(KEY)) } catch { return null }
 }
 const writeLocal = (b) => {
-  try { localStorage.setItem(KEY, JSON.stringify({ basePrice: b.basePrice, options: b.options })) } catch {}
+  try { localStorage.setItem(KEY, JSON.stringify({ basePrice: b.basePrice, options: b.options, removed: b.removed })) } catch { throw new Error('No hay espacio en este navegador para guardar más fotos.') }
 }
 const localBuild = () => {
   const saved = readLocal()
   if (!saved) return { ...buildSeed }
-  // Opciones nuevas del ejemplo (p. ej. un grupo agregado después) que aún no estaban guardadas
-  const missing = buildSeed.options.filter((o) => !saved.options?.some((x) => x.id === o.id))
+  // Opciones nuevas del ejemplo (p. ej. un grupo agregado después) que aún no estaban guardadas y no se eliminaron
+  const missing = buildSeed.options.filter((o) => !saved.options?.some((x) => x.id === o.id) && !saved.removed?.includes(o.id))
   return { ...buildSeed, ...saved, options: [...(saved.options || []), ...missing] }
 }
 
@@ -68,6 +68,17 @@ export async function saveBuildOption(opt) {
   const b = localBuild()
   const exists = b.options.some((o) => o.id === id)
   writeLocal({ ...b, options: exists ? b.options.map((o) => (o.id === id ? { ...o, ...row } : o)) : [...b.options, row] })
+}
+
+// Los pedidos guardan el nombre de cada opción, así que eliminarla no afecta el historial
+export async function deleteBuildOption(id) {
+  if (supabaseConfigurado) {
+    const { error } = await supabase.from('build_options').delete().eq('id', id)
+    if (error) throw new Error(error.message)
+    return
+  }
+  const b = localBuild()
+  writeLocal({ ...b, options: b.options.filter((o) => o.id !== id), removed: [...(b.removed || []), id] })
 }
 
 export async function saveBasePrice(price) {
