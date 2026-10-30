@@ -16,6 +16,7 @@ export const site = {
   openDays: [1, 2, 3, 4, 5, 6], // 0 = domingo
   openHour: 11,
   closeHour: 15,
+  menuPrice: 10, // S/ precio único de todos los menús del día (se cambia desde el panel, Carta)
   deliveryFee: 3, // S/ por delivery
   freeDeliveryFrom: 40, // S/ pedido mínimo para delivery gratis
   adminDemoPin: 'zabori', // solo para el panel en modo demo (sin Supabase); con Supabase se usa la tabla admins

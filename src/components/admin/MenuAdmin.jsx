@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus } from '@phosphor-icons/react'
 import { useMenu } from '../../context/MenuContext'
-import { loadMenu, saveMenuItem } from '../../lib/menu'
+import { loadMenu, saveMenuItem, saveMenuPrice, menuPrice } from '../../lib/menu'
 import { inRange, unitsByName } from '../../lib/stats'
 import { categories as allCategories } from '../../data/menu'
 import BuildAdmin from './BuildAdmin'
@@ -10,9 +10,12 @@ import BuildAdmin from './BuildAdmin'
 const categories = allCategories.filter((c) => c.id !== 'arma')
 import { money } from '../../config/site'
 
+// Los menús del día no llevan precio propio: usan el precio único de la carta
+const withPrice = (item, unico) => (item.cat === 'menu' ? { ...item, price: unico } : item)
+
 const empty = { name: '', desc: '', cat: 'menu', price: '', active: true, tag: '' }
 
-function ItemCard({ item, sold, onSaved }) {
+function ItemCard({ item, sold, unico, onSaved }) {
   const [f, setF] = useState(item)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
@@ -22,7 +25,7 @@ function ItemCard({ item, sold, onSaved }) {
 
   const save = async () => {
     setBusy(true); setErr('')
-    try { await saveMenuItem(f); setSaved(true); await onSaved() } catch (e) { setErr(e.message) } finally { setBusy(false) }
+    try { await saveMenuItem(withPrice(f, unico)); setSaved(true); await onSaved() } catch (e) { setErr(e.message) } finally { setBusy(false) }
   }
 
   return (
@@ -30,7 +33,9 @@ function ItemCard({ item, sold, onSaved }) {
       <span className="m-swatch" style={{ background: item.tone }} aria-hidden="true" />
       <div className="m-fields">
         <label className="m-name">Nombre<input value={f.name} onChange={set('name')} /></label>
-        <label className="m-price">Precio (S/)<input type="number" min="0" step="0.5" value={f.price} onChange={set('price')} /></label>
+        {f.cat === 'menu'
+          ? <span className="m-price m-fixed">Precio<b>{money(unico)}</b><small>precio único</small></span>
+          : <label className="m-price">Precio (S/)<input type="number" min="0" step="0.5" value={f.price} onChange={set('price')} /></label>}
         <label className="m-desc">Descripción / entrada y segundo<input value={f.desc} onChange={set('desc')} /></label>
         <label>Categoría
           <select value={f.cat} onChange={set('cat')}>
@@ -46,6 +51,33 @@ function ItemCard({ item, sold, onSaved }) {
         {err && <span className="form-err">{err}</span>}
       </div>
     </div>
+  )
+}
+
+// Precio único de todos los menús del día
+function MenuPriceBox({ price, onSaved }) {
+  const [v, setV] = useState(String(price))
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  const [saved, setSaved] = useState(false)
+  const dirty = Number(v) !== price
+
+  const save = async (e) => {
+    e.preventDefault()
+    setBusy(true); setErr('')
+    try { await saveMenuPrice(v); setSaved(true); await onSaved() } catch (error) { setErr(error.message) } finally { setBusy(false) }
+  }
+
+  return (
+    <form className="menu-price-box" onSubmit={save}>
+      <label>Precio del menú del día
+        <span className="bo-price big">S/<input type="number" min="0" step="0.5" required value={v}
+          onChange={(e) => { setSaved(false); setV(e.target.value) }} /></span>
+      </label>
+      <p className="muted">Es el mismo para todos los menús. "Arma tu plato" y los shots tienen su propio precio.</p>
+      <button className="btn primary small" disabled={!dirty || busy}>{busy ? 'Guardando…' : saved && !dirty ? 'Guardado ✓' : 'Guardar precio'}</button>
+      {err && <span className="form-err">{err}</span>}
+    </form>
   )
 }
 
@@ -68,11 +100,13 @@ export default function MenuAdmin({ orders }) {
     return { d7: unitsByName(all.filter((o) => inRange(o, '7d'))), d30: unitsByName(all.filter((o) => inRange(o, '30d'))) }
   }, [orders])
 
+  const unico = menuPrice(list || [])
+
   const add = async (e) => {
     e.preventDefault()
     setErr('')
     try {
-      await saveMenuItem({ ...draft, sort: (list?.length || 0) + 1 })
+      await saveMenuItem(withPrice({ ...draft, sort: (list?.length || 0) + 1 }, unico))
       setDraft({ ...empty, cat: draft.cat })
       setAdding(false)
       await refresh()
@@ -97,7 +131,9 @@ export default function MenuAdmin({ orders }) {
         <form className="m-card new" onSubmit={add}>
           <div className="m-fields">
             <label className="m-name">Nombre<input required value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} autoFocus /></label>
-            <label className="m-price">Precio (S/)<input required type="number" min="0" step="0.5" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} /></label>
+            {draft.cat === 'menu'
+              ? <span className="m-price m-fixed">Precio<b>{money(unico)}</b><small>precio único</small></span>
+              : <label className="m-price">Precio (S/)<input required type="number" min="0" step="0.5" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} /></label>}
             <label className="m-desc">Descripción / entrada y segundo<input value={draft.desc} onChange={(e) => setDraft({ ...draft, desc: e.target.value })} /></label>
             <label>Categoría
               <select value={draft.cat} onChange={(e) => setDraft({ ...draft, cat: e.target.value })}>
@@ -114,6 +150,8 @@ export default function MenuAdmin({ orders }) {
         </form>
       )}
 
+      {list && (cat === 'todas' || cat === 'menu') && <MenuPriceBox price={unico} onSaved={refresh} />}
+
       <div className="tabs">
         {[{ id: 'todas', label: 'Todas' }, ...categories, { id: 'arma', label: 'Arma tu plato' }].map((c) => (
           <button key={c.id} className={cat === c.id ? 'tab on' : 'tab'} onClick={() => setCat(c.id)}>
@@ -123,7 +161,7 @@ export default function MenuAdmin({ orders }) {
       </div>
 
       {cat === 'arma' ? <BuildAdmin orders={orders} /> : list === null ? <p className="muted">Cargando…</p> : shown.map((i) => (
-        <ItemCard key={i.id + JSON.stringify(i)} item={i} onSaved={refresh}
+        <ItemCard key={i.id + JSON.stringify(i)} item={i} unico={unico} onSaved={refresh}
           sold={{ d7: sold.d7[i.name] || 0, d30: sold.d30[i.name] || 0 }} />
       ))}
     </section>

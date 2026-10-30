@@ -17,7 +17,7 @@ export function injectBusinessSchema() {
     image: url + 'og-image.jpg',
     logo: url + 'icon-512.png',
     servesCuisine: ['Peruana', 'Saludable'],
-    priceRange: 'S/ 13 - S/ 30',
+    priceRange: 'S/ 10 - S/ 30',
     paymentAccepted: 'Yape, Plin, tarjeta de crédito y débito',
     currenciesAccepted: 'PEN',
     address: { '@type': 'PostalAddress', addressLocality: 'Lima', addressRegion: 'Lima', addressCountry: 'PE' },

@@ -8,6 +8,7 @@ import Reveal from './Reveal'
 import TodayBadge from './TodayBadge'
 import BuildPlate from './BuildPlate'
 import { needsTaper } from '../lib/build'
+import { menuPrice } from '../lib/menu'
 import { OPEN_BUILD_EVENT } from './BuildPromo'
 
 function Card({ item, index }) {
@@ -27,7 +28,8 @@ function Card({ item, index }) {
         <h3>{item.name}</h3>
         <p>{item.desc}</p>
         <div className="card-foot">
-          <strong>{money(item.price)}</strong>
+          {/* Los menús del día tienen un precio único (se muestra arriba de la grilla) */}
+          {item.cat !== 'menu' && <strong>{money(item.price)}</strong>}
           {withTaper ? (
             <span className="card-add">
               {n > 0 && <span className="in-cart">{n} en tu pedido</span>}
@@ -73,6 +75,13 @@ export default function Menu() {
             </button>
           ))}
         </div>
+        {cat === 'menu' && (
+          <p className="menu-price">
+            <span>Todos nuestros menús a</span>
+            <strong>S/ {Number.isInteger(menuPrice(items)) ? menuPrice(items) : menuPrice(items).toFixed(2)}</strong>
+            <small>Entrada, segundo y refresco · eliges tu táper al agregar</small>
+          </p>
+        )}
         {cat === 'arma' ? <BuildPlate /> : (
           <div className="grid">
             {items.filter((i) => i.cat === cat).map((i, k) => <Card key={cat + i.id} item={i} index={k} />)}

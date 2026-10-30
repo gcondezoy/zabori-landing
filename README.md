@@ -23,6 +23,7 @@ solo en el navegador, y el panel se abre con el PIN de `src/config/site.js`.
 ## Dónde se edita
 
 - Datos del negocio (WhatsApp, dirección, horario, delivery, Yape/Plin): `src/config/site.js`
+- Menú del día a **precio único** (`site.menuPrice`, S/ 10; luego se cambia desde el panel → Carta). "Arma tu plato" y los shots tienen precio propio.
 - Carta de ejemplo: `src/data/menu.js` — menús del día, "Arma tu plato" y 3 shots (con Supabase se edita desde el panel)
 - Opciones de "Arma tu plato" (proteínas por gramos, vegetales máx. 2, aderezos, tápers): `src/data/build.js`
 - Base de datos: `supabase/setup.sql`

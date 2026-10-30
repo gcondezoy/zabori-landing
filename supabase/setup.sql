@@ -19,10 +19,10 @@ alter table public.menu_items add column if not exists tag  text not null defaul
 alter table public.menu_items add column if not exists sort int  not null default 0;
 
 insert into public.menu_items (id, cat, name, descr, price) values
-  ('m1','menu','Menú Criollo','Entrada del día, lomo saltado con arroz y papas, refresco.',14),
-  ('m2','menu','Menú Marino','Entrada del día, arroz con mariscos, refresco.',16),
-  ('m3','menu','Menú Casero','Entrada del día, seco de res con frejoles, refresco.',13),
-  ('m4','menu','Menú Ligero','Ensalada fresca, pollo a la plancha con puré, refresco.',13),
+  ('m1','menu','Menú Criollo','Entrada del día, lomo saltado con arroz y papas, refresco.',10),
+  ('m2','menu','Menú Marino','Entrada del día, arroz con mariscos, refresco.',10),
+  ('m3','menu','Menú Casero','Entrada del día, seco de res con frejoles, refresco.',10),
+  ('m4','menu','Menú Ligero','Ensalada fresca, pollo a la plancha con puré, refresco.',10),
   ('arma','arma','Arma tu plato','Fit: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y aderezos.',0),
   ('s1','shots','Shot de jengibre y limón','Jengibre fresco, limón y una pizca de miel.',5),
   ('s2','shots','Shot verde','Espinaca, manzana verde y apio.',5),

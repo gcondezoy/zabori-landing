@@ -2,8 +2,9 @@
 // y los cambios del panel quedan en este navegador (modo demo).
 import { supabase, supabaseConfigurado } from './supabase'
 import { items as seed } from '../data/menu'
+import { site } from '../config/site'
 
-const KEY = 'zabori-menu-v2' // v2: Bebidas pasó a Shots
+const KEY = 'zabori-menu-v3' // v2: Bebidas pasó a Shots · v3: precio único del menú
 const TONES = ['#034d5b', '#0b6b7a', '#a87400', '#1f6f5c', '#7a5a14', '#b3541e', '#2c4a7a', '#5f8a1c']
 
 const toneFor = (id) => {
@@ -33,18 +34,36 @@ const writeLocal = (list) => {
 const localMenu = () =>
   (readLocal() || seed.map((s, i) => ({ ...s, active: true, tag: s.tag || '', sort: i + 1 })))
 
+// Todos los menús del día cuestan lo mismo: el precio único se guarda en cada fila 'menu'
+export const menuPrice = (list) => list.find((i) => i.cat === 'menu')?.price ?? site.menuPrice
+const samePrice = (list) => {
+  const p = menuPrice(list)
+  return list.map((i) => (i.cat === 'menu' ? { ...i, price: p } : i))
+}
+
 // includeInactive: el panel ve también los platos ocultos
 export async function loadMenu({ includeInactive = false } = {}) {
   if (supabaseConfigurado) {
     const { data, error } = await supabase.from('menu_items').select('*').order('sort').order('name')
     if (error || !data?.length) return localMenuFallback(includeInactive)
-    return data.map(fromRow).filter((i) => includeInactive || i.active)
+    return samePrice(data.map(fromRow)).filter((i) => includeInactive || i.active)
   }
   return localMenuFallback(includeInactive)
 }
 
 const localMenuFallback = (includeInactive) =>
-  localMenu().map((i) => ({ ...i, tone: toneFor(i.id), img: imgFor(i.id) })).filter((i) => includeInactive || i.active)
+  samePrice(localMenu().map((i) => ({ ...i, tone: toneFor(i.id), img: imgFor(i.id) }))).filter((i) => includeInactive || i.active)
+
+// Cambia el precio de todos los menús del día a la vez
+export async function saveMenuPrice(price) {
+  const p = Math.max(0, Number(price) || 0)
+  if (supabaseConfigurado) {
+    const { error } = await supabase.from('menu_items').update({ price: p }).eq('cat', 'menu')
+    if (error) throw new Error(error.message)
+    return
+  }
+  writeLocal(localMenu().map((i) => (i.cat === 'menu' ? { ...i, price: p } : i)))
+}
 
 // item = { id?, cat, name, desc, price, active, tag }
 export async function saveMenuItem(item) {
