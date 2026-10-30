@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import Menu from './components/Menu'
@@ -11,9 +11,12 @@ import AuthModal from './components/AuthModal'
 import CartBar from './components/CartBar'
 import WhatsAppFab from './components/WhatsAppFab'
 import TaperPicker from './components/TaperPicker'
-import Admin from './components/admin/AdminApp'
-import TrackOrder from './components/TrackOrder'
-import AccountPage from './components/AccountPage'
+// Páginas que no son la portada: se descargan solo cuando se abren (la portada carga más rápido)
+const Admin = lazy(() => import('./components/admin/AdminApp'))
+const TrackOrder = lazy(() => import('./components/TrackOrder'))
+const AccountPage = lazy(() => import('./components/AccountPage'))
+
+const Loading = () => <main className="section page-loading" aria-busy="true"><div className="wrap"><p className="muted">Cargando…</p></div></main>
 
 const routeOf = () => {
   const h = window.location.hash
@@ -46,7 +49,7 @@ export default function App() {
   if (route === 'admin') {
     return (
       <>
-        <Admin />
+        <Suspense fallback={<Loading />}><Admin /></Suspense>
         <AuthModal />
       </>
     )
@@ -55,7 +58,8 @@ export default function App() {
   return (
     <>
       <Header />
-      {route === 'seguir' ? <TrackOrder /> : route === 'cuenta' ? <AccountPage /> : (
+      {route === 'seguir' ? <Suspense fallback={<Loading />}><TrackOrder /></Suspense>
+        : route === 'cuenta' ? <Suspense fallback={<Loading />}><AccountPage /></Suspense> : (
         <main>
           <Hero />
           <BuildPromo />
