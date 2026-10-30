@@ -393,10 +393,14 @@ create policy "admin gestiona carta" on public.menu_items for all using (public.
 --  ETAPA 4b · Historial de cada pedido (línea de tiempo en el panel)
 -- =============================================================
 alter table public.orders add column if not exists history jsonb not null default '[]'::jsonb;
+-- El panel se actualiza pidiendo solo los pedidos que cambiaron desde la última vez
+alter table public.orders add column if not exists updated_at timestamptz not null default now();
+create index if not exists orders_updated_idx on public.orders (updated_at);
 
 create or replace function public.orders_history() returns trigger
 language plpgsql as $$
 begin
+  new.updated_at := now();
   if tg_op = 'INSERT' then
     new.history := jsonb_build_array(jsonb_build_object('type','status','value',new.status,'at',now()));
   else

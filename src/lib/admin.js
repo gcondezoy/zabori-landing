@@ -55,21 +55,23 @@ export async function isAdmin() {
 // Pedido normalizado:
 // { id, code, userId, name, phone, email, mode, address, notes, subtotal, fee, total,
 //   status, payment, paymentRef, createdAt, history: [{ type, value, at }], items: [{ name, qty, price }] }
-export async function listOrders() {
+// Sin `changedSince` trae los últimos 120 días; con `changedSince` solo lo que cambió desde esa hora,
+// para que actualizar el panel cada pocos segundos casi no gaste tráfico.
+export async function listOrders({ changedSince } = {}) {
   if (supabaseConfigurado) {
     const since = new Date(Date.now() - 120 * 864e5).toISOString() // últimos 120 días
-    const { data, error } = await supabase
+    let query = supabase
       .from('orders')
-      .select('id, code, user_id, customer_name, phone, email, mode, address, lat, lng, notes, subtotal, delivery_fee, total, status, payment_status, payment_method, payment_ref, history, created_at, order_items(name, detail, qty, price)')
+      .select('id, code, user_id, customer_name, phone, email, mode, address, lat, lng, notes, subtotal, delivery_fee, total, status, payment_status, payment_method, payment_ref, history, created_at, updated_at, order_items(name, detail, qty, price)')
       .gte('created_at', since)
-      .order('created_at', { ascending: false })
-      .limit(2000)
+    if (changedSince) query = query.gt('updated_at', changedSince)
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(2000)
     if (error) throw new Error(error.message)
     return data.map((o) => ({
       id: o.id, code: o.code, userId: o.user_id, name: o.customer_name, phone: o.phone, email: o.email,
       mode: o.mode, address: o.address, lat: o.lat != null ? Number(o.lat) : null, lng: o.lng != null ? Number(o.lng) : null, notes: o.notes, subtotal: Number(o.subtotal),
       fee: Number(o.delivery_fee), total: Number(o.total), status: o.status, payment: o.payment_status, method: o.payment_method || 'tarjeta',
-      paymentRef: o.payment_ref, createdAt: o.created_at, history: o.history || [],
+      paymentRef: o.payment_ref, createdAt: o.created_at, updatedAt: o.updated_at, history: o.history || [],
       items: o.order_items.map((i) => ({ name: i.name, detail: i.detail || '', qty: i.qty, price: Number(i.price) })),
     }))
   }
@@ -79,6 +81,25 @@ export async function listOrders() {
     status: o.status, payment: o.payment || 'pendiente', method: o.paymentMethod || 'tarjeta', paymentRef: o.paymentRef || null,
     createdAt: o.createdAt, history: o.history || [], items: o.items,
   }))
+}
+
+// Desde qué hora pedir cambios: el último visto menos un margen, porque un pedido puede guardarse
+// con una hora algo anterior a la de otro que ya se leyó. null = hay que cargar todo.
+const OVERLAP_MS = 60000
+export function changesSince(list) {
+  if (!supabaseConfigurado || !list?.length) return null
+  const last = list.reduce((max, o) => Math.max(max, new Date(o.updatedAt).getTime() || 0), 0)
+  return last ? new Date(last - OVERLAP_MS).toISOString() : null
+}
+
+// Une los pedidos cambiados con la lista; si llega una respuesta atrasada no pisa datos más nuevos
+export function mergeOrders(list, changed) {
+  const byId = new Map(list.map((o) => [o.id, o]))
+  changed.forEach((o) => {
+    const old = byId.get(o.id)
+    if (!old || new Date(o.updatedAt) >= new Date(old.updatedAt)) byId.set(o.id, o)
+  })
+  return [...byId.values()].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 }
 
 // fields: { status } o { payment }

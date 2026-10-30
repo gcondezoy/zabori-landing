@@ -90,8 +90,9 @@ export async function saveMenuItem(item) {
 export async function uploadMenuPhoto(file) {
   if (supabaseConfigurado) {
     const blob = await compressPhoto(file)
+    // Cada foto tiene nombre propio y no cambia: se puede guardar en caché todo un año y ahorrar tráfico
     const path = `${Date.now().toString(36)}.${blob.type === 'image/webp' ? 'webp' : 'jpg'}`
-    const { error } = await supabase.storage.from('menu').upload(path, blob, { contentType: blob.type })
+    const { error } = await supabase.storage.from('menu').upload(path, blob, { contentType: blob.type, cacheControl: '31536000' })
     if (error) throw new Error(error.message)
     return supabase.storage.from('menu').getPublicUrl(path).data.publicUrl
   }

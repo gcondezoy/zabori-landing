@@ -52,7 +52,7 @@ export default function TrackOrder() {
   // Se actualiza solo mientras el pedido siga en curso
   useEffect(() => {
     if (!order || order.status === 'entregado' || order.status === 'cancelado') return
-    const t = setInterval(() => look(order.code, phone, true), REFRESH_MS)
+    const t = setInterval(() => { if (!document.hidden) look(order.code, phone, true) }, REFRESH_MS) // sin gastar tráfico en segundo plano
     return () => clearInterval(t)
   }, [order, phone, look])
 

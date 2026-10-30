@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useMenu } from '../../context/MenuContext'
 import { seedDemoOrders, clearDemoOrders } from '../../lib/demoData'
 import { supabaseConfigurado } from '../../lib/supabase'
-import { listOrders, isOpen } from '../../lib/admin'
+import { listOrders, isOpen, changesSince, mergeOrders } from '../../lib/admin'
 import Gate, { DEMO_SESSION } from './Gate'
 import Dashboard from './Dashboard'
 import Orders from './Orders'
@@ -44,10 +44,14 @@ function useOrders(enabled) {
   const [error, setError] = useState('')
   const [fresh, setFresh] = useState(0)
   const known = useRef(null)
+  const current = useRef(null) // la última lista, para pedir solo lo que cambió
 
   const refresh = useCallback(async () => {
     try {
-      const list = await listOrders()
+      const changedSince = changesSince(current.current)
+      const rows = await listOrders({ changedSince })
+      const list = changedSince ? mergeOrders(current.current, rows) : rows
+      current.current = list
       if (known.current) {
         const n = list.filter((o) => !known.current.has(o.code)).length
         if (n > 0) { setFresh((x) => x + n); beep() }
@@ -68,7 +72,7 @@ function useOrders(enabled) {
   }, [enabled, refresh])
 
   // Recarga sin tratar los pedidos como nuevos (al cargar o borrar datos de ejemplo)
-  const reload = useCallback(async () => { known.current = null; setFresh(0); await refresh() }, [refresh])
+  const reload = useCallback(async () => { known.current = null; current.current = null; setFresh(0); await refresh() }, [refresh])
 
   return { orders, error, refresh, reload, fresh, clearFresh: () => setFresh(0) }
 }

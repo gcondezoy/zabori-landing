@@ -145,7 +145,7 @@ export default function AccountPage() {
   const live = (orders || []).filter(isOpen)
   useEffect(() => {
     if (!live.length) return
-    const t = setInterval(load, REFRESH_MS)
+    const t = setInterval(() => { if (!document.hidden) load() }, REFRESH_MS) // sin gastar tráfico en segundo plano
     return () => clearInterval(t)
   }, [live.length, load])
 
