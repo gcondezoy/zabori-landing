@@ -59,6 +59,7 @@ export default function PlateCarousel() {
       onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)} onBlur={() => setPaused(false)} onKeyDown={onKey}>
 
+      <div className="plate-wrap">
       <div className="plate" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {list.map((s, i) => (
           <img key={s.id} src={s.img} alt={i === index % n ? s.name : ''} aria-hidden={i !== index % n}
@@ -72,6 +73,14 @@ export default function PlateCarousel() {
           </>
         )}
       </div>
+      {/* Sello de precio: cambia con cada plato del carrusel */}
+      {current.price != null && (
+        <span className="price-sticker" key={current.id} aria-hidden="true">
+          <small>S/</small>
+          <b>{Number.isInteger(current.price) ? current.price : current.price.toFixed(2)}</b>
+        </span>
+      )}
+      </div>
 
       {current.price != null && (
         <div className="plate-label" aria-live="polite">
@@ -79,7 +88,7 @@ export default function PlateCarousel() {
             <small>{current.tag || 'Menú del día'}</small>
             <strong>{current.name}</strong>
           </span>
-          <span className="pl-price">{money(current.price)}</span>
+          <span className="sr-only">{money(current.price)}</span>
           <button className={`pl-add${added === current.id ? ' ok' : ''}`} onClick={addCurrent}
             aria-label={`Agregar ${current.name} al carrito`}>
             {added === current.id ? <Check size={18} weight="bold" /> : <Plus size={18} weight="bold" />}
