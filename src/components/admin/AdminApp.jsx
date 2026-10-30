@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Bell, ChartBar, Receipt, Users, BookOpen, SignOut, Database, Trash } from '@phosphor-icons/react'
+import { ArrowLeft, Bell, CalendarBlank, ChartBar, Receipt, Users, BookOpen, SignOut, Database, Trash } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
 import { useMenu } from '../../context/MenuContext'
 import { seedDemoOrders, clearDemoOrders } from '../../lib/demoData'
@@ -10,6 +10,7 @@ import Dashboard from './Dashboard'
 import Orders from './Orders'
 import Customers from './Customers'
 import MenuAdmin from './MenuAdmin'
+import WeekAdmin from './WeekAdmin'
 
 // Título de la web (index.html), para devolverlo al salir del panel
 const SITE_TITLE = document.title
@@ -20,6 +21,7 @@ const SECTIONS = [
   { id: 'resumen', label: 'Resumen', icon: ChartBar },
   { id: 'pedidos', label: 'Pedidos', icon: Receipt },
   { id: 'clientes', label: 'Clientes', icon: Users },
+  { id: 'semana', label: 'Menú semanal', icon: CalendarBlank },
   { id: 'carta', label: 'Carta', icon: BookOpen },
 ]
 
@@ -132,7 +134,7 @@ export default function AdminApp() {
         </nav>
         <div className="side-foot">
           <a href="#top"><ArrowLeft size={16} /> Ver la web</a>
-          <button onClick={exit}><SignOut size={16} /> Salir</button>
+          <button onClick={exit} aria-label="Salir"><SignOut size={16} /> <span>Salir</span></button>
         </div>
       </aside>
 
@@ -158,6 +160,7 @@ export default function AdminApp() {
           <Orders orders={data.orders} refresh={data.refresh} focusCode={focusCode} onFocusDone={() => setFocusCode(null)} />
         )}
         {section === 'clientes' && <Customers orders={data.orders} onOpen={openOrder} />}
+        {section === 'semana' && <WeekAdmin orders={data.orders} />}
         {section === 'carta' && <MenuAdmin orders={data.orders} />}
         <p className="muted small-note">Se actualiza solo cada {POLL_MS / 1000} s. Deja esta pestaña abierta para recibir avisos.</p>
       </main>

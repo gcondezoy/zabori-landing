@@ -31,7 +31,8 @@ function demoBuiltPlate(pick) {
 
 export function seedDemoOrders(menu, days = 14) {
   const mains = menu.filter((i) => i.cat === 'menu' && i.active !== false)
-  const extras = menu.filter((i) => i.cat !== 'menu' && i.cat !== 'arma' && i.active !== false)
+  const extras = menu.filter((i) => i.cat === 'shots' && i.active !== false)
+  const entradas = menu.filter((i) => i.cat === 'entrada' && i.active !== false)
   if (!mains.length) return 0
 
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)]
@@ -53,7 +54,8 @@ export function seedDemoOrders(menu, days = 14) {
         ? [demoBuiltPlate(pick)]
         : [(() => {
           const taper = pick(buildSeed.options.filter((o) => o.grp === 'taper'))
-          return { name: main.name, detail: taper.name, price: main.price + taper.price, qty: 1 + (Math.random() > 0.7 ? 1 : 0) }
+          const detail = [entradas.length && `Entrada: ${pick(entradas).name}`, taper.name].filter(Boolean).join(' · ')
+          return { name: main.name, detail, price: main.price + taper.price, qty: 1 + (Math.random() > 0.7 ? 1 : 0) }
         })()]
       if (extras.length && Math.random() > 0.45) { const x = pick(extras); items.push({ name: x.name, price: x.price, qty: 1 }) }
       const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0)

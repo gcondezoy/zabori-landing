@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react'
 import { useMenu } from './MenuContext'
 import { site } from '../config/site'
-import { CART_PREFIX, TAPER_SEP, idsFromKey, chosen, missingGroup, buildDetail, buildPrice, taperOptions, needsTaper } from '../lib/build'
+import { CART_PREFIX, TAPER_SEP, idsFromKey, chosen, missingGroup, buildDetail, buildPrice, taperOptions, needsPick } from '../lib/build'
 
 const CartContext = createContext(null)
 const KEY = 'zabori-cart'
@@ -41,7 +41,7 @@ export function CartProvider({ children }) {
   const [open, setOpen] = useState(false)
   const [checkout, setCheckout] = useState(false)
   const [pickFor, setPickFor] = useState(null) // menú esperando que el cliente elija su táper
-  const { items: catalog, build } = useMenu()
+  const { items: catalog, entradas, build } = useMenu()
 
   useEffect(() => {
     try {
@@ -56,18 +56,21 @@ export function CartProvider({ children }) {
       if (!build.available || chosen(build, ids).length !== ids.length || missingGroup(build, ids)) return null
       return { id: key, isCustom: true, options: ids, name: 'Arma tu plato', detail: buildDetail(build, ids), price: buildPrice(build, ids), img: build.img }
     }
-    // Un menú del día se guarda con su táper: "m1~t-kraft" (precio = menú + táper)
+    // Un menú del día se guarda con su táper y su entrada: "m1~t-kraft~e1" (precio = menú + táper).
+    // Si esa entrada ya no sale ese día, la línea se descarta.
     const tapers = taperOptions(build)
     const withTaper = (key) => {
-      const [baseId, taperId] = key.split(TAPER_SEP)
+      const [baseId, taperId, entradaId] = key.split(TAPER_SEP)
       const base = catalog.find((i) => i.id === baseId)
       const taper = tapers.find((t) => t.id === taperId)
-      if (!base || !taper) return null
-      return { ...base, id: key, baseId, taper: taperId, detail: taper.name, price: base.price + taper.price }
+      const entrada = entradas.find((e) => e.id === entradaId)
+      if (!base || (tapers.length && !taper) || (entradas.length && !entrada)) return null
+      const detail = [entrada && `Entrada: ${entrada.name}`, taper?.name].filter(Boolean).join(' · ')
+      return { ...base, id: key, baseId, taper: taper?.id || '', entrada: entrada?.id || '', detail, price: base.price + (taper?.price || 0) }
     }
     const plain = (key) => {
       const item = catalog.find((i) => i.id === key)
-      return item && needsTaper(item, build) ? null : item // un menú sin táper ya no es válido
+      return item && needsPick(item, build, entradas) ? null : item // un menú sin elegir entrada y táper no es válido
     }
     const lines = Object.entries(qty)
       .map(([id, n]) => ({
@@ -85,14 +88,14 @@ export function CartProvider({ children }) {
       dec: (id) => dispatch({ type: 'dec', id }),
       remove: (id) => dispatch({ type: 'remove', id }),
       clear: () => dispatch({ type: 'clear' }),
-      // Agregar desde una tarjeta: si el plato necesita táper, primero se pregunta cuál
-      requestAdd: (item) => (needsTaper(item, build) ? setPickFor(item) : dispatch({ type: 'add', id: item.id })),
+      // Agregar desde una tarjeta: si es un menú, primero se pregunta la entrada y el táper
+      requestAdd: (item) => (needsPick(item, build, entradas) ? setPickFor(item) : dispatch({ type: 'add', id: item.id })),
       // Unidades de un plato en el carrito, sumando todas sus variantes de táper
       countOf: (id) => Object.entries(qty).reduce((s, [k, n]) => (k === id || k.startsWith(id + TAPER_SEP) ? s + n : s), 0),
       pickFor, setPickFor,
       open, setOpen, checkout, setCheckout,
     }
-  }, [qty, open, checkout, catalog, build, pickFor])
+  }, [qty, open, checkout, catalog, entradas, build, pickFor])
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

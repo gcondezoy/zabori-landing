@@ -133,9 +133,9 @@ export function missingGroup(build, ids) {
 export const TAPER_GROUP = 'taper'
 export const TAPER_SEP = '~'
 export const taperOptions = (build) => build.options.filter((o) => o.grp === TAPER_GROUP && o.active !== false)
-// Los menús del día se piden con táper (si hay alguno disponible); los shots no
-export const needsTaper = (item, build) => item.cat === 'menu' && taperOptions(build).length > 0
-export const taperKey = (itemId, taperId) => `${itemId}${TAPER_SEP}${taperId}`
+// Al agregar un menú del día se elige entrada y táper (si hay disponibles); los shots no
+export const needsPick = (item, build, entradas) => item.cat === 'menu' && (taperOptions(build).length > 0 || entradas.length > 0)
+export const menuKey = (itemId, taperId, entradaId) => [itemId, taperId || '', entradaId || ''].join(TAPER_SEP)
 
 // Clave estable del carrito para un plato armado (mismas opciones = misma línea)
 export const cartKey = (ids) => CART_PREFIX + [...ids].sort().join(',')

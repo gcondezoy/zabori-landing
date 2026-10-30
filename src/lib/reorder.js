@@ -1,5 +1,7 @@
 // "Volver a pedir": reconstruye las líneas del carrito de un pedido anterior con la carta y opciones de hoy.
-import { cartKey, taperKey, taperOptions, missingGroup, needsTaper, sizeId, hasSizes } from './build'
+import { cartKey, menuKey, taperOptions, missingGroup, needsPick, sizeId, hasSizes } from './build'
+
+const ENTRADA = 'Entrada: '
 
 // items = [{ itemId, name, detail, qty }] (de listMyOrders)
 // Devuelve { lines: [{ key, qty }], missing: [nombres que ya no se pueden pedir] }
@@ -25,10 +27,18 @@ export function reorderLines(items, catalog, build) {
     }
     const item = catalog.find((c) => c.id === i.itemId) || catalog.find((c) => c.name === i.name)
     if (!item || item.active === false) { missing.push(i.name); return }
-    if (needsTaper(item, build)) {
+    const entradas = catalog.filter((c) => c.cat === 'entrada')
+    if (needsPick(item, build, entradas)) {
+      // El detalle guarda "Entrada: Sopa · Bowl kraft"
+      const parts = (i.detail || '').split(' · ')
+      const eName = parts.find((p) => p.startsWith(ENTRADA))?.slice(ENTRADA.length)
+      const tName = parts.find((p) => !p.startsWith(ENTRADA))
+      // Si esa entrada no sale hoy no se cambia por otra: el cliente elige de nuevo
+      const entrada = entradas.find((e) => e.name === eName)
+      if (entradas.length && !entrada) { missing.push(eName ? `${i.name} con ${eName}` : i.name); return }
       // Mismo táper que la vez pasada; si ya no existe, el primero disponible
-      const taper = taperOptions(build).find((t) => t.name === i.detail) || taperOptions(build)[0]
-      lines.push({ key: taperKey(item.id, taper.id), qty: i.qty })
+      const taper = taperOptions(build).find((t) => t.name === tName) || taperOptions(build)[0]
+      lines.push({ key: menuKey(item.id, taper?.id, entrada?.id), qty: i.qty })
       return
     }
     lines.push({ key: item.id, qty: i.qty })

@@ -10,7 +10,7 @@ import Checkout from './components/Checkout'
 import AuthModal from './components/AuthModal'
 import CartBar from './components/CartBar'
 import WhatsAppFab from './components/WhatsAppFab'
-import TaperPicker from './components/TaperPicker'
+import MenuPicker from './components/MenuPicker'
 // Páginas que no son la portada: se descargan solo cuando se abren (la portada carga más rápido)
 const Admin = lazy(() => import('./components/admin/AdminApp'))
 const TrackOrder = lazy(() => import('./components/TrackOrder'))
@@ -70,7 +70,7 @@ export default function App() {
       <Footer />
       <CartBar />
       <WhatsAppFab />
-      <TaperPicker />
+      <MenuPicker />
       <CartDrawer />
       <Checkout />
       <AuthModal />

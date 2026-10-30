@@ -3,8 +3,9 @@
 import { supabase, supabaseConfigurado } from './supabase'
 import { items as seed } from '../data/menu'
 import { site } from '../config/site'
+import { compressPhoto } from './images'
 
-const KEY = 'zabori-menu-v3' // v2: Bebidas pasó a Shots · v3: precio único del menú
+const KEY = 'zabori-menu-v4' // v2: Bebidas pasó a Shots · v3: precio único del menú · v4: entradas
 const TONES = ['#034d5b', '#0b6b7a', '#a87400', '#1f6f5c', '#7a5a14', '#b3541e', '#2c4a7a', '#5f8a1c']
 
 const toneFor = (id) => {
@@ -21,14 +22,14 @@ const imgFor = (id) => seed.find((s) => s.id === id)?.img || ''
 // Fila de la base -> plato de la interfaz
 const fromRow = (r) => ({
   id: r.id, cat: r.cat, name: r.name, desc: r.descr, price: Number(r.price),
-  active: r.active, tag: r.tag || '', sort: r.sort ?? 0, tone: toneFor(r.id), img: imgFor(r.id),
+  active: r.active, tag: r.tag || '', sort: r.sort ?? 0, tone: toneFor(r.id), img: r.img || imgFor(r.id),
 })
 
 const readLocal = () => {
   try { return JSON.parse(localStorage.getItem(KEY)) } catch { return null }
 }
 const writeLocal = (list) => {
-  try { localStorage.setItem(KEY, JSON.stringify(list)) } catch {}
+  try { localStorage.setItem(KEY, JSON.stringify(list)) } catch { throw new Error('No hay espacio en este navegador para guardar más fotos.') }
 }
 
 const localMenu = () =>
@@ -52,7 +53,7 @@ export async function loadMenu({ includeInactive = false } = {}) {
 }
 
 const localMenuFallback = (includeInactive) =>
-  samePrice(localMenu().map((i) => ({ ...i, tone: toneFor(i.id), img: imgFor(i.id) }))).filter((i) => includeInactive || i.active)
+  samePrice(localMenu().map((i) => ({ ...i, tone: toneFor(i.id), img: i.img || imgFor(i.id) }))).filter((i) => includeInactive || i.active)
 
 // Cambia el precio de todos los menús del día a la vez
 export async function saveMenuPrice(price) {
@@ -65,21 +66,55 @@ export async function saveMenuPrice(price) {
   writeLocal(localMenu().map((i) => (i.cat === 'menu' ? { ...i, price: p } : i)))
 }
 
-// item = { id?, cat, name, desc, price, active, tag }
+// item = { id?, cat, name, desc, price, active, tag, img }. Devuelve el id del plato.
 export async function saveMenuItem(item) {
   const id = item.id || 'p' + Date.now().toString(36)
   const price = Math.max(0, Number(item.price) || 0)
   if (supabaseConfigurado) {
     const { error } = await supabase.from('menu_items').upsert({
       id, cat: item.cat, name: item.name.trim(), descr: (item.desc || '').trim(),
-      price, active: item.active, tag: (item.tag || '').trim(), sort: item.sort ?? 99,
+      price, active: item.active, tag: (item.tag || '').trim(), sort: item.sort ?? 99, img: item.img || '',
     })
     if (error) throw new Error(error.message)
-    return
+    return id
   }
   const list = localMenu()
   const next = { id, cat: item.cat, name: item.name.trim(), desc: (item.desc || '').trim(),
-    price, active: item.active, tag: (item.tag || '').trim(), sort: item.sort ?? 99 }
+    price, active: item.active, tag: (item.tag || '').trim(), sort: item.sort ?? 99, img: item.img || '' }
   const exists = list.some((i) => i.id === id)
   writeLocal(exists ? list.map((i) => (i.id === id ? { ...i, ...next } : i)) : [...list, next])
+  return id
+}
+
+// Sube la foto de un plato y devuelve la dirección para guardarla en el plato
+export async function uploadMenuPhoto(file) {
+  if (supabaseConfigurado) {
+    const blob = await compressPhoto(file)
+    const path = `${Date.now().toString(36)}.${blob.type === 'image/webp' ? 'webp' : 'jpg'}`
+    const { error } = await supabase.storage.from('menu').upload(path, blob, { contentType: blob.type })
+    if (error) throw new Error(error.message)
+    return supabase.storage.from('menu').getPublicUrl(path).data.publicUrl
+  }
+  // Modo demo: la foto queda dentro del navegador, más pequeña
+  const blob = await compressPhoto(file, 480)
+  return new Promise((res, rej) => {
+    const r = new FileReader()
+    r.onload = () => res(r.result)
+    r.onerror = () => rej(new Error('No pudimos leer esa imagen.'))
+    r.readAsDataURL(blob)
+  })
+}
+
+// Elimina un plato. Si ya tiene pedidos en el historial no se puede borrar: queda oculto (devuelve 'hidden').
+export async function deleteMenuItem(id) {
+  if (supabaseConfigurado) {
+    const { error } = await supabase.from('menu_items').delete().eq('id', id)
+    if (!error) return 'deleted'
+    if (error.code !== '23503') throw new Error(error.message)
+    const res = await supabase.from('menu_items').update({ active: false }).eq('id', id)
+    if (res.error) throw new Error(res.error.message)
+    return 'hidden'
+  }
+  writeLocal(localMenu().filter((i) => i.id !== id))
+  return 'deleted'
 }

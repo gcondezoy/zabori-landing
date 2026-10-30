@@ -19,10 +19,14 @@ alter table public.menu_items add column if not exists tag  text not null defaul
 alter table public.menu_items add column if not exists sort int  not null default 0;
 
 insert into public.menu_items (id, cat, name, descr, price) values
-  ('m1','menu','Menú Criollo','Entrada del día, lomo saltado con arroz y papas, refresco.',10),
-  ('m2','menu','Menú Marino','Entrada del día, arroz con mariscos, refresco.',10),
-  ('m3','menu','Menú Casero','Entrada del día, seco de res con frejoles, refresco.',10),
-  ('m4','menu','Menú Ligero','Ensalada fresca, pollo a la plancha con puré, refresco.',10),
+  ('m1','menu','Lomo saltado','Con arroz y papas fritas.',10),
+  ('m2','menu','Arroz con mariscos','Con salsa criolla.',10),
+  ('m3','menu','Seco de res','Con frejoles y arroz.',10),
+  ('m4','menu','Pollo a la plancha','Con puré y ensalada.',10),
+  ('e1','entrada','Sopa de casa','',0),
+  ('e2','entrada','Ensalada fresca','',0),
+  ('e3','entrada','Papa a la huancaína','',0),
+  ('e4','entrada','Tequeños','',0),
   ('arma','arma','Arma tu plato','Fit: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y aderezos.',0),
   ('s1','shots','Shot de jengibre y limón','Jengibre fresco, limón y una pizca de miel.',5),
   ('s2','shots','Shot verde','Espinaca, manzana verde y apio.',5),
@@ -196,7 +200,7 @@ create policy "lineas propias" on public.order_items for select
 -- Los precios SIEMPRE se leen de la base: el navegador nunca manda precios.
 -- p = { name, phone, email, mode, address, notes, items: [{id, qty}] }
 -- Plato armado: { id: 'arma', qty, options: ['p-pollo','c-arroz',...] } (se validan los mínimos/máximos de cada grupo)
--- Menú del día: { id: 'm1', qty, taper: 't-kraft' } (el táper es obligatorio y suma su precio)
+-- Menú del día: { id: 'm1', qty, taper: 't-kraft', entrada: 'e1' } (el táper es obligatorio y suma su precio; la entrada va incluida)
 create or replace function public.create_order(p jsonb) returns text
 language plpgsql security definer set search_path = public as $$
 declare
@@ -213,6 +217,7 @@ declare
   v_qty int;
   v_price numeric;
   v_detail text;
+  v_entrada text;
   v_opts text[];
   v_n int;
   v_ids text[];
@@ -284,17 +289,24 @@ begin
 
       v_lines := v_lines || jsonb_build_object('item_id', 'arma', 'name', 'Arma tu plato', 'detail', v_detail, 'price', v_price, 'qty', v_qty);
     else
-      select id, name, price, cat into r from public.menu_items where id = it->>'id' and active and cat <> 'arma';
+      select id, name, price, cat into r from public.menu_items where id = it->>'id' and active and cat not in ('arma', 'entrada');
       if not found then raise exception 'Un producto de tu pedido ya no está disponible'; end if;
       v_price := r.price;
       v_detail := '';
+
+      -- La entrada que eligió el cliente va incluida en el menú: queda en el detalle para la cocina
+      if r.cat = 'menu' and coalesce(it->>'entrada', '') <> '' then
+        select name into v_entrada from public.menu_items where id = it->>'entrada' and cat = 'entrada' and active;
+        if not found then raise exception 'La entrada de tu % ya no está disponible', r.name; end if;
+        v_detail := 'Entrada: ' || v_entrada;
+      end if;
 
       -- Los menús del día van con táper (si hay alguno disponible): se suma su precio
       if r.cat = 'menu' and exists (select 1 from public.build_options where grp = 'taper' and active) then
         select name, price into g from public.build_options where id = it->>'taper' and grp = 'taper' and active;
         if not found then raise exception 'Elige el táper de tu %', r.name; end if;
         v_price := v_price + g.price;
-        v_detail := g.name;
+        v_detail := concat_ws(' · ', nullif(v_detail, ''), g.name);
       end if;
 
       v_lines := v_lines || jsonb_build_object('item_id', r.id, 'name', r.name, 'detail', v_detail, 'price', v_price, 'qty', v_qty);
@@ -345,7 +357,8 @@ grant execute on function public.create_order(jsonb) to anon, authenticated;
 -- Orden y etiquetas de la carta de ejemplo
 update public.menu_items set sort = v.s, tag = v.t
 from (values ('m1',1,'Más pedido'),('m2',2,''),('m3',3,''),('m4',4,'Saludable'),
-             ('arma',5,''),('s1',6,''),('s2',7,'Detox'),('s3',8,'')) as v(id,s,t)
+             ('arma',5,''),('s1',6,''),('s2',7,'Detox'),('s3',8,''),
+             ('e1',9,''),('e2',10,''),('e3',11,''),('e4',12,'')) as v(id,s,t)
 where public.menu_items.id = v.id and public.menu_items.sort = 0;
 
 create table if not exists public.admins (
@@ -432,3 +445,58 @@ begin
   );
 end $$;
 grant execute on function public.track_order(text, text) to anon, authenticated;
+
+-- =============================================================
+--  ETAPA 6 · Menú semanal y fotos de la carta
+-- =============================================================
+alter table public.menu_items add column if not exists img text not null default '';
+
+-- Qué segundos y entradas salen cada día (0 = domingo) y en qué orden; sort 0 es el primero
+create table if not exists public.weekly_menu (
+  day     smallint not null check (day between 0 and 6),
+  item_id text not null references public.menu_items(id) on delete cascade,
+  sort    int  not null default 0,
+  primary key (day, item_id)
+);
+create index if not exists weekly_menu_sort_idx on public.weekly_menu (day, sort);
+
+alter table public.weekly_menu enable row level security;
+drop policy if exists "semana publica" on public.weekly_menu;
+create policy "semana publica" on public.weekly_menu for select using (true);
+drop policy if exists "admin gestiona semana" on public.weekly_menu;
+create policy "admin gestiona semana" on public.weekly_menu for all using (public.is_admin()) with check (public.is_admin());
+
+-- Plan de ejemplo: solo si aún no hay ninguno (re-ejecutar este archivo no pisa lo que edite el cliente)
+insert into public.weekly_menu (day, item_id, sort)
+select v.day, v.item_id, v.sort
+from (values (1,'m1',0),(1,'m2',1),(1,'m3',2),(1,'e1',3),(1,'e2',4),(1,'e3',5),
+             (2,'m3',0),(2,'m4',1),(2,'m1',2),(2,'e2',3),(2,'e4',4),(2,'e1',5),
+             (3,'m2',0),(3,'m1',1),(3,'m4',2),(3,'e3',3),(3,'e1',4),(3,'e4',5),
+             (4,'m4',0),(4,'m3',1),(4,'m2',2),(4,'e1',3),(4,'e3',4),(4,'e2',5),
+             (5,'m1',0),(5,'m4',1),(5,'m2',2),(5,'e4',3),(5,'e2',4),(5,'e1',5),
+             (6,'m2',0),(6,'m3',1),(6,'m4',2),(6,'e2',3),(6,'e3',4),(6,'e4',5)) as v(day, item_id, sort)
+where not exists (select 1 from public.weekly_menu);
+
+-- Bebida del día: viene incluida, el cliente no la elige
+create table if not exists public.weekly_drink (
+  day  smallint primary key check (day between 0 and 6),
+  name text not null default ''
+);
+alter table public.weekly_drink enable row level security;
+drop policy if exists "bebida publica" on public.weekly_drink;
+create policy "bebida publica" on public.weekly_drink for select using (true);
+drop policy if exists "admin gestiona bebida" on public.weekly_drink;
+create policy "admin gestiona bebida" on public.weekly_drink for all using (public.is_admin()) with check (public.is_admin());
+
+insert into public.weekly_drink (day, name) values
+  (1,'Chicha morada'),(2,'Limonada'),(3,'Maracuyá'),(4,'Chicha morada'),(5,'Limonada'),(6,'Emoliente')
+on conflict (day) do nothing;
+
+-- Fotos de los platos: lectura pública, solo los administradores suben o cambian
+insert into storage.buckets (id, name, public) values ('menu', 'menu', true) on conflict (id) do nothing;
+drop policy if exists "fotos menu publicas" on storage.objects;
+create policy "fotos menu publicas" on storage.objects for select using (bucket_id = 'menu');
+drop policy if exists "admin sube fotos menu" on storage.objects;
+create policy "admin sube fotos menu" on storage.objects for insert with check (bucket_id = 'menu' and public.is_admin());
+drop policy if exists "admin borra fotos menu" on storage.objects;
+create policy "admin borra fotos menu" on storage.objects for delete using (bucket_id = 'menu' and public.is_admin());

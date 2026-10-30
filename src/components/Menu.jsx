@@ -7,14 +7,15 @@ import { useCart } from '../context/CartContext'
 import Reveal from './Reveal'
 import TodayBadge from './TodayBadge'
 import BuildPlate from './BuildPlate'
-import { needsTaper } from '../lib/build'
+import { needsPick } from '../lib/build'
 import { menuPrice } from '../lib/menu'
+import { DAY_NAMES } from '../lib/week'
 import { OPEN_BUILD_EVENT } from './BuildPromo'
 
 function Card({ item, index }) {
   const { qty, add, dec, requestAdd, countOf } = useCart()
-  const { build } = useMenu()
-  const withTaper = needsTaper(item, build) // los menús del día piden táper al agregar
+  const { build, entradas } = useMenu()
+  const withTaper = needsPick(item, build, entradas) // los menús del día piden entrada y táper al agregar
   const n = withTaper ? countOf(item.id) : qty[item.id] || 0
   return (
     <Reveal as="article" className="card" delay={Math.min(index, 5) * 70}>
@@ -52,7 +53,8 @@ function Card({ item, index }) {
 
 export default function Menu() {
   const [cat, setCat] = useState('menu')
-  const { items } = useMenu()
+  const { items, entradas, drink, day } = useMenu()
+  const hasMenus = items.some((i) => i.cat === 'menu')
 
   useEffect(() => {
     const open = () => setCat('arma')
@@ -64,8 +66,8 @@ export default function Menu() {
       <div className="wrap">
         <Reveal>
           <TodayBadge />
-          <h2>La carta de hoy</h2>
-          <p className="sub">Los platos cambian cada día. Ejemplo de menú, se actualizará con el real.</p>
+          <h2>{day.today ? 'La carta de hoy' : `La carta del ${DAY_NAMES[day.day]}`}</h2>
+          <p className="sub">Los platos cambian cada día.</p>
         </Reveal>
         <div className="tabs" role="tablist">
           {categories.map((c) => (
@@ -75,13 +77,21 @@ export default function Menu() {
             </button>
           ))}
         </div>
-        {cat === 'menu' && (
-          <p className="menu-price">
-            <span>Todos nuestros menús a</span>
-            <strong>S/ {Number.isInteger(menuPrice(items)) ? menuPrice(items) : menuPrice(items).toFixed(2)}</strong>
-            <small>Entrada, segundo y refresco · eliges tu táper al agregar</small>
-          </p>
+        {cat === 'menu' && !hasMenus && (
+          <div className="menu-empty">
+            <p>Aún no publicamos los menús de este día.</p>
+            <button className="btn primary small" onClick={() => setCat('arma')}>Arma tu plato</button>
+          </div>
         )}
+        {cat === 'menu' && hasMenus && (
+          <div className="menu-price">
+            <span>Menú completo a</span>
+            <strong>S/ {Number.isInteger(menuPrice(items)) ? menuPrice(items) : menuPrice(items).toFixed(2)}</strong>
+            <small>Eliges tu entrada y tu segundo · Bebida incluida: <b>{drink}</b></small>
+            {entradas.length > 0 && <small><b>Entradas:</b> {entradas.map((e) => e.name).join(' · ')}</small>}
+          </div>
+        )}
+        {cat === 'menu' && hasMenus && <h3 className="menu-step">Elige tu segundo</h3>}
         {cat === 'arma' ? <BuildPlate /> : (
           <div className="grid">
             {items.filter((i) => i.cat === cat).map((i, k) => <Card key={cat + i.id} item={i} index={k} />)}

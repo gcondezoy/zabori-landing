@@ -22,8 +22,8 @@ export async function createOrder(form, lines, userId) {
         ...form,
         items: lines.map((l) => (l.item.isCustom
           ? { id: 'arma', qty: l.n, options: l.item.options } // el servidor recalcula el precio
-          : l.item.taper
-            ? { id: l.item.baseId, qty: l.n, taper: l.item.taper }
+          : l.item.baseId
+            ? { id: l.item.baseId, qty: l.n, taper: l.item.taper, entrada: l.item.entrada }
             : { id: l.item.id, qty: l.n })),
       },
     })

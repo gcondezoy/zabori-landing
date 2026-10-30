@@ -14,7 +14,7 @@ export default function Hero() {
             Pide en minutos y paga con Yape, Plin o tarjeta.
           </p>
           <div className="cta-row">
-            <a href="#menu" className="btn primary">Ver el menú de hoy <ArrowRight weight="bold" /></a>
+            <a href="#menu" className="btn primary">Ver el menú <ArrowRight weight="bold" /></a>
             <a href="#como" className="btn ghost">Cómo funciona</a>
           </div>
           <ul className="facts">
