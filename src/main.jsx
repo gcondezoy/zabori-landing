@@ -7,6 +7,9 @@ import App from './App'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
 import { MenuProvider } from './context/MenuContext'
+import { injectBusinessSchema } from './lib/seo'
+
+injectBusinessSchema()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
