@@ -9,7 +9,8 @@ function label(p) {
   const place = p.name && p.name !== p.street && p.type !== 'street' ? p.name : ''
   const area = [p.district || p.locality, p.city || p.county].filter(Boolean)
   const main = [place, street].filter(Boolean).join(', ') || p.name || ''
-  return { main, area: [...new Set(area)].join(', '), full: [main, ...new Set(area)].filter(Boolean).join(', ') }
+  const areas = [...new Set(area)]
+  return { main, area: areas.join(', '), areas, hasNumber: Boolean(p.housenumber), full: [main, ...areas].filter(Boolean).join(', ') }
 }
 
 const toResult = (f) => {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { X, CheckCircle, CreditCard, DeviceMobile, WhatsappLogo, Copy, Check, MapTrifold } from '@phosphor-icons/react'
+import { X, CheckCircle, CreditCard, DeviceMobile, WhatsappLogo, Copy, Check, MapTrifold, Storefront } from '@phosphor-icons/react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { createOrder } from '../lib/orders'
@@ -144,6 +144,10 @@ export default function Checkout() {
             <h3>{wallet ? '¡Pedido registrado!' : '¡Pedido recibido!'}</h3>
             <p>Código <strong>{done.code}</strong> · {money(done.total)}</p>
 
+            {done.mode === 'recojo' && (
+              <p className="pickup-note"><Storefront size={20} /> <span>Recoges en <b>{site.address}</b><br />{site.schedule}</span></p>
+            )}
+
             {wallet ? <WalletPay done={done} /> : (
               <>
                 <p>{done.mode === 'delivery' ? 'Te avisaremos cuando salga tu delivery.' : 'Te avisaremos cuando esté listo para recoger.'}</p>
@@ -151,7 +155,7 @@ export default function Checkout() {
                   ? <p className="demo-note">Pago con tarjeta confirmado. Gracias por tu compra.</p>
                   : <p className="demo-note">Pago en modo demo: no se realizó ningún cobro real.</p>}
                 <a className="btn wa block" target="_blank" rel="noreferrer"
-                  href={zaboriWhatsapp(`Hola, acabo de hacer el pedido ${done.code}. ¿Me avisan cuando esté en camino?`)}>
+                  href={zaboriWhatsapp(`Hola, acabo de hacer el pedido ${done.code}. ¿Me avisan cuando esté ${done.mode === 'delivery' ? 'en camino' : 'listo para recoger'}?`)}>
                   <WhatsappLogo size={20} weight="fill" /> Seguir mi pedido por WhatsApp
                 </a>
               </>
@@ -199,6 +203,9 @@ export default function Checkout() {
             {f.mode === 'delivery' && (
               <AddressPicker address={f.address} lat={f.lat} lng={f.lng}
                 onChange={(a) => setF((cur) => ({ ...cur, ...a }))} />
+            )}
+            {f.mode === 'recojo' && (
+              <p className="pickup-note"><Storefront size={20} /> <span>Recoges en <b>{site.address}</b><br />{site.schedule}</span></p>
             )}
             <label>{f.mode === 'delivery' ? 'Referencia (opcional)' : 'Indicaciones (opcional)'}
               <textarea rows={2} value={f.notes} onChange={set('notes')}

@@ -37,7 +37,12 @@ export default function AddressPicker({ address, lat, lng, onChange }) {
   const pick = (r) => {
     typed.current = false
     setOpen(false); setList([])
-    onChange({ address: r.full, lat: r.lat, lng: r.lng })
+    // El buscador suele devolver la calle sin número: si el cliente escribió uno (o Mz./Lt.),
+    // se respeta su texto y solo se le agrega el distrito que falte
+    const text = address.trim()
+    const keep = !r.hasNumber && /\d/.test(text)
+    const missing = keep ? r.areas.filter((x) => !text.toLowerCase().includes(x.toLowerCase())) : []
+    onChange({ address: keep ? [text, ...missing].join(', ') : r.full, lat: r.lat, lng: r.lng })
   }
 
   const locate = () => {

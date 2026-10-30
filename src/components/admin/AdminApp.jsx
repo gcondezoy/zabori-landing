@@ -11,6 +11,9 @@ import Orders from './Orders'
 import Customers from './Customers'
 import MenuAdmin from './MenuAdmin'
 
+// Título de la web (index.html), para devolverlo al salir del panel
+const SITE_TITLE = document.title
+
 const POLL_MS = 15000
 
 const SECTIONS = [
@@ -79,7 +82,7 @@ export default function AdminApp() {
 
   useEffect(() => {
     document.title = data.fresh ? `(${data.fresh}) Nuevo pedido | Zabori` : 'Panel | Zabori'
-    return () => { document.title = 'Zabori | El sabor de elegir bien' }
+    return () => { document.title = SITE_TITLE }
   }, [data.fresh])
 
   const exit = async () => {
