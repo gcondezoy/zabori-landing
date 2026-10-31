@@ -105,6 +105,21 @@ Los textos están en `src/data/legal.js` y son un **borrador**: debe revisarlos 
    select code, terms_version, terms_at from public.orders order by created_at desc limit 20;
    ```
 
+# Notificaciones del pedido
+
+Avisan al celular cuando cambia el estado o se confirma el pago, con o sin cuenta. En Android basta con dar permiso; en iPhone hay que instalar la web en la pantalla de inicio. Sin configurar, el botón no aparece.
+
+1. Correr `supabase/setup.sql`.
+2. Generar las llaves una sola vez: `npx web-push generate-vapid-keys`. **La privada nunca va en Vercel ni en el código.**
+3. Instalar la función:
+   ```
+   supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... VAPID_SUBJECT=mailto:correo@negocio.pe
+   supabase functions deploy notify-order --no-verify-jwt
+   ```
+4. En Vercel, agregar `VITE_VAPID_PUBLIC_KEY` con la llave pública y volver a desplegar.
+
+El envío sale del panel al cambiar el estado: si la pestaña del panel se cierra justo en ese momento, el aviso puede no salir. La suscripción se borra cuando el pedido termina.
+
 # Correos: bienvenida y publicidad
 
 Hace falta un **dominio propio** y una cuenta en [Resend](https://resend.com) (de preferencia a nombre del cliente).

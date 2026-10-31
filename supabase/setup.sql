@@ -575,3 +575,50 @@ begin
 end $$;
 revoke execute on function public.marketing_contacts() from public, anon;
 grant execute on function public.marketing_contacts() to authenticated;
+
+-- =============================================================
+--  ETAPA 9 · Notificaciones del navegador para seguir un pedido
+-- =============================================================
+create table if not exists public.push_subscriptions (
+  id         uuid primary key default gen_random_uuid(),
+  order_id   uuid not null references public.orders(id) on delete cascade,
+  endpoint   text not null,
+  p256dh     text not null,
+  auth       text not null,
+  created_at timestamptz not null default now(),
+  unique (order_id, endpoint)
+);
+alter table public.push_subscriptions enable row level security;
+-- Los clientes no leen esta tabla: guardan con la función de abajo. Los administradores solo ven si hay avisos activos.
+drop policy if exists "admin ve avisos" on public.push_subscriptions;
+create policy "admin ve avisos" on public.push_subscriptions for select using (public.is_admin());
+
+-- Mismo control que "Sigue tu pedido": código + últimos 4 dígitos del celular. Sirve con o sin cuenta.
+create or replace function public.save_push_subscription(p_code text, p_phone text, p_sub jsonb) returns boolean
+language plpgsql security definer set search_path = public as $$
+declare
+  v_order uuid;
+  v_last4 text := right(regexp_replace(coalesce(p_phone, ''), '\D', '', 'g'), 4);
+  v_endpoint text := p_sub->>'endpoint';
+  v_p256dh text := p_sub#>>'{keys,p256dh}';
+  v_auth text := p_sub#>>'{keys,auth}';
+begin
+  if length(v_last4) < 4 or v_endpoint is null or v_endpoint not like 'https://%' or length(v_endpoint) > 1000
+     or coalesce(length(v_p256dh), 0) not between 20 and 200 or coalesce(length(v_auth), 0) not between 8 and 100 then
+    return false;
+  end if;
+  select id into v_order from public.orders
+  where code = upper(trim(p_code))
+    and right(regexp_replace(phone, '\D', '', 'g'), 4) = v_last4
+    and status not in ('entregado', 'cancelado');
+  if not found then return false; end if;
+  if (select count(*) from public.push_subscriptions where order_id = v_order and endpoint <> v_endpoint) >= 5 then
+    return false;
+  end if;
+  insert into public.push_subscriptions (order_id, endpoint, p256dh, auth)
+  values (v_order, v_endpoint, v_p256dh, v_auth)
+  on conflict (order_id, endpoint) do update set p256dh = excluded.p256dh, auth = excluded.auth;
+  return true;
+end $$;
+revoke execute on function public.save_push_subscription(text, text, jsonb) from public;
+grant execute on function public.save_push_subscription(text, text, jsonb) to anon, authenticated;

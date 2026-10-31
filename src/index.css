@@ -1239,3 +1239,14 @@ h1, h2 { text-wrap: balance; }
 .legal-draft svg { flex: none; color: var(--red); }
 .legal-todo { padding: 1px 5px; border-radius: 5px; background: var(--yellow); color: var(--ink); font-weight: 600; }
 .legal-version { margin-top: 28px; font-size: .82rem; color: var(--muted); }
+
+/* Notificaciones del pedido */
+.push-optin { width: 100%; font-size: .9rem; }
+.push-optin p { margin: 0; }
+.push-optin p b { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); }
+.push-optin ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 4px; text-align: left; }
+.push-optin:has(ol), p.push-optin:not(.ok) { padding: 12px 14px; border-radius: 12px; background: var(--bg-alt); text-align: left; }
+.push-optin.ok { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #dcf3e3; color: #145c2e; font-weight: 600; }
+.track-card .push-optin { margin: 16px 0 0; }
+.push-state { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; background: #f3ead0; color: var(--muted); font-size: .85rem; font-weight: 600; }
+.push-state.on { background: #dcf3e3; color: #145c2e; }

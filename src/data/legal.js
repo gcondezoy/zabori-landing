@@ -3,7 +3,7 @@
 // Al cambiar un texto, subir LEGAL_VERSION: cada pedido y cuenta guarda la versión que aceptó.
 import { money, site } from '../config/site'
 
-export const LEGAL_VERSION = '2026-10-31-borrador'
+export const LEGAL_VERSION = '2026-10-31-borrador-2'
 
 const data = site.legal
 const pending = (value, label) => value || `[[${label}]]`
@@ -77,12 +77,13 @@ export const LEGAL_PAGES = {
           'Si creas una cuenta: correo, nombre, celular, dirección guardada e historial de pedidos. Tu contraseña se guarda cifrada y nosotros no podemos verla.',
           'Del pedido: productos, montos, medio de pago, estado y fechas.',
           'Si pagas con Yape o Plin: la captura que nos envías por WhatsApp.',
+          'Si activas los avisos del pedido: la dirección técnica que genera tu navegador para enviarte notificaciones. La borramos cuando tu pedido termina.',
           'Si pagas con tarjeta: tu correo y la referencia del cobro. No recibimos ni guardamos el número, la fecha de vencimiento ni el código de seguridad.',
         ] },
       ] },
       { title: 'Para qué los usamos', blocks: [
         { list: [
-          'Preparar, entregar y cobrar tu pedido, y avisarte cómo va.',
+          'Preparar, entregar y cobrar tu pedido, y avisarte cómo va, también con notificaciones si las activas.',
           'Atender tus consultas y reclamos.',
           'Administrar tu cuenta y mostrarte tus pedidos anteriores.',
           'Cumplir obligaciones legales y contables.',
@@ -102,6 +103,7 @@ export const LEGAL_PAGES = {
           'Resend: envío de correos, cuando esté activo.',
           'Photon y OpenStreetMap: búsqueda de direcciones y mapa, cuando escribes tu dirección o usas tu ubicación.',
           'WhatsApp: si decides escribirnos por ese medio.',
+          'El servicio de notificaciones de tu navegador (por ejemplo Google o Apple): si activas los avisos del pedido.',
           '[[Indicar quién hace el reparto, si es un tercero]]',
         ] },
         'Algunos de estos proveedores tienen sus servidores fuera del Perú. [[Confirmar con el abogado cómo informar esta transferencia internacional]]',

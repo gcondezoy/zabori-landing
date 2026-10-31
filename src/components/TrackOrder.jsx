@@ -3,6 +3,8 @@ import { MagnifyingGlass, CheckCircle, Circle, WhatsappLogo, ArrowLeft, XCircle 
 import { trackOrder } from '../lib/track'
 import { zaboriWhatsapp, lastOrder, METHODS } from '../lib/whatsapp'
 import { money } from '../config/site'
+import { pushPhone } from '../lib/push'
+import PushOptIn from './PushOptIn'
 
 const REFRESH_MS = 20000
 
@@ -23,8 +25,14 @@ function reachedAt(order, status) {
   return h.length ? h[h.length - 1].at : status === 'pendiente' ? order.createdAt : null
 }
 
+// Al tocar una notificación se llega con #/seguir?codigo=ZAB-XXXXX
+function codeFromLink() {
+  return new URLSearchParams(window.location.hash.split('?')[1] || '').get('codigo')?.toUpperCase() || ''
+}
+
 export default function TrackOrder() {
-  const saved = lastOrder()
+  const linked = codeFromLink()
+  const saved = linked ? { code: linked, phone: lastOrder()?.code === linked ? lastOrder().phone : pushPhone(linked) } : lastOrder()
   const [code, setCode] = useState(saved?.code || '')
   const [phone, setPhone] = useState((saved?.phone || '').replace(/\D/g, '').slice(-4))
   const [order, setOrder] = useState(null)
@@ -120,6 +128,8 @@ export default function TrackOrder() {
                 <li key={k}><b>{i.qty}× {i.name}</b>{i.detail && <small>{i.detail}</small>}</li>
               ))}
             </ul>
+
+            {!cancelled && order.status !== 'entregado' && <PushOptIn code={order.code} phone={phone} />}
 
             <div className="track-foot">
               <a className="btn wa" target="_blank" rel="noreferrer" href={zaboriWhatsapp(`Hola, tengo una consulta sobre mi pedido ${order.code}.`)}>

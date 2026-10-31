@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { X, Phone, WhatsappLogo, EnvelopeSimple, MapPin, CheckCircle, Circle, UserCircle, MapTrifold } from '@phosphor-icons/react'
+import { Bell, X, Phone, WhatsappLogo, EnvelopeSimple, MapPin, CheckCircle, Circle, UserCircle, MapTrifold } from '@phosphor-icons/react'
 import { STATUS, PAYMENT, nextStatus, updateOrder, whatsappLink } from '../../lib/admin'
 import { fmtDateTime } from '../../lib/stats'
+import { notifyOrder, pushConfigurado, pushCount } from '../../lib/push'
 import { mapsLink } from '../../lib/geo'
 import { money } from '../../config/site'
 import { StatusPill, PayPill } from './ui'
@@ -10,6 +11,8 @@ export default function OrderDetail({ order: o, onClose, refresh }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const [notify, setNotify] = useState(false) // tras cambiar el estado, sugerir avisar al cliente
+  const [pushes, setPushes] = useState(null) // dispositivos con avisos activos en este pedido
+  const [pushSent, setPushSent] = useState(false)
   const next = nextStatus(o)
   const closed = o.status === 'entregado' || o.status === 'cancelado'
 
@@ -19,12 +22,22 @@ export default function OrderDetail({ order: o, onClose, refresh }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  useEffect(() => {
+    let alive = true
+    pushCount(o.id).then((n) => { if (alive) setPushes(n) })
+    return () => { alive = false }
+  }, [o.id])
+
   const act = async (fields) => {
-    setBusy(true); setErr('')
+    setBusy(true); setErr(''); setPushSent(false)
     try {
       await updateOrder(o, fields)
+      const result = await notifyOrder(o.code, fields.payment ? 'payment' : 'status')
+      const sent = result?.sent > 0
+      setPushSent(sent)
+      if (result) setPushes(fields.status === 'entregado' || fields.status === 'cancelado' ? 0 : result.total)
       await refresh()
-      if (fields.status) setNotify(true)
+      if (fields.status && !sent) setNotify(true) // sin notificación: queda el aviso manual por WhatsApp
     } catch (e) {
       setErr(e.message)
     } finally {
@@ -59,6 +72,13 @@ export default function OrderDetail({ order: o, onClose, refresh }) {
             </div>
           )}
           {err && <p className="form-err" role="alert">{err}</p>}
+          {pushConfigurado && pushes !== null && !closed && (
+            <p className={`push-state${pushes > 0 ? ' on' : ''}`}>
+              <Bell size={16} weight={pushes > 0 ? 'fill' : 'regular'} />
+              {pushes > 0 ? 'Avisos activos: se notifica solo al cambiar el estado.' : 'Sin avisos activos: este cliente no recibe notificaciones.'}
+            </p>
+          )}
+          {pushSent && <p className="push-state on" role="status"><Bell size={16} weight="fill" /> Notificación enviada al cliente.</p>}
           {notify && (
             <a className="notify" href={whatsappLink(o)} target="_blank" rel="noreferrer" onClick={() => setNotify(false)}>
               <WhatsappLogo size={18} weight="fill" /> Avisar al cliente: “{STATUS[o.status]}”

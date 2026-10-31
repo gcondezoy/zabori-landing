@@ -8,6 +8,7 @@ import { zaboriWhatsapp, rememberOrder } from '../lib/whatsapp'
 import { money, site } from '../config/site'
 import { LEGAL_VERSION } from '../data/legal'
 import AddressPicker from './AddressPicker'
+import PushOptIn from './PushOptIn'
 
 const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', lat: null, lng: null, notes: '', terms: false }
 
@@ -160,6 +161,7 @@ export default function Checkout() {
               </>
             )}
 
+            <PushOptIn code={done.code} phone={done.phone} />
             <button type="button" className="btn ghost block" onClick={goTrack}><MapTrifold size={18} /> Ver el estado de mi pedido</button>
             <button type="button" className="link" onClick={close}>Volver a la carta</button>
           </div>
