@@ -1223,3 +1223,19 @@ h1, h2 { text-wrap: balance; }
   .co-col { display: grid; gap: 14px; }
   .co-col + .co-col { padding-top: 38px; }
 }
+
+/* Términos y Privacidad */
+.consent a { color: var(--red); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.footer-legal { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 28px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .16); font-size: .88rem; }
+.legal { min-height: 70vh; padding-top: 40px; }
+.legal-in { max-width: 720px; }
+.legal h1 { margin-top: 14px; font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; color: var(--ink); }
+.legal section { margin-top: 28px; }
+.legal h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 8px; }
+.legal section p, .legal section li { line-height: 1.6; }
+.legal section p + p, .legal section p + ul, .legal section ul + p { margin-top: 10px; }
+.legal section ul { padding-left: 20px; display: grid; gap: 6px; }
+.legal-draft { display: flex; align-items: flex-start; gap: 8px; margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: var(--bg-alt); color: var(--ink); font-size: .92rem; font-weight: 600; }
+.legal-draft svg { flex: none; color: var(--red); }
+.legal-todo { padding: 1px 5px; border-radius: 5px; background: var(--yellow); color: var(--ink); font-weight: 600; }
+.legal-version { margin-top: 28px; font-size: .82rem; color: var(--muted); }

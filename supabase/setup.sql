@@ -201,6 +201,10 @@ create policy "lineas propias" on public.order_items for select
 -- p = { name, phone, email, mode, address, notes, items: [{id, qty}] }
 -- Plato armado: { id: 'arma', qty, options: ['p-pollo','c-arroz',...] } (se validan los mínimos/máximos de cada grupo)
 -- Menú del día: { id: 'm1', qty, taper: 't-kraft', entrada: 'e1' } (el táper es obligatorio y suma su precio; la entrada va incluida)
+-- Constancia de que aceptó Términos y Privacidad en cada pedido
+alter table public.orders add column if not exists terms_version text;
+alter table public.orders add column if not exists terms_at timestamptz;
+
 create or replace function public.create_order(p jsonb) returns text
 language plpgsql security definer set search_path = public as $$
 declare
@@ -334,11 +338,17 @@ begin
     raise exception 'Medio de pago inválido';
   end if;
 
+  -- Constancia de aceptación: la versión viene del navegador y la hora la pone el servidor
+  if coalesce(trim(p->>'terms_version'), '') = '' then
+    raise exception 'Debes aceptar los Términos y la Política de Privacidad';
+  end if;
+
   insert into public.orders (code, user_id, customer_name, phone, email, mode, address, notes,
-                             subtotal, delivery_fee, total, payment_method, lat, lng)
+                             subtotal, delivery_fee, total, payment_method, lat, lng, terms_version, terms_at)
   values (v_code, auth.uid(), trim(p->>'name'), trim(p->>'phone'), coalesce(trim(p->>'email'), ''),
           v_mode, coalesce(trim(p->>'address'), ''), coalesce(trim(p->>'notes'), ''),
-          v_subtotal, v_fee, v_subtotal + v_fee, coalesce(p->>'payment_method', 'tarjeta'), v_lat, v_lng)
+          v_subtotal, v_fee, v_subtotal + v_fee, coalesce(p->>'payment_method', 'tarjeta'), v_lat, v_lng,
+          left(trim(p->>'terms_version'), 40), now())
   returning id into v_order;
 
   insert into public.order_items (order_id, item_id, name, detail, price, qty)
@@ -509,6 +519,8 @@ create policy "admin borra fotos menu" on storage.objects for delete using (buck
 --  ETAPA 7 · Permiso para publicidad y correo de bienvenida
 -- =============================================================
 alter table public.profiles add column if not exists accepts_marketing boolean not null default false;
+alter table public.profiles add column if not exists terms_version text; -- versión de Términos y Privacidad aceptada
+alter table public.profiles add column if not exists terms_at timestamptz;
 alter table public.profiles add column if not exists marketing_at timestamptz; -- cuándo dio (o retiró) su permiso
 alter table public.profiles add column if not exists welcomed_at timestamptz;  -- lo marca la función welcome-email
 
@@ -518,12 +530,14 @@ language plpgsql security definer set search_path = public as $$
 declare
   v_ok boolean := coalesce(new.raw_user_meta_data->>'accepts_marketing', '') = 'true';
 begin
-  insert into public.profiles (id, name, phone, accepts_marketing, marketing_at)
+  insert into public.profiles (id, name, phone, accepts_marketing, marketing_at, terms_version, terms_at)
   values (new.id,
           coalesce(new.raw_user_meta_data->>'name', ''),
           coalesce(new.raw_user_meta_data->>'phone', ''),
           v_ok,
-          case when v_ok then now() end)
+          case when v_ok then now() end,
+          left(new.raw_user_meta_data->>'terms_version', 40),
+          case when new.raw_user_meta_data ? 'terms_version' then now() end)
   on conflict (id) do nothing;
   return new;
 end $$;
@@ -537,6 +551,8 @@ begin
   end if;
   if current_user not in ('service_role', 'postgres') then
     new.welcomed_at := old.welcomed_at;
+    new.terms_version := old.terms_version;
+    new.terms_at := old.terms_at;
   end if;
   return new;
 end $$;

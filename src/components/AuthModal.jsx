@@ -13,7 +13,7 @@ const STATUS = {
 function AuthForm({ mode }) {
   const { signIn, signUp, setModal } = useAuth()
   const registro = mode === 'registro'
-  const [f, setF] = useState({ name: '', phone: '', email: '', password: '', marketing: false })
+  const [f, setF] = useState({ name: '', phone: '', email: '', password: '', marketing: false, terms: false })
   const [err, setErr] = useState('')
   const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
@@ -58,8 +58,14 @@ function AuthForm({ mode }) {
       </label>
       {registro && (
         <label className="consent">
+          <input type="checkbox" required checked={f.terms} onChange={(e) => setF({ ...f, terms: e.target.checked })} />
+          <span>Acepto los <a href="#/terminos" target="_blank" rel="noreferrer">Términos y Condiciones</a> y la <a href="#/privacidad" target="_blank" rel="noreferrer">Política de Privacidad</a>.</span>
+        </label>
+      )}
+      {registro && (
+        <label className="consent">
           <input type="checkbox" checked={f.marketing} onChange={(e) => setF({ ...f, marketing: e.target.checked })} />
-          <span>Quiero recibir promociones y novedades de Zabori por correo. Puedo dejar de recibirlas cuando quiera.</span>
+          <span>Opcional: quiero recibir promociones y novedades de Zabori por correo. Puedo dejar de recibirlas cuando quiera.</span>
         </label>
       )}
       {err && <p className="form-err" role="alert">{err}</p>}

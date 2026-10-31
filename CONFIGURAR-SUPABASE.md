@@ -94,6 +94,17 @@ Las políticas RLS (`is_admin()`) permiten ver/actualizar pedidos y editar la ca
 - Las coordenadas se guardan en `orders.lat` / `orders.lng` (solo si están dentro del Perú) y el panel abre el punto exacto en Google Maps.
 - Si más adelante se quiere Google Maps (mejores resultados en Lima), solo se cambia `src/lib/geo.js` y el mapa; el resto queda igual.
 
+# Términos, Privacidad y reclamos
+
+Los textos están en `src/data/legal.js` y son un **borrador**: debe revisarlos un abogado. Lo pendiente se ve resaltado en las páginas.
+
+1. Completar `site.legal` en `src/config/site.js`: razón social, RUC, domicilio, correo, número del banco de datos y enlace del Libro de Reclamaciones virtual ([Tu Libro de Reclamaciones](https://consumidor.indecopi.gob.pe/tulibro/)).
+2. Cuando estén revisados, poner `draft: false` y cambiar `LEGAL_VERSION`.
+3. Cada pedido guarda `orders.terms_version` y `terms_at`, y cada cuenta `profiles.terms_version` y `terms_at`. Consulta:
+   ```sql
+   select code, terms_version, terms_at from public.orders order by created_at desc limit 20;
+   ```
+
 # Correos: bienvenida y publicidad
 
 Hace falta un **dominio propio** y una cuenta en [Resend](https://resend.com) (de preferencia a nombre del cliente).

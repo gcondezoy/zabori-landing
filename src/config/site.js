@@ -19,6 +19,9 @@ export const site = {
   menuPrice: 10, // S/ precio único de todos los menús del día (se cambia desde el panel, Carta)
   deliveryFee: 3, // S/ por delivery
   freeDeliveryFrom: 40, // S/ pedido mínimo para delivery gratis
+  // Datos para Términos y Privacidad. Lo que esté vacío se muestra como pendiente en esas páginas.
+  // draft: mientras sea true, se avisa que los textos están pendientes de revisión legal.
+  legal: { draft: true, razonSocial: '', ruc: '', domicilio: '', email: '', bancoDatos: '', reclamosUrl: '' },
   adminDemoPin: 'zabori', // solo para el panel en modo demo (sin Supabase); con Supabase se usa la tabla admins
 }
 

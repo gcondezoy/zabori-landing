@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase, supabaseConfigurado } from '../lib/supabase'
+import { LEGAL_VERSION } from '../data/legal'
 
 const AuthContext = createContext(null)
 const DEMO_USERS = 'zabori-demo-users'
@@ -54,14 +55,14 @@ export function AuthProvider({ children }) {
 
   const signUp = useCallback(async ({ email, password, name, phone, marketing }) => {
     if (supabaseConfigurado) {
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name, phone, accepts_marketing: marketing === true } } })
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name, phone, accepts_marketing: marketing === true, terms_version: LEGAL_VERSION } } })
       if (error) throw new Error(error.message)
       // Si el proyecto exige confirmar el correo, aún no hay sesión
       return { needsConfirm: !data.session }
     }
     const users = read(DEMO_USERS, [])
     if (users.some((u) => u.email === email)) throw new Error('Ese correo ya está registrado.')
-    const u = { id: 'u' + Date.now(), email, password, name, phone, address: '', lat: null, lng: null, accepts_marketing: marketing === true, marketing_at: marketing ? new Date().toISOString() : null }
+    const u = { id: 'u' + Date.now(), email, password, name, phone, address: '', lat: null, lng: null, accepts_marketing: marketing === true, marketing_at: marketing ? new Date().toISOString() : null, terms_version: LEGAL_VERSION, terms_at: new Date().toISOString() }
     write(DEMO_USERS, [...users, u])
     write(DEMO_SESSION, u.id)
     setUser(u)

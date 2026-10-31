@@ -6,9 +6,10 @@ import { createOrder } from '../lib/orders'
 import { culqiConfigurado, pedirToken, cobrar } from '../lib/culqi'
 import { zaboriWhatsapp, rememberOrder } from '../lib/whatsapp'
 import { money, site } from '../config/site'
+import { LEGAL_VERSION } from '../data/legal'
 import AddressPicker from './AddressPicker'
 
-const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', lat: null, lng: null, notes: '' }
+const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', lat: null, lng: null, notes: '', terms: false }
 
 // La tarjeta solo se ofrece con las llaves de Culqi: sin ellas no se puede cobrar
 const PAY_OPTIONS = [
@@ -111,7 +112,7 @@ export default function Checkout() {
     setPaying(true)
     try {
       const deliver = f.mode === 'delivery'
-      const form = { ...f, address: deliver ? f.address : '', lat: deliver ? f.lat : null, lng: deliver ? f.lng : null, email: card ? f.email : '', payment_method: method }
+      const form = { ...f, address: deliver ? f.address : '', lat: deliver ? f.lat : null, lng: deliver ? f.lng : null, email: card ? f.email : '', terms_version: LEGAL_VERSION, payment_method: method }
       const res = await createOrder(form, lines, user?.id)
       if (user && f.mode === 'delivery' && f.address && f.address !== user.address) {
         saveProfile({ address: f.address, lat: f.lat, lng: f.lng }).catch(() => {})
@@ -250,6 +251,10 @@ export default function Checkout() {
                 ? `Al confirmar te mostramos el QR y número de ${site.wallets[method].label} para pagar.`
                 : 'Pago seguro con tarjeta a través de Culqi. Tus datos de tarjeta no pasan por Zabori.'}
             </div>
+            <label className="consent">
+              <input type="checkbox" required checked={f.terms} onChange={(e) => setF({ ...f, terms: e.target.checked })} />
+              <span>Acepto los <a href="#/terminos" target="_blank" rel="noreferrer">Términos y Condiciones</a> y la <a href="#/privacidad" target="_blank" rel="noreferrer">Política de Privacidad</a>.</span>
+            </label>
             {err && <p className="form-err" role="alert">{err}</p>}
             <button className="btn primary block" disabled={paying}>
               {paying ? 'Procesando…' : card ? `Pagar ${money(total)}` : `Confirmar pedido · ${money(total)}`}

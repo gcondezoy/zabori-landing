@@ -20,6 +20,13 @@ export default function Footer() {
           </li>
         </ul>
       </div>
+      <nav className="wrap footer-legal" aria-label="Información legal">
+        <a href="#/terminos">Términos y Condiciones</a>
+        <a href="#/privacidad">Política de Privacidad</a>
+        {site.legal.reclamosUrl
+          ? <a href={site.legal.reclamosUrl} target="_blank" rel="noreferrer">Libro de Reclamaciones</a>
+          : <span>Libro de Reclamaciones (por habilitar)</span>}
+      </nav>
       <p className="copy">© {new Date().getFullYear()} {site.name}. Todos los derechos reservados.</p>
     </footer>
   )

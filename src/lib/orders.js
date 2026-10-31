@@ -33,7 +33,7 @@ export async function createOrder(form, lines, userId) {
 
   const code = 'ZAB-' + Math.random().toString(36).slice(2, 7).toUpperCase()
   const order = {
-    code, userId: userId || null, ...form, subtotal, fee, total: subtotal + fee,
+    code, userId: userId || null, ...form, terms_at: new Date().toISOString(), subtotal, fee, total: subtotal + fee,
     status: 'pendiente', payment: 'pendiente', paymentMethod: form.payment_method || 'tarjeta', createdAt: new Date().toISOString(),
     history: [{ type: 'status', value: 'pendiente', at: new Date().toISOString() }],
     items: lines.map((l) => ({
