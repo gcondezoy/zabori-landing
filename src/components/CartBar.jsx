@@ -11,7 +11,7 @@ export default function CartBar() {
       <button onClick={() => setOpen(true)} tabIndex={visible ? 0 : -1}>
         <span className="cb-icon"><ShoppingBag size={20} weight="bold" /><b key={count} className="bump">{count}</b></span>
         <span className="cb-text">Ver mi pedido</span>
-        <span className="cb-total">{money(subtotal)} <CaretRight size={16} weight="bold" /></span>
+        <span className="cb-total"><span key={subtotal} className="bump">{money(subtotal)}</span> <CaretRight size={16} weight="bold" /></span>
       </button>
     </div>
   )

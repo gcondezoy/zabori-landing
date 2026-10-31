@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { X, CheckCircle, CreditCard, WhatsappLogo, Copy, Check, MapTrifold, Storefront } from '@phosphor-icons/react'
+import { useEffect, useRef, useState } from 'react'
+import { X, CreditCard, WhatsappLogo, Copy, Check, MapTrifold, Storefront } from '@phosphor-icons/react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { createOrder } from '../lib/orders'
@@ -7,6 +7,7 @@ import { culqiConfigurado, pedirToken, cobrar } from '../lib/culqi'
 import { zaboriWhatsapp, rememberOrder } from '../lib/whatsapp'
 import { money, site } from '../config/site'
 import { LEGAL_VERSION } from '../data/legal'
+import { useExit } from '../lib/useExit'
 import AddressPicker from './AddressPicker'
 import PushOptIn from './PushOptIn'
 
@@ -72,14 +73,25 @@ export default function Checkout() {
     }))
   }, [checkout, user])
 
-  if (!checkout) return null
+  const { shown, leaving } = useExit(checkout)
+  const box = useRef(null)
+
+  // Se limpia cuando ya salió: no debe verse el formulario mientras se cierra el pedido terminado
+  useEffect(() => {
+    if (!shown) { setDone(null); setErr(''); setPending(null) }
+  }, [shown])
+
+  // El botón de confirmar queda abajo: se sube para ver la confirmación
+  useEffect(() => { if (done) box.current?.scrollTo(0, 0) }, [done])
+
+  if (!shown) return null
 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
   const fee = deliveryFor(f.mode)
   const total = subtotal + fee
   const card = method === 'tarjeta'
 
-  const close = () => { setCheckout(false); setDone(null); setErr(''); setPending(null) }
+  const close = () => setCheckout(false)
   const openAuth = (m) => { setCheckout(false); setModal(m) }
   const goTrack = () => { close(); window.location.hash = '#/seguir' }
 
@@ -137,12 +149,15 @@ export default function Checkout() {
   const wallet = done && done.method !== 'tarjeta'
 
   return (
-    <div className="overlay center" onClick={close}>
-      <div className="modal" role="dialog" aria-label="Finalizar pedido" onClick={(e) => e.stopPropagation()}>
+    <div className={`overlay center${leaving ? ' leaving' : ''}`} onClick={close}>
+      <div ref={box} className="modal" role="dialog" aria-label="Finalizar pedido" onClick={(e) => e.stopPropagation()}>
         <button className="icon-btn close" onClick={close} aria-label="Cerrar"><X size={22} /></button>
         {done ? (
           <div className="done">
-            <CheckCircle size={56} weight="fill" />
+            <svg className="done-check" viewBox="0 0 56 56" width="64" height="64" aria-hidden="true">
+              <circle cx="28" cy="28" r="26" />
+              <path d="M16 29l8 8 16-17" pathLength="1" />
+            </svg>
             <h3>{wallet ? '¡Pedido registrado!' : '¡Pedido recibido!'}</h3>
             <p>Código <strong>{done.code}</strong> · {money(done.total)}</p>
 
@@ -242,7 +257,7 @@ export default function Checkout() {
               {f.mode === 'delivery' && (
                 <div className="row"><span>Delivery</span><span>{fee ? money(fee) : 'Gratis'}</span></div>
               )}
-              <div className="row total"><span>Total</span><strong>{money(total)}</strong></div>
+              <div className="row total"><span>Total</span><strong key={total} className="bump">{money(total)}</strong></div>
               {f.mode === 'delivery' && fee > 0 && (
                 <p className="hint">Delivery gratis desde {money(site.freeDeliveryFrom)}.</p>
               )}

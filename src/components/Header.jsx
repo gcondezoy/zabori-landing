@@ -4,6 +4,7 @@ import { site } from '../config/site'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { lastOrder } from '../lib/whatsapp'
+import { useExit } from '../lib/useExit'
 
 export default function Header() {
   const { count, setOpen } = useCart()
@@ -33,7 +34,8 @@ export default function Header() {
     }
   }, [navOpen])
 
-  const tracked = navOpen ? lastOrder() : null
+  const { shown: navShown, leaving: navLeaving } = useExit(navOpen, 140)
+  const tracked = navShown ? lastOrder() : null
 
   return (
     <header className={`header${scrolled ? ' scrolled' : ''}`}>
@@ -57,14 +59,14 @@ export default function Header() {
           </button>
           <button ref={burger} className="burger" onClick={() => setNavOpen((v) => !v)}
             aria-label={navOpen ? 'Cerrar menú' : 'Abrir menú'} aria-expanded={navOpen} aria-controls="nav-celular">
-            {navOpen ? <X size={22} weight="bold" /> : <List size={22} weight="bold" />}
+            <span key={navOpen} className="burger-icon">{navOpen ? <X size={22} weight="bold" /> : <List size={22} weight="bold" />}</span>
           </button>
         </div>
       </div>
-      {navOpen && (
+      {navShown && (
         <>
-          <div className="nav-scrim" onClick={() => setNavOpen(false)} />
-          <nav id="nav-celular" className="nav-mobile" aria-label="Menú" onClick={() => setNavOpen(false)}>
+          <div className={`nav-scrim${navLeaving ? ' leaving' : ''}`} onClick={() => setNavOpen(false)} />
+          <nav id="nav-celular" className={`nav-mobile${navLeaving ? ' leaving' : ''}`} aria-label="Menú" onClick={() => setNavOpen(false)}>
             <a href="#/seguir" className="nav-track">
               <MapTrifold size={22} weight="bold" />
               <span>Sigue tu pedido{tracked && <small>{tracked.code}</small>}</span>

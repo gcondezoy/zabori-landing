@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Plus, Minus, ForkKnife } from '@phosphor-icons/react'
 import { categories } from '../data/menu'
 import { useMenu } from '../context/MenuContext'
@@ -13,6 +13,10 @@ import { menuPrice } from '../lib/menu'
 import { DAY_NAMES } from '../lib/week'
 import { OPEN_BUILD_EVENT, OPEN_MENU_EVENT } from './BuildPromo'
 
+// Solo se oculta la foto que aún está cargando: visible por defecto, nunca queda en blanco si algo falla
+const markLoading = (img) => { if (img && !img.complete) img.classList.add('loading') }
+const markLoaded = (e) => e.currentTarget.classList.remove('loading')
+
 function Card({ item, index }) {
   const { qty, add, dec, requestAdd, countOf } = useCart()
   const { build, entradas } = useMenu()
@@ -22,7 +26,7 @@ function Card({ item, index }) {
     <Reveal as="article" className="card" delay={Math.min(index, 2) * 70}>
       <div className="card-img" style={{ background: item.tone }}>
         {item.img
-          ? <img src={item.img} alt={item.name} loading="lazy" width="720" height="540" />
+          ? <img src={item.img} alt={item.name} loading="lazy" width="720" height="540" ref={markLoading} onLoad={markLoaded} onError={markLoaded} />
           : <ForkKnife size={34} weight="duotone" />}
         {item.tag && <span className="tag">{item.tag}</span>}
       </div>
@@ -42,7 +46,7 @@ function Card({ item, index }) {
           ) : (
             <div className="stepper">
               <button onClick={() => dec(item.id)} aria-label="Quitar uno"><Minus weight="bold" /></button>
-              <span>{n}</span>
+              <span key={n} className="bump">{n}</span>
               <button onClick={() => add(item.id)} aria-label="Agregar uno"><Plus weight="bold" /></button>
             </div>
           )}
@@ -56,6 +60,21 @@ export default function Menu() {
   const [cat, setCat] = useState('menu')
   const { items, entradas, drink, day } = useMenu()
   const hasMenus = items.some((i) => i.cat === 'menu')
+  const tabs = useRef(null)
+  const [ink, setInk] = useState(null)
+
+  // La marca de la pestaña elegida se desliza hasta su lugar
+  useLayoutEffect(() => {
+    const measure = () => {
+      const on = tabs.current?.querySelector('.tab.on')
+      if (on) setInk({ x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, h: on.offsetHeight })
+    }
+    measure()
+    let alive = true
+    document.fonts?.ready.then(() => { if (alive) measure() })
+    window.addEventListener('resize', measure)
+    return () => { alive = false; window.removeEventListener('resize', measure) }
+  }, [cat])
 
   useEffect(() => {
     const open = () => setCat('arma')
@@ -75,7 +94,8 @@ export default function Menu() {
           <h2>{day.today ? 'La carta de hoy' : `La carta del ${DAY_NAMES[day.day]}`}</h2>
           <p className="sub">Los platos cambian cada día.</p>
         </Reveal>
-        <div className="tabs" role="tablist">
+        <div ref={tabs} className="tabs tabs-ink" role="tablist">
+          {ink && <span className="tab-ink" aria-hidden="true" style={{ width: ink.w, height: ink.h, transform: `translate(${ink.x}px, ${ink.y}px)` }} />}
           {categories.map((c) => (
             <button key={c.id} role="tab" aria-selected={cat === c.id}
               className={cat === c.id ? 'tab on' : 'tab'} onClick={() => setCat(c.id)}>

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { X } from '@phosphor-icons/react'
 import { useAuth } from '../context/AuthContext'
 import { listMyOrders } from '../lib/orders'
 import { supabaseConfigurado } from '../lib/supabase'
 import { money } from '../config/site'
+import { useExit } from '../lib/useExit'
 
 const STATUS = {
   pendiente: 'Pendiente', preparando: 'Preparando', en_camino: 'En camino',
@@ -137,11 +138,15 @@ function Account() {
 
 export default function AuthModal() {
   const { modal, setModal, user } = useAuth()
-  if (!modal) return null
+  const { shown, leaving } = useExit(modal)
+  const lastView = useRef(null)
+  if (!shown) return null
   const close = () => setModal(null)
-  const view = user ? 'cuenta' : modal === 'cuenta' ? 'login' : modal
+  // Mientras sale conserva lo que mostraba: al iniciar sesión no debe asomarse otra vista
+  if (!leaving) lastView.current = user ? 'cuenta' : modal === 'cuenta' ? 'login' : modal
+  const view = lastView.current
   return (
-    <div className="overlay center" onClick={close}>
+    <div className={`overlay center${leaving ? ' leaving' : ''}`} onClick={close}>
       <div className="modal" role="dialog" aria-label="Cuenta" onClick={(e) => e.stopPropagation()}>
         <button className="icon-btn close" onClick={close} aria-label="Cerrar"><X size={22} /></button>
         {view === 'cuenta' ? <Account /> : <AuthForm key={view} mode={view} />}

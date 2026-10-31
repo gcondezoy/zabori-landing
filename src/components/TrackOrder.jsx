@@ -121,7 +121,7 @@ export default function TrackOrder() {
                   const state = i < current ? 'is-done' : i === current ? 'is-now' : 'is-next'
                   return (
                     <li key={s} className={state}>
-                      <span className="ts-dot">{state === 'is-next' ? <Circle size={22} /> : <CheckCircle size={22} weight="fill" />}</span>
+                      <span key={state} className="ts-dot">{state === 'is-next' ? <Circle size={22} /> : <CheckCircle size={22} weight="fill" />}</span>
                       <span className="ts-label">{label}</span>
                       <span className="ts-time">{state !== 'is-next' && at ? hora(at) : ''}</span>
                     </li>

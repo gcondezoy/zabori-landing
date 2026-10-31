@@ -51,7 +51,7 @@ export default function OrderStrip() {
     <a href="#/seguir" className="order-strip" aria-label={`Tu pedido ${order.code}: ${label}. Ver cómo va`}>
       <span className="wrap order-strip-in">
         <span className="order-strip-dot" aria-hidden="true" />
-        <span className="order-strip-text"><b>{label}</b><small>{order.code}</small></span>
+        <span className="order-strip-text"><b key={label} className="order-strip-label">{label}</b><small>{order.code}</small></span>
         <span className="order-strip-go">Ver <CaretRight size={14} weight="bold" /></span>
       </span>
     </a>

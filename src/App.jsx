@@ -62,6 +62,7 @@ export default function App() {
   return (
     <>
       <Header />
+      <div key={route} className="page">
       {route === 'seguir' ? <Suspense fallback={<Loading />}><TrackOrder /></Suspense>
         : route === 'cuenta' ? <Suspense fallback={<Loading />}><AccountPage /></Suspense>
         : route === 'terminos' || route === 'privacidad' ? <Suspense fallback={<Loading />}><LegalPage page={route} /></Suspense> : (
@@ -73,6 +74,7 @@ export default function App() {
           <HowItWorks />
         </main>
       )}
+      </div>
       <Footer />
       <CartBar />
       <WhatsAppFab />

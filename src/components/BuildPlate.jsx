@@ -153,7 +153,7 @@ export default function BuildPlate() {
         <div className="b-actions">
           <div className="stepper" aria-label="Cantidad">
             <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Uno menos"><Minus weight="bold" /></button>
-            <span>{qty}</span>
+            <span key={qty} className="bump">{qty}</span>
             <button type="button" onClick={() => setQty((q) => Math.min(20, q + 1))} aria-label="Uno más"><Plus weight="bold" /></button>
           </div>
           {missing

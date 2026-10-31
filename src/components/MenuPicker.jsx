@@ -4,10 +4,12 @@ import { useCart } from '../context/CartContext'
 import { useMenu } from '../context/MenuContext'
 import { taperOptions, menuKey } from '../lib/build'
 import { money } from '../config/site'
+import { useExit } from '../lib/useExit'
 
 // Al agregar un menú del día: el cliente elige su entrada y su táper; la bebida ya viene incluida
 export default function MenuPicker() {
-  const { pickFor: item, setPickFor, add, setOpen } = useCart()
+  const { pickFor, setPickFor, add, setOpen } = useCart()
+  const { shown: item, leaving } = useExit(pickFor)
   const { build, entradas, drink } = useMenu()
   const [taper, setTaper] = useState(null)
   const [entrada, setEntrada] = useState(null)
@@ -39,7 +41,7 @@ export default function MenuPicker() {
   }
 
   return (
-    <div className="overlay center" onClick={close}>
+    <div className={`overlay center${leaving ? ' leaving' : ''}`} onClick={close}>
       <div className="modal taper-modal" role="dialog" aria-label={`Arma tu menú con ${item.name}`} onClick={(e) => e.stopPropagation()}>
         <button className="icon-btn close" onClick={close} aria-label="Cerrar"><X size={22} /></button>
         <div className="tp-head">
@@ -94,7 +96,7 @@ export default function MenuPicker() {
         <div className="tp-foot">
           <div className="stepper" aria-label="Cantidad">
             <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Uno menos"><Minus weight="bold" /></button>
-            <span>{qty}</span>
+            <span key={qty} className="bump">{qty}</span>
             <button type="button" onClick={() => setQty((q) => Math.min(20, q + 1))} aria-label="Uno más"><Plus weight="bold" /></button>
           </div>
           <button type="button" className="btn primary tp-add" disabled={Boolean(missing)} onClick={confirm}>

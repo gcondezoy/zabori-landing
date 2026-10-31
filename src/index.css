@@ -1347,3 +1347,82 @@ html { overflow-x: clip; }
   .burger { transition: none; }
   .burger:active { transform: none; }
 }
+
+/* ---------- Transiciones: salidas, confirmaciones y cambios de estado ---------- */
+
+/* Entre páginas */
+@keyframes page-in { from { opacity: 0; } }
+.page { animation: page-in .22s ease; }
+
+/* El carrito y las ventanas también salen con suavidad, más rápido de lo que entran */
+@keyframes overlay-out { to { background-color: rgba(30, 15, 8, 0); } }
+@keyframes drawer-out { to { transform: translateX(100%); } }
+@keyframes modal-out { to { opacity: 0; transform: translateY(6px) scale(.98); } }
+.overlay.leaving { animation: overlay-out .22s ease forwards; pointer-events: none; }
+.overlay.leaving .drawer { animation: drawer-out .22s var(--ease-drawer) forwards; }
+.overlay.leaving .modal { animation: modal-out .16s ease forwards; }
+
+/* Menú del celular */
+@keyframes nav-out { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes nav-scrim-out { to { opacity: 0; } }
+@keyframes link-in { from { opacity: 0; transform: translateY(-4px); } }
+@keyframes icon-swap { from { opacity: 0; transform: rotate(-60deg) scale(.8); } }
+.nav-mobile a { animation: link-in .22s var(--ease-out) backwards; }
+.nav-mobile a:nth-child(2) { animation-delay: 30ms; }
+.nav-mobile a:nth-child(3) { animation-delay: 60ms; }
+.nav-mobile a:nth-child(4) { animation-delay: 90ms; }
+.nav-mobile.leaving { animation: nav-out .14s ease forwards; pointer-events: none; }
+.nav-scrim.leaving { animation: nav-scrim-out .14s ease forwards; pointer-events: none; }
+.burger-icon { display: grid; animation: icon-swap .2s var(--ease-out); }
+
+/* Pestañas de la carta: una sola marca que se desliza */
+.tabs-ink { position: relative; }
+.tabs-ink .tab { position: relative; background: transparent; }
+.tabs-ink .tab.on { background: transparent; border-color: transparent; }
+.tab-ink { position: absolute; top: 0; left: 0; border-radius: 999px; background: var(--red); transition: transform .3s var(--ease-out), width .3s var(--ease-out); }
+
+/* Fotos de la carta: aparecen sobre su color al terminar de cargar */
+.card-img img { transition: opacity .35s ease, transform .8s var(--ease-out); }
+.card-img img.loading { opacity: 0; }
+
+/* Al agregar */
+.card-foot .stepper, .in-cart { animation: pop .18s var(--ease-out); }
+@keyframes line-in { from { opacity: 0; transform: translateX(10px); } }
+.lines li { animation: line-in .26s var(--ease-out) backwards; }
+
+/* Pedido confirmado: el momento más importante de la compra */
+@keyframes check-circle { from { opacity: 0; transform: scale(.7); } }
+@keyframes check-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes check-ring { from { box-shadow: 0 0 0 0 rgba(3, 77, 91, .3); } to { box-shadow: 0 0 0 18px rgba(3, 77, 91, 0); } }
+.done-check { border-radius: 50%; animation: check-ring .7s .3s ease-out backwards; }
+.done-check circle { fill: currentColor; transform-origin: center; animation: check-circle .32s var(--ease-out) backwards; }
+.done-check path { fill: none; stroke: #fff; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; animation: check-draw .32s .2s var(--ease-out) backwards; }
+.done-check ~ * { animation: panel-in .3s .28s var(--ease-out) backwards; }
+
+/* Sigue tu pedido: el avance se nota */
+.track-card { animation: panel-in .28s var(--ease-out); }
+.track-steps li::after { transition: border-color .35s ease; }
+.track-steps li { transition: color .25s ease; }
+.track-steps li:not(.is-next) .ts-dot svg { animation: pop .3s var(--ease-out); }
+
+/* Franja del pedido */
+@keyframes strip-in { from { max-height: 0; opacity: 0; } to { max-height: 72px; opacity: 1; } }
+@keyframes label-swap { from { opacity: 0; transform: translateY(6px); } }
+.order-strip { overflow: hidden; animation: strip-in .3s var(--ease-out); }
+.order-strip-label { display: inline-block; animation: label-swap .25s var(--ease-out); }
+.order-strip-dot { box-shadow: 0 0 0 0 rgba(74, 222, 128, .5); animation: strip-dot 2s infinite; }
+@keyframes strip-dot { 70% { box-shadow: 0 0 0 7px rgba(74, 222, 128, 0); } 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); } }
+
+/* Errores y campos */
+@keyframes err-in { 0% { opacity: 0; transform: translateX(-6px); } 40% { opacity: 1; transform: translateX(4px); } 70% { transform: translateX(-2px); } 100% { transform: none; } }
+.form-err { animation: err-in .3s ease; }
+.modal input, .modal textarea, .track-form input { transition: border-color .15s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .page, .tab-ink, .nav-mobile a, .burger-icon, .card-foot .stepper, .in-cart, .lines li, .track-card, .track-steps li:not(.is-next) .ts-dot svg, .order-strip, .order-strip-label, .order-strip-dot, .form-err { animation: none; transition: none; }
+  .card-img img, .card-img img.loading { opacity: 1; transition: none; }
+  .overlay.leaving, .nav-mobile.leaving, .nav-scrim.leaving { animation: panel-out .12s ease forwards; }
+  .overlay.leaving .drawer, .overlay.leaving .modal { animation: none; }
+  .done-check, .done-check circle, .done-check path, .done-check ~ * { animation: none; }
+}
+@keyframes panel-out { to { opacity: 0; } }
