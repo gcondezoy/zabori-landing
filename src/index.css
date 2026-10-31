@@ -169,6 +169,8 @@ h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 900; }
 .link { background: none; border: 0; padding: 0; color: var(--red); font-weight: 600; text-decoration: underline; cursor: pointer; }
 .switch { text-align: center; font-size: .92rem; color: var(--muted); }
 .form-err { background: #fbe3df; color: #8a1f12; padding: 10px 12px; border-radius: 10px; font-size: .9rem; }
+.consent { display: flex !important; align-items: flex-start; gap: 9px; font-size: .85rem; font-weight: 500; line-height: 1.35; color: var(--muted); cursor: pointer; }
+.consent input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; padding: 0; accent-color: var(--red); }
 .form-ok { background: #e6efd5; color: #3a4a1c; padding: 10px 12px; border-radius: 10px; font-size: .9rem; }
 .account { display: grid; gap: 14px; }
 .account form { display: grid; gap: 12px; }
@@ -784,12 +786,15 @@ h1, h2 { text-wrap: balance; }
 /* Medio de pago y pago con billetera */
 .paymethod { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; }
 .paymethod legend { font-size: .9rem; font-weight: 600; margin-bottom: 6px; padding: 0; }
-.pm-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pm-options { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
+.pm-logo { display: block; width: 36px; height: 36px; }
+.wallet-logo { display: block; width: 56px; height: 56px; }
+.facts-pay { display: inline-flex; align-items: center; gap: 6px; }
+.facts-pay img { display: block; width: 26px; height: 26px; }
 .pm-options label { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 4px !important; padding: 10px 6px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; cursor: pointer; font-weight: 700 !important; text-align: center; }
 .pm-options input { position: absolute; opacity: 0; pointer-events: none; }
 .pm-options label:has(input:focus-visible) { outline: 3px solid var(--red); outline-offset: 2px; }
 .pm-options label.on { border-color: var(--red); background: #e1f0f2; color: var(--red); }
-.pm-yape svg { color: #742284; } .pm-plin svg { color: #00a3b5; }
 .done .wa, .btn.wa { background: #1fa855; color: #fff; }
 .btn.wa:hover { background: #178a45; }
 .done .btn.block { width: 100%; }

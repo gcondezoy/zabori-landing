@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { X, CheckCircle, CreditCard, DeviceMobile, WhatsappLogo, Copy, Check, MapTrifold, Storefront } from '@phosphor-icons/react'
+import { X, CheckCircle, CreditCard, WhatsappLogo, Copy, Check, MapTrifold, Storefront } from '@phosphor-icons/react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { createOrder } from '../lib/orders'
@@ -12,8 +12,8 @@ const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', l
 
 // La tarjeta solo se ofrece con las llaves de Culqi: sin ellas no se puede cobrar
 const PAY_OPTIONS = [
-  { id: 'yape', label: 'Yape', icon: DeviceMobile },
-  { id: 'plin', label: 'Plin', icon: DeviceMobile },
+  { id: 'yape', label: 'Yape', logo: site.wallets.yape.logo },
+  { id: 'plin', label: 'Plin', logo: site.wallets.plin.logo },
   ...(culqiConfigurado ? [{ id: 'tarjeta', label: 'Tarjeta', icon: CreditCard }] : []),
 ]
 
@@ -26,6 +26,7 @@ function WalletPay({ done }) {
   }
   return (
     <div className="wallet">
+      <img className="wallet-logo" src={w.logo} alt="" width="56" height="56" />
       <p className="wallet-step">Paga <strong>{money(done.total)}</strong> con {w.label}</p>
       {w.qr
         ? <img className="wallet-qr" src={w.qr} alt={`QR de ${w.label} de ${site.name}`} width="220" height="220" />
@@ -212,10 +213,13 @@ export default function Checkout() {
             <fieldset className="paymethod">
               <legend>¿Cómo pagas?</legend>
               <div className="pm-options">
-                {PAY_OPTIONS.map(({ id, label, icon: Icon }) => (
+                {PAY_OPTIONS.map(({ id, label, logo, icon: Icon }) => (
                   <label key={id} className={`pm-${id}${method === id ? ' on' : ''}`}>
                     <input type="radio" name="method" value={id} checked={method === id} onChange={() => setMethod(id)} />
-                    <Icon size={20} weight={method === id ? 'fill' : 'regular'} /> {label}
+                    {logo
+                      ? <img className="pm-logo" src={logo} alt="" width="36" height="36" />
+                      : <Icon size={36} weight={method === id ? 'fill' : 'regular'} />}
+                    {label}
                   </label>
                 ))}
               </div>

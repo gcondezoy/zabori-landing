@@ -21,6 +21,10 @@ export default function Hero() {
           <ul className="facts">
             <li><Clock size={18} weight="bold" /> {site.schedule}</li>
             <li><Motorcycle size={18} weight="bold" /> Delivery y recojo</li>
+            <li className="facts-pay">
+              Paga con
+              {Object.values(site.wallets).map((w) => <img key={w.label} src={w.logo} alt={w.label} title={w.label} width="26" height="26" />)}
+            </li>
           </ul>
         </div>
         <div className="hero-art">
