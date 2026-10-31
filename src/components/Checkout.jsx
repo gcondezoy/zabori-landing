@@ -3,7 +3,6 @@ import { X, CheckCircle, CreditCard, DeviceMobile, WhatsappLogo, Copy, Check, Ma
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { createOrder } from '../lib/orders'
-import { supabaseConfigurado } from '../lib/supabase'
 import { culqiConfigurado, pedirToken, cobrar } from '../lib/culqi'
 import { zaboriWhatsapp, rememberOrder } from '../lib/whatsapp'
 import { money, site } from '../config/site'
@@ -11,10 +10,11 @@ import AddressPicker from './AddressPicker'
 
 const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', lat: null, lng: null, notes: '' }
 
+// La tarjeta solo se ofrece con las llaves de Culqi: sin ellas no se puede cobrar
 const PAY_OPTIONS = [
   { id: 'yape', label: 'Yape', icon: DeviceMobile },
   { id: 'plin', label: 'Plin', icon: DeviceMobile },
-  { id: 'tarjeta', label: 'Tarjeta', icon: CreditCard },
+  ...(culqiConfigurado ? [{ id: 'tarjeta', label: 'Tarjeta', icon: CreditCard }] : []),
 ]
 
 // Datos para pagar con Yape o Plin + botón para enviar la captura
@@ -75,7 +75,6 @@ export default function Checkout() {
   const fee = deliveryFor(f.mode)
   const total = subtotal + fee
   const card = method === 'tarjeta'
-  const needsEmail = card && culqiConfigurado // Culqi exige correo
 
   const close = () => { setCheckout(false); setDone(null); setErr(''); setPending(null) }
   const openAuth = (m) => { setCheckout(false); setModal(m) }
@@ -83,7 +82,7 @@ export default function Checkout() {
 
   const finish = (order) => {
     rememberOrder(order.code, order.phone)
-    setDone({ ...order, paid: order.method === 'tarjeta' && culqiConfigurado })
+    setDone(order)
     setPending(null)
     clear()
     setF(empty)
@@ -117,8 +116,8 @@ export default function Checkout() {
         saveProfile({ address: f.address, lat: f.lat, lng: f.lng }).catch(() => {})
       }
       const order = { code: res.code, total: res.total, mode: f.mode, email: f.email, phone: f.phone, method }
-      if (!card || !culqiConfigurado) {
-        // Yape/Plin: se paga fuera y se confirma en el panel. Tarjeta sin Culqi: modo demo.
+      if (!card) {
+        // Yape/Plin: se paga fuera y se confirma en el panel
         finish(order)
       } else {
         setPending(order)
@@ -151,9 +150,7 @@ export default function Checkout() {
             {wallet ? <WalletPay done={done} /> : (
               <>
                 <p>{done.mode === 'delivery' ? 'Te avisaremos cuando salga tu delivery.' : 'Te avisaremos cuando esté listo para recoger.'}</p>
-                {done.paid
-                  ? <p className="demo-note">Pago con tarjeta confirmado. Gracias por tu compra.</p>
-                  : <p className="demo-note">Pago en modo demo: no se realizó ningún cobro real.</p>}
+                <p className="demo-note">Pago con tarjeta confirmado. Gracias por tu compra.</p>
                 <a className="btn wa block" target="_blank" rel="noreferrer"
                   href={zaboriWhatsapp(`Hola, acabo de hacer el pedido ${done.code}. ¿Me avisan cuando esté ${done.mode === 'delivery' ? 'en camino' : 'listo para recoger'}?`)}>
                   <WhatsappLogo size={20} weight="fill" /> Seguir mi pedido por WhatsApp
@@ -225,8 +222,8 @@ export default function Checkout() {
             </fieldset>
 
             {card && (
-              <label>Correo{needsEmail ? '' : ' (opcional)'}
-                <input type="email" required={needsEmail} value={f.email} onChange={set('email')} autoComplete="email" placeholder="Para el comprobante del pago" />
+              <label>Correo
+                <input type="email" required value={f.email} onChange={set('email')} autoComplete="email" placeholder="Para el comprobante del pago" />
               </label>
             )}
 
@@ -244,13 +241,11 @@ export default function Checkout() {
             <div className="card-demo">
               {!card
                 ? `Al confirmar te mostramos el QR y número de ${site.wallets[method].label} para pagar.`
-                : culqiConfigurado
-                  ? 'Pago seguro con tarjeta a través de Culqi. Tus datos de tarjeta no pasan por Zabori.'
-                  : `Modo demo: no se cobra nada.${supabaseConfigurado ? ' Falta la llave de Culqi para cobrar de verdad.' : ' Los pedidos se guardan solo en este navegador.'}`}
+                : 'Pago seguro con tarjeta a través de Culqi. Tus datos de tarjeta no pasan por Zabori.'}
             </div>
             {err && <p className="form-err" role="alert">{err}</p>}
             <button className="btn primary block" disabled={paying}>
-              {paying ? 'Procesando…' : card ? `Pagar ${money(total)}${culqiConfigurado ? '' : ' (demo)'}` : `Confirmar pedido · ${money(total)}`}
+              {paying ? 'Procesando…' : card ? `Pagar ${money(total)}` : `Confirmar pedido · ${money(total)}`}
             </button>
           </form>
         )}

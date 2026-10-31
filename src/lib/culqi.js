@@ -1,9 +1,10 @@
 // Pago con tarjeta: Culqi Checkout v4 (tokeniza en el navegador) + Edge Function "pay-order" (cobra).
-// Sin VITE_CULQI_PUBLIC_KEY o sin Supabase, el pago queda en modo demo.
+// Sin VITE_CULQI_PUBLIC_KEY o sin Supabase, la web no ofrece pagar con tarjeta.
 import { supabase, supabaseConfigurado } from './supabase'
 
 const publicKey = import.meta.env.VITE_CULQI_PUBLIC_KEY
 export const culqiConfigurado = Boolean(publicKey && supabaseConfigurado)
+export const payText = culqiConfigurado ? 'Yape, Plin o tarjeta' : 'Yape o Plin'
 
 let loading
 

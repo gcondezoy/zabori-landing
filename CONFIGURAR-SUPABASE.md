@@ -23,7 +23,7 @@ Sin esto la web funciona en **modo demo** (cuentas y pedidos solo en el navegado
 
 # Activar el pago con tarjeta (Culqi, etapa 3)
 
-Sin la llave de Culqi el checkout sigue en modo demo (guarda el pedido pero no cobra).
+Sin la llave de Culqi la web solo ofrece Yape y Plin; la opción **Tarjeta** aparece sola al poner la llave y volver a desplegar.
 
 1. Crear cuenta en https://culqi.com y entrar al CulqiPanel → Desarrollo → API Keys (modo **integración / pruebas**).
 2. Llave **pública** (`pk_test_...`) → `.env.local`:

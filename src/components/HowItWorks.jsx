@@ -1,9 +1,10 @@
-import { ListChecks, CreditCard, Package } from '@phosphor-icons/react'
+import { ListChecks, Wallet, Package } from '@phosphor-icons/react'
 import Reveal from './Reveal'
+import { payText } from '../lib/culqi'
 
 const steps = [
   { icon: ListChecks, t: 'Elige tu menú', d: 'Agrega los platos al carrito y escoge delivery o recojo.' },
-  { icon: CreditCard, t: 'Paga en línea', d: 'Con tarjeta, como invitado o con tu cuenta Zabori.' },
+  { icon: Wallet, t: 'Paga en línea', d: `Con ${payText}, como invitado o con tu cuenta Zabori.` },
   { icon: Package, t: 'Recíbelo', d: 'Te avisamos cuando tu pedido salga o esté listo para recoger.' },
 ]
 

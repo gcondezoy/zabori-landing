@@ -1,3 +1,4 @@
+import { culqiConfigurado } from './culqi'
 import { site } from '../config/site'
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
@@ -18,7 +19,7 @@ export function injectBusinessSchema() {
     logo: url + 'icon-512.png',
     servesCuisine: ['Peruana', 'Saludable'],
     priceRange: 'S/ 10 - S/ 30',
-    paymentAccepted: 'Yape, Plin, tarjeta de crédito y débito',
+    paymentAccepted: culqiConfigurado ? 'Yape, Plin, tarjeta de crédito y débito' : 'Yape, Plin',
     currenciesAccepted: 'PEN',
     address: { '@type': 'PostalAddress', addressLocality: 'Lima', addressRegion: 'Lima', addressCountry: 'PE' },
     openingHours: `${site.openDays.map((d) => DAYS[d]).join(',')} ${hh(site.openHour)}-${hh(site.closeHour)}`,
