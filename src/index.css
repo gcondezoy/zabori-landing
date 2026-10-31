@@ -697,10 +697,11 @@ h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 900; }
 /* Opciones con miniatura (Táper) */
 .b-options.with-img { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
 .b-opt.has-img { position: relative; display: grid; grid-template-columns: 20px 1fr; grid-template-areas: "img img" "chk name" "chk price"; gap: 4px 10px; align-items: start; padding: 12px; }
-.b-opt.has-img .b-thumb { grid-area: img; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain; border-radius: 10px; background: #fbf6e6; margin-bottom: 6px; transition: transform .25s; }
+.b-opt.has-img .b-thumb { grid-area: img; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; background: #fbf6e6; margin-bottom: 6px; transition: transform .25s; }
 .b-opt.has-img:hover:not(:disabled) .b-thumb { transform: scale(1.05); }
 .b-opt.has-img .b-check { grid-area: chk; margin-top: 1px; }
-.b-opt.has-img .b-name { grid-area: name; line-height: 1.25; overflow-wrap: break-word; hyphens: auto; }
+.b-opt.has-img .b-name { grid-area: name; line-height: 1.25; overflow-wrap: break-word; }
+.b-opt.has-img .b-thumb[src$=".svg"] { object-fit: contain; }
 .b-opt.has-img .b-price { grid-area: price; }
 .b-opt.has-img.on .b-thumb { background: #dcecee; }
 .b-plate { position: relative; }
@@ -1149,8 +1150,9 @@ h1, h2 { text-wrap: balance; }
 /* Una sola opción: círculo. Varias: cuadro */
 .b-opt.single .b-check { border-radius: 50%; }
 
-/* El botón sin completar indica el siguiente paso: tiene que leerse bien */
-.btn.b-add:disabled { opacity: 1; cursor: not-allowed; background: transparent !important; color: var(--yellow) !important; border-color: var(--yellow); }
+/* Mientras falta algo, el botón lleva al siguiente paso */
+.b-add.b-next { background: transparent !important; color: var(--yellow) !important; border-color: var(--yellow); }
+.b-add.b-next:hover { background: rgba(253, 197, 42, .12) !important; }
 
 /* Fila completa aunque haya pocos platos */
 .grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }

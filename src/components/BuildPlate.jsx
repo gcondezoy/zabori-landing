@@ -87,6 +87,7 @@ export default function BuildPlate() {
   const [sel, setSel] = useState([])
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
+  const [passed, setPassed] = useState([]) // pasos opcionales por los que ya se pasó
 
   const optionOf = (full) => build.options.find((o) => o.id === parseId(full).id)
 
@@ -106,6 +107,18 @@ export default function BuildPlate() {
   const missing = missingGroup(build, sel)
   const protein = picked.find((o) => o.grp === 'proteina')
 
+  // Siguiente paso en orden: los opcionales también se muestran, aunque se puedan saltar
+  const next = build.groups.find((g) => {
+    const count = picked.filter((o) => o.grp === g.id).length
+    return count < g.min || (g.min === 0 && count === 0 && !passed.includes(g.id))
+  })
+
+  const goNext = () => {
+    if (next.min === 0) setPassed((p) => [...p, next.id])
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    document.getElementById(`paso-${next.id}`)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+  }
+
   const toggle = (g, full) => {
     setAdded(false)
     setSel((s) => {
@@ -123,6 +136,7 @@ export default function BuildPlate() {
     add(cartKey(sel), qty)
     setAdded(true)
     setSel([])
+    setPassed([])
     setQty(1)
   }
 
@@ -157,7 +171,7 @@ export default function BuildPlate() {
           }
           const gridClass = `b-options${opts.some((o) => o.img) ? ' with-img' : ''}${sized ? ' sized' : ''}`
           return (
-            <Reveal as="fieldset" key={g.id} className="b-step" delay={gi * 80}>
+            <Reveal as="fieldset" key={g.id} id={`paso-${g.id}`} className="b-step" delay={gi * 80}>
               <legend>
                 <span className={`b-num${count >= Math.max(1, g.min) ? ' done' : ''}`}>
                   {count >= Math.max(1, g.min) ? <Check size={14} weight="bold" /> : gi + 1}
@@ -197,13 +211,17 @@ export default function BuildPlate() {
             <span>{qty}</span>
             <button type="button" onClick={() => setQty((q) => Math.min(20, q + 1))} aria-label="Uno más"><Plus weight="bold" /></button>
           </div>
-          <button type="button" className="btn primary b-add" disabled={!!missing} onClick={addToCart}>
-            {missing ? `Elige tu ${missing.label.toLowerCase()}` : 'Agregar al carrito'}
-          </button>
+          {missing
+            ? (
+              <button type="button" className="btn primary b-add b-next" onClick={goNext}>
+                {next.min === 0 ? `Sigue: ${next.label}` : `Elige tu ${next.label.toLowerCase()}`}
+              </button>
+            )
+            : <button type="button" className="btn primary b-add" onClick={addToCart}>Agregar al carrito</button>}
         </div>
 
         {sel.length > 0 && (
-          <button type="button" className="link b-reset" onClick={() => setSel([])}>
+          <button type="button" className="link b-reset" onClick={() => { setSel([]); setPassed([]) }}>
             <ArrowCounterClockwise size={14} /> Empezar de nuevo
           </button>
         )}
