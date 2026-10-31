@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext'
 import { useMenu } from '../context/MenuContext'
 import { listMyOrders } from '../lib/orders'
 import { reorderLines } from '../lib/reorder'
+import { loadPromos } from '../lib/promos'
 import { rememberOrder, METHODS } from '../lib/whatsapp'
 import { supabaseConfigurado } from '../lib/supabase'
 import { money } from '../config/site'
@@ -29,6 +30,7 @@ function Welcome() {
     [Receipt, 'Sigue tus pedidos en vivo', 'Ve en qué paso está tu almuerzo sin preguntar.'],
     [ArrowClockwise, 'Vuelve a pedir en un toque', 'Tu pedido de siempre, con el mismo táper y opciones.'],
     [Heart, 'Tus datos guardados', 'Dirección, referencia y celular se completan solos.'],
+    [Gift, 'Promociones de Zabori', 'Míralas en tu cuenta apenas salgan.'],
   ]
   return (
     <div className="acc-welcome">
@@ -82,7 +84,7 @@ function PastOrder({ o, onReorder }) {
   return (
     <li className="acc-past">
       <div className="acc-past-main">
-        <span className="acc-date">{fecha(o.createdAt)} · {o.mode === 'delivery' ? 'Delivery' : 'Recojo'}</span>
+        <span className="acc-date">{fecha(o.createdAt)} · {o.mode === 'delivery' ? 'Delivery' : 'Recojo'} · {o.code}</span>
         <ul>
           {o.items.map((i, k) => (
             <li key={k}><b>{i.qty}× {i.name}</b>{i.detail && <small>{i.detail}</small>}</li>
@@ -100,6 +102,61 @@ function PastOrder({ o, onReorder }) {
   )
 }
 
+/* ---------- Permiso para correos ---------- */
+// Se guarda al instante: retirarlo no debe depender de completar otro formulario
+function MarketingCheck() {
+  const { user, saveProfile } = useAuth()
+  const [err, setErr] = useState('')
+  const toggle = async (e) => {
+    const accepts_marketing = e.target.checked
+    setErr('')
+    try { await saveProfile({ accepts_marketing }) } catch (error) { setErr(error.message) }
+  }
+  return (
+    <>
+      <label className="consent">
+        <input type="checkbox" checked={user.accepts_marketing === true} onChange={toggle} />
+        <span>Quiero recibir promociones y novedades de Zabori por correo</span>
+      </label>
+      {err && <p className="form-err" role="alert">{err}</p>}
+    </>
+  )
+}
+
+/* ---------- Promociones ---------- */
+const vence = (d) => {
+  const [y, m, day] = d.split('-').map(Number)
+  return new Date(y, m - 1, day).toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+function Promos({ promos }) {
+  if (promos === null) return <p className="muted">Cargando promociones…</p>
+  return (
+    <section className="acc-section">
+      {promos.length === 0 ? (
+        <div className="empty-box">
+          <Gift size={32} weight="duotone" aria-hidden="true" />
+          <p>Por ahora no hay promociones. Cuando salga una, la verás aquí.</p>
+        </div>
+      ) : (
+        <ul className="acc-promos">
+          {promos.map((p) => (
+            <li key={p.id} className="acc-promo">
+              {p.img && <img src={p.img} alt="" loading="lazy" width="720" height="540" />}
+              <div>
+                <h3>{p.title}</h3>
+                {p.desc && <p>{p.desc}</p>}
+                {p.endsOn && <small>Hasta el {vence(p.endsOn)}</small>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="acc-promo-mail"><MarketingCheck /></div>
+    </section>
+  )
+}
+
 /* ---------- Mis datos ---------- */
 function MyData() {
   const { user, saveProfile } = useAuth()
@@ -112,12 +169,6 @@ function MyData() {
     setErr('')
     try { await saveProfile(f); setSaved(true) } catch (error) { setErr(error.message) }
   }
-  // El permiso se guarda al instante: retirarlo no debe depender de completar el resto del formulario
-  const toggleMarketing = async (e) => {
-    const accepts_marketing = e.target.checked
-    setErr('')
-    try { await saveProfile({ accepts_marketing }) } catch (error) { setErr(error.message) }
-  }
   return (
     <form className="acc-data" onSubmit={save}>
       <label>Nombre<input value={f.name} onChange={set('name')} autoComplete="name" /></label>
@@ -125,10 +176,7 @@ function MyData() {
       <AddressPicker address={f.address} lat={f.lat} lng={f.lng}
         onChange={(a) => { setF((cur) => ({ ...cur, ...a })); setSaved(false) }} />
       <p className="muted small">Correo: {user.email}</p>
-      <label className="consent">
-        <input type="checkbox" checked={user.accepts_marketing === true} onChange={toggleMarketing} />
-        <span>Quiero recibir promociones y novedades de Zabori por correo</span>
-      </label>
+      <MarketingCheck />
       {err && <p className="form-err" role="alert">{err}</p>}
       <button className="btn primary">{saved ? 'Guardado ✓' : 'Guardar mis datos'}</button>
     </form>
@@ -143,6 +191,7 @@ export default function AccountPage() {
   const [orders, setOrders] = useState(null)
   const [tab, setTab] = useState('pedidos')
   const [notice, setNotice] = useState('')
+  const [promos, setPromos] = useState(null)
 
   const load = useCallback(async () => {
     if (!user) return
@@ -150,6 +199,13 @@ export default function AccountPage() {
   }, [user])
 
   useEffect(() => { setOrders(null); load() }, [load])
+
+  useEffect(() => {
+    if (!user) return undefined
+    let alive = true
+    loadPromos().then((p) => { if (alive) setPromos(p) }).catch(() => { if (alive) setPromos([]) })
+    return () => { alive = false }
+  }, [user])
 
   // Mientras haya pedidos en curso, se actualiza solo
   const live = (orders || []).filter(isOpen)
@@ -188,23 +244,24 @@ export default function AccountPage() {
             <header className="acc-head">
               <div>
                 <h1>Hola, {(user.name || 'cliente').split(' ')[0]}</h1>
-                <p className="sub">Aquí ves tus pedidos y tus datos.</p>
+                <p className="sub">Aquí ves tus pedidos, promociones y datos.</p>
               </div>
               <button className="link acc-out" onClick={signOut}><SignOut size={16} /> Cerrar sesión</button>
             </header>
 
             <div className="acc-stats">
-              <div><Receipt size={22} weight="duotone" /><b>{stats.total}</b><small>pedidos</small></div>
+              <div><Receipt size={22} weight="duotone" /><b>{stats.total}</b><small>{stats.total === 1 ? 'pedido' : 'pedidos'}</small></div>
               <div><Star size={22} weight="duotone" /><b className="ellipsis">{stats.fav || '—'}</b><small>tu favorito</small></div>
-              <div><Gift size={22} weight="duotone" /><b>{live.length}</b><small>en curso</small></div>
+              <button type="button" onClick={() => setTab('promos')}><Gift size={22} weight="duotone" /><b>{promos?.length ?? '—'}</b><small>{promos?.length === 1 ? 'promoción' : 'promociones'}</small></button>
             </div>
 
             <div className="tabs" role="tablist">
               <button role="tab" aria-selected={tab === 'pedidos'} className={tab === 'pedidos' ? 'tab on' : 'tab'} onClick={() => setTab('pedidos')}>Mis pedidos</button>
+              <button role="tab" aria-selected={tab === 'promos'} className={tab === 'promos' ? 'tab on' : 'tab'} onClick={() => setTab('promos')}>Promociones{promos?.length ? ` (${promos.length})` : ''}</button>
               <button role="tab" aria-selected={tab === 'datos'} className={tab === 'datos' ? 'tab on' : 'tab'} onClick={() => setTab('datos')}>Mis datos</button>
             </div>
 
-            {tab === 'datos' ? <MyData /> : orders === null ? <p className="muted">Cargando tus pedidos…</p> : (
+            {tab === 'datos' ? <MyData /> : tab === 'promos' ? <Promos promos={promos} /> : orders === null ? <p className="muted">Cargando tus pedidos…</p> : (
               <>
                 {notice && <p className="acc-notice" role="status">{notice}</p>}
                 {live.length > 0 && (

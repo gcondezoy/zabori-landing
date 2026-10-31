@@ -622,3 +622,28 @@ begin
 end $$;
 revoke execute on function public.save_push_subscription(text, text, jsonb) from public;
 grant execute on function public.save_push_subscription(text, text, jsonb) to anon, authenticated;
+
+-- =============================================================
+--  ETAPA 10 · Promociones (solo informan: no cambian precios)
+-- =============================================================
+create table if not exists public.promotions (
+  id         uuid primary key default gen_random_uuid(),
+  title      text not null check (length(trim(title)) between 1 and 80),
+  descr      text not null default '' check (length(descr) <= 300),
+  img        text not null default '',
+  starts_on  date,
+  ends_on    date,
+  active     boolean not null default true,
+  created_at timestamptz not null default now(),
+  check (starts_on is null or ends_on is null or ends_on >= starts_on)
+);
+alter table public.promotions enable row level security;
+-- El público solo ve las visibles y vigentes hoy en Lima. Las programadas y vencidas quedan para el panel.
+drop policy if exists "promociones vigentes" on public.promotions;
+create policy "promociones vigentes" on public.promotions for select using (
+  active
+  and (starts_on is null or starts_on <= (now() at time zone 'America/Lima')::date)
+  and (ends_on is null or ends_on >= (now() at time zone 'America/Lima')::date)
+);
+drop policy if exists "admin gestiona promociones" on public.promotions;
+create policy "admin gestiona promociones" on public.promotions for all using (public.is_admin()) with check (public.is_admin());

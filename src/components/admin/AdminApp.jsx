@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Bell, CalendarBlank, ChartBar, ForkKnife, Receipt, Users, BookOpen, SignOut, Database, Trash } from '@phosphor-icons/react'
+import { ArrowLeft, Bell, CalendarBlank, ChartBar, ForkKnife, Megaphone, Receipt, Users, BookOpen, SignOut, Database, Trash } from '@phosphor-icons/react'
 import { useAuth } from '../../context/AuthContext'
 import { useMenu } from '../../context/MenuContext'
 import { seedDemoOrders, clearDemoOrders } from '../../lib/demoData'
@@ -12,6 +12,7 @@ import Customers from './Customers'
 import MenuAdmin from './MenuAdmin'
 import WeekAdmin from './WeekAdmin'
 import BuildAdmin from './BuildAdmin'
+import PromosAdmin from './PromosAdmin'
 
 // Título de la web (index.html), para devolverlo al salir del panel
 const SITE_TITLE = document.title
@@ -25,6 +26,7 @@ const SECTIONS = [
   { id: 'semana', label: 'Menú semanal', icon: CalendarBlank },
   { id: 'arma', label: 'Arma tu plato', icon: ForkKnife },
   { id: 'carta', label: 'Carta', icon: BookOpen },
+  { id: 'promos', label: 'Promociones', icon: Megaphone },
 ]
 
 function beep() {
@@ -195,6 +197,7 @@ export default function AdminApp() {
         {section === 'semana' && <WeekAdmin orders={data.orders} />}
         {section === 'arma' && <BuildAdmin orders={data.orders} />}
         {section === 'carta' && <MenuAdmin orders={data.orders} />}
+        {section === 'promos' && <PromosAdmin />}
         <p className="muted small-note">Se actualiza solo cada {POLL_MS / 1000} s. Deja esta pestaña abierta para recibir avisos.</p>
       </main>
     </div>

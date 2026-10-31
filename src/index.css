@@ -1426,3 +1426,44 @@ html { overflow-x: clip; }
   .done-check, .done-check circle, .done-check path, .done-check ~ * { animation: none; }
 }
 @keyframes panel-out { to { opacity: 0; } }
+
+/* ---------- Promociones ---------- */
+.nav-mobile a:nth-child(5) { animation-delay: 120ms; }
+
+/* Cuenta del cliente */
+.acc-stats > button { display: grid; gap: 2px; justify-items: start; padding: 14px 16px; border-radius: 16px; background: #fff; border: 1px solid var(--line); color: var(--red); min-width: 0; font: inherit; text-align: left; transition: transform .14s var(--ease-out), border-color .2s ease; }
+.acc-stats > button:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) { .acc-stats > button:hover { border-color: var(--red); } }
+/* Celular: el favorito va a lo ancho para que su nombre no se corte */
+@media (max-width: 600px) { .acc-stats > :nth-child(2) { grid-column: 1 / -1; order: 3; } }
+.acc-promos { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px; }
+.acc-promo { display: flex; flex-direction: column; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: 16px; animation: panel-in .28s var(--ease-out); }
+.acc-promo img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
+.acc-promo > div { display: grid; gap: 6px; padding: 14px 16px 16px; }
+.acc-promo h3 { font-size: 1.08rem; text-wrap: balance; }
+.acc-promo p { margin: 0; color: var(--muted); font-size: .92rem; line-height: 1.4; white-space: pre-line; overflow-wrap: anywhere; }
+.acc-promo small { color: var(--red); font-size: .8rem; font-weight: 700; }
+.acc-section .empty-box { display: grid; justify-items: center; gap: 8px; margin-bottom: 18px; color: var(--muted); }
+.acc-section .empty-box p { margin: 0; }
+.acc-promo-mail { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+
+/* Panel */
+.promo-card.m-card { grid-template-columns: 1fr 200px; padding-left: 16px; }
+.promo-card .m-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.promo-card .promo-wide { grid-column: 1 / -1; }
+.promo-card textarea { padding: 9px 11px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; width: 100%; min-width: 0; font: inherit; font-size: .92rem; color: var(--ink); font-weight: 500; resize: vertical; }
+.promo-card textarea:focus { outline: 2px solid var(--red); border-color: var(--red); }
+.promo-status { padding: 3px 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; background: var(--bg-alt); color: var(--muted); }
+.promo-status.s-live { background: #dcf3e3; color: #145c2e; }
+.promo-status.s-soon { background: #fff1c4; color: #6b4a00; }
+@media (max-width: 760px) {
+  .promo-card.m-card { grid-template-columns: minmax(0, 1fr); padding: 14px; }
+  .promo-card .m-fields, .promo-card .m-side { grid-column: 1 / -1; min-width: 0; }
+  .promo-card .m-side { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; }
+  .promo-card .form-err { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .acc-promo { animation: none; }
+  .acc-stats > button { transition: border-color .2s ease; }
+  .acc-stats > button:active { transform: none; }
+}

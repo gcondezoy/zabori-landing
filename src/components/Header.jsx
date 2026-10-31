@@ -71,6 +71,7 @@ export default function Header() {
               <MapTrifold size={22} weight="bold" />
               <span>Sigue tu pedido{tracked && <small>{tracked.code}</small>}</span>
             </a>
+            <a href="#/cuenta">{user ? 'Mis pedidos y promociones' : 'Mi cuenta'}</a>
             <a href="#menu">Menú</a>
             <a href="#como">Cómo pedir</a>
             <a href="#contacto">Contacto</a>
