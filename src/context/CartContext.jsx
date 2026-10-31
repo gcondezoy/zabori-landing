@@ -89,7 +89,11 @@ export function CartProvider({ children }) {
       remove: (id) => dispatch({ type: 'remove', id }),
       clear: () => dispatch({ type: 'clear' }),
       // Agregar desde una tarjeta: si es un menú, primero se pregunta la entrada y el táper
-      requestAdd: (item) => (needsPick(item, build, entradas) ? setPickFor(item) : dispatch({ type: 'add', id: item.id })),
+      requestAdd: (item) => {
+        if (needsPick(item, build, entradas)) { setPickFor(item); return }
+        dispatch({ type: 'add', id: item.id })
+        if (item.cat === 'menu') setOpen(true)
+      },
       // Unidades de un plato en el carrito, sumando todas sus variantes de táper
       countOf: (id) => Object.entries(qty).reduce((s, [k, n]) => (k === id || k.startsWith(id + TAPER_SEP) ? s + n : s), 0),
       pickFor, setPickFor,

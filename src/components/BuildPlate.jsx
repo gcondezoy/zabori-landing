@@ -1,5 +1,5 @@
 import { Children, useEffect, useMemo, useRef, useState } from 'react'
-import { Check, Plus, Minus, ShoppingBag, ArrowCounterClockwise, Barbell } from '@phosphor-icons/react'
+import { Check, Plus, Minus, ArrowCounterClockwise, Barbell } from '@phosphor-icons/react'
 import { useMenu } from '../context/MenuContext'
 import { useCart } from '../context/CartContext'
 import { chosen, buildPrice, missingGroup, cartKey, parseId, sizeId, hasSizes, fromPrice } from '../lib/build'
@@ -86,7 +86,6 @@ export default function BuildPlate() {
   const { add, setOpen } = useCart()
   const [sel, setSel] = useState([])
   const [qty, setQty] = useState(1)
-  const [added, setAdded] = useState(false)
   const [passed, setPassed] = useState([]) // pasos opcionales por los que ya se pasó
 
   const optionOf = (full) => build.options.find((o) => o.id === parseId(full).id)
@@ -95,12 +94,6 @@ export default function BuildPlate() {
   useEffect(() => {
     setSel((s) => s.filter((full) => chosen(build, [full]).length === 1))
   }, [build])
-
-  useEffect(() => {
-    if (!added) return
-    const t = setTimeout(() => setAdded(false), 4000)
-    return () => clearTimeout(t)
-  }, [added])
 
   const picked = useMemo(() => chosen(build, sel), [build, sel])
   const price = buildPrice(build, sel)
@@ -120,7 +113,6 @@ export default function BuildPlate() {
   }
 
   const toggle = (g, full) => {
-    setAdded(false)
     setSel((s) => {
       if (s.includes(full)) return s.filter((x) => x !== full)
       const others = s.filter((x) => parseId(x).id !== parseId(full).id) // otra porción de la misma opción se reemplaza
@@ -134,7 +126,7 @@ export default function BuildPlate() {
   const addToCart = () => {
     if (missing) return
     add(cartKey(sel), qty)
-    setAdded(true)
+    setOpen(true) // plato terminado: se muestra el pedido, y desde ahí se puede seguir pidiendo
     setSel([])
     setPassed([])
     setQty(1)
@@ -224,12 +216,6 @@ export default function BuildPlate() {
           <button type="button" className="link b-reset" onClick={() => { setSel([]); setPassed([]) }}>
             <ArrowCounterClockwise size={14} /> Empezar de nuevo
           </button>
-        )}
-        {added && (
-          <p className="b-added" role="status">
-            <Check size={16} weight="bold" /> ¡Listo, va a tu carrito!
-            <button type="button" className="link" onClick={() => setOpen(true)}><ShoppingBag size={14} /> Ver carrito</button>
-          </p>
         )}
       </aside>
     </div>

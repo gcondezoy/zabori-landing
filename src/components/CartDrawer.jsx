@@ -1,10 +1,13 @@
 import { X, Plus, Minus, Trash } from '@phosphor-icons/react'
 import { useCart } from '../context/CartContext'
+import { useMenu } from '../context/MenuContext'
 import { money } from '../config/site'
 
 export default function CartDrawer() {
-  const { open, setOpen, lines, subtotal, add, dec, remove, setCheckout } = useCart()
+  const { open, setOpen, lines, subtotal, add, dec, remove, setCheckout, qty } = useCart()
+  const { items } = useMenu()
   if (!open) return null
+  const extras = items.filter((i) => i.cat === 'shots' && !qty[i.id]) // lo que aún no está en el pedido
   const go = () => { setOpen(false); setCheckout(true) }
   return (
     <div className="overlay" onClick={() => setOpen(false)}>
@@ -17,6 +20,7 @@ export default function CartDrawer() {
           <p className="empty">Tu carrito está vacío. Agrega algo del menú.</p>
         ) : (
           <>
+            <div className="drawer-scroll">
             <ul className="lines">
               {lines.map(({ item, n }) => (
                 <li key={item.id}>
@@ -34,9 +38,24 @@ export default function CartDrawer() {
                 </li>
               ))}
             </ul>
+            {extras.length > 0 && (
+              <section className="cart-extras" aria-label="Sugerencias">
+                <h4>¿Le sumas un shot?</h4>
+                <ul>
+                  {extras.map((i) => (
+                    <li key={i.id}>
+                      <span><b>{i.name}</b><small>{money(i.price)}</small></span>
+                      <button className="btn ghost small" onClick={() => add(i.id)} aria-label={`Agregar ${i.name}`}><Plus size={14} weight="bold" /> Agregar</button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            </div>
             <div className="drawer-foot">
               <div className="row"><span>Subtotal</span><strong>{money(subtotal)}</strong></div>
               <button className="btn primary block" onClick={go}>Continuar</button>
+              <button className="btn ghost block" onClick={() => setOpen(false)}>Seguir pidiendo</button>
             </div>
           </>
         )}

@@ -1250,3 +1250,16 @@ h1, h2 { text-wrap: balance; }
 .track-card .push-optin { margin: 16px 0 0; }
 .push-state { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; background: #f3ead0; color: var(--muted); font-size: .85rem; font-weight: 600; }
 .push-state.on { background: #dcf3e3; color: #145c2e; }
+
+/* Carrito: lo elegido y las sugerencias se desplazan juntos; los botones quedan siempre a la vista */
+.drawer-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+.drawer-scroll .lines { overflow: visible; }
+.cart-extras { padding: 8px 20px 18px; }
+.cart-extras h4 { margin-bottom: 8px; font-size: 1rem; }
+.cart-extras ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cart-extras li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.cart-extras span { display: grid; min-width: 0; line-height: 1.3; }
+.cart-extras b { font-size: .9rem; font-weight: 600; }
+.cart-extras small { color: var(--muted); font-size: .82rem; }
+.cart-extras .btn { flex: none; }
+.drawer-foot .btn.ghost { margin-top: -6px; }

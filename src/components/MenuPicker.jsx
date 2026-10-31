@@ -7,7 +7,7 @@ import { money } from '../config/site'
 
 // Al agregar un menú del día: el cliente elige su entrada y su táper; la bebida ya viene incluida
 export default function MenuPicker() {
-  const { pickFor: item, setPickFor, add } = useCart()
+  const { pickFor: item, setPickFor, add, setOpen } = useCart()
   const { build, entradas, drink } = useMenu()
   const [taper, setTaper] = useState(null)
   const [entrada, setEntrada] = useState(null)
@@ -35,6 +35,7 @@ export default function MenuPicker() {
     if (missing) return
     add(menuKey(item.id, chosen?.id, pickedEntrada?.id), qty)
     close()
+    setOpen(true) // con el plato principal elegido, el siguiente paso suele ser pagar
   }
 
   return (
