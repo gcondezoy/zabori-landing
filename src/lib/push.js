@@ -55,6 +55,14 @@ export function pushPhone(code) {
   try { return (JSON.parse(localStorage.getItem(PHONE_KEY)) || {})[code] || '' } catch { return '' }
 }
 
+// Llama a fn(código) cuando llega una notificación con la web abierta. Devuelve cómo dejar de escuchar.
+export function onOrderPush(fn) {
+  if (!('serviceWorker' in navigator)) return () => {}
+  const listener = (e) => { if (e.data?.type === 'order-update') fn(e.data.code) }
+  navigator.serviceWorker.addEventListener('message', listener)
+  return () => navigator.serviceWorker.removeEventListener('message', listener)
+}
+
 /* ---------- Panel ---------- */
 
 // Cuántos dispositivos recibirán los avisos de este pedido (null si no se pudo saber)

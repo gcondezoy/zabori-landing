@@ -3,7 +3,7 @@ import { MagnifyingGlass, CheckCircle, Circle, WhatsappLogo, ArrowLeft, XCircle 
 import { trackOrder } from '../lib/track'
 import { zaboriWhatsapp, lastOrder, METHODS } from '../lib/whatsapp'
 import { money } from '../config/site'
-import { pushPhone } from '../lib/push'
+import { onOrderPush, pushPhone } from '../lib/push'
 import PushOptIn from './PushOptIn'
 
 const REFRESH_MS = 20000
@@ -57,11 +57,18 @@ export default function TrackOrder() {
   // Si viene de hacer un pedido, se consulta solo
   useEffect(() => { if (saved?.code && saved?.phone) look(saved.code, saved.phone) }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Se actualiza solo mientras el pedido siga en curso
+  // Se actualiza solo mientras el pedido siga en curso: al momento si llega la notificación o se vuelve a la pestaña
   useEffect(() => {
     if (!order || order.status === 'entregado' || order.status === 'cancelado') return
-    const t = setInterval(() => { if (!document.hidden) look(order.code, phone, true) }, REFRESH_MS) // sin gastar tráfico en segundo plano
-    return () => clearInterval(t)
+    const refresh = () => { if (!document.hidden) look(order.code, phone, true) } // sin gastar tráfico en segundo plano
+    const t = setInterval(refresh, REFRESH_MS)
+    const offPush = onOrderPush((c) => { if (c === order.code) refresh() })
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      clearInterval(t)
+      offPush()
+      document.removeEventListener('visibilitychange', refresh)
+    }
   }, [order, phone, look])
 
   const submit = (e) => { e.preventDefault(); look() }
