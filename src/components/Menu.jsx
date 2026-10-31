@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext'
 import Reveal from './Reveal'
 import TodayBadge from './TodayBadge'
 import BuildPlate from './BuildPlate'
+import SwipeRail from './SwipeRail'
 import { needsPick } from '../lib/build'
 import { menuPrice } from '../lib/menu'
 import { DAY_NAMES } from '../lib/week'
@@ -18,7 +19,7 @@ function Card({ item, index }) {
   const withTaper = needsPick(item, build, entradas) // los menús del día piden entrada y táper al agregar
   const n = withTaper ? countOf(item.id) : qty[item.id] || 0
   return (
-    <Reveal as="article" className="card" delay={Math.min(index, 5) * 70}>
+    <Reveal as="article" className="card" delay={Math.min(index, 2) * 70}>
       <div className="card-img" style={{ background: item.tone }}>
         {item.img
           ? <img src={item.img} alt={item.name} loading="lazy" width="720" height="540" />
@@ -99,7 +100,13 @@ export default function Menu() {
           </div>
         )}
         {cat === 'menu' && hasMenus && <h3 className="menu-step">Elige tu segundo</h3>}
-        {cat === 'arma' ? <BuildPlate /> : (
+        {cat === 'arma' ? <BuildPlate /> : cat === 'menu' ? (
+          <Reveal>
+            <SwipeRail className="grid menu-rail" wrapClass="menu-rail-wrap" label="Segundos del día" arrows>
+              {items.filter((i) => i.cat === cat).map((i, k) => <Card key={cat + i.id} item={i} index={k} />)}
+            </SwipeRail>
+          </Reveal>
+        ) : (
           <div className="grid">
             {items.filter((i) => i.cat === cat).map((i, k) => <Card key={cat + i.id} item={i} index={k} />)}
           </div>

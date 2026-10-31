@@ -1280,3 +1280,39 @@ html { overflow-x: clip; }
 .search input { width: 100%; }
 /* Con letra menor a 16px, el iPhone acerca la pantalla al tocar un campo */
 @media (max-width: 800px) { input, select, textarea { font-size: 16px !important; } }
+
+/* Menú del día en carrusel: en celular siempre; en computadora, desde 4 platos.
+   La fila entera aparece de una vez: una tarjeta deslizada nunca debe verse vacía. */
+.menu-rail-wrap { position: relative; }
+.menu-rail.b-rail { padding: 6px 2px 10px; margin-inline: -2px; }
+.menu-rail .card.reveal { opacity: 1; transform: none; transition: transform .25s var(--ease-out), box-shadow .25s; transition-delay: 0s !important; }
+.menu-rail .card.reveal:not(.in) .card-img img { transform: none; }
+.menu-rail-wrap .b-rail-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: .78rem; font-weight: 600; color: var(--muted); }
+.menu-rail-wrap .b-rail-dots { display: flex; margin-left: -8px; }
+.menu-rail-wrap .b-rail-dots button { width: 26px; height: 26px; padding: 0; border: 0; background: none; display: grid; place-items: center; }
+.menu-rail-wrap .b-rail-dots button::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--line); transition: transform .2s var(--ease-out), background-color .2s ease; }
+.menu-rail-wrap .b-rail-dots button.on::after { background: var(--red); transform: scale(1.3); }
+.rail-arrow { position: absolute; top: 112px; z-index: 2; width: 44px; height: 44px; display: none; place-items: center; border: 0; border-radius: 50%; background: #fff; color: var(--red); box-shadow: 0 2px 8px rgba(3, 50, 60, .28); transition: opacity .2s ease, transform .14s var(--ease-out); }
+.rail-arrow:active:not(:disabled) { transform: scale(.94); }
+.rail-arrow:disabled { opacity: 0; pointer-events: none; }
+.rail-arrow.prev { left: -14px; }
+.rail-arrow.next { right: -14px; }
+
+@media (max-width: 640px) {
+  .grid.menu-rail { display: flex; gap: 12px; margin-inline: -16px; padding: 6px 16px 10px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; overscroll-behavior-x: contain; scrollbar-width: none; }
+  .menu-rail::-webkit-scrollbar { display: none; }
+  .menu-rail > .card { flex: 0 0 84%; min-width: 0; scroll-snap-align: start; }
+  .menu-rail > .card:only-child { flex-basis: 100%; max-width: none; }
+}
+@media (min-width: 641px) {
+  .grid.menu-rail:has(> :nth-child(4)) { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 2px; scrollbar-width: none; }
+  .menu-rail::-webkit-scrollbar { display: none; }
+  .menu-rail:has(> :nth-child(4)) > .card { flex: 0 0 calc((100% - 40px) / 3); min-width: 0; scroll-snap-align: start; }
+  .menu-rail-wrap .b-rail-nav { justify-content: center; }
+  .menu-rail-wrap .b-rail-nav span { display: none; }
+  .rail-arrow { display: grid; }
+}
+@media (min-width: 641px) and (max-width: 899px) {
+  .menu-rail:has(> :nth-child(3)) { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 2px; scrollbar-width: none; }
+  .menu-rail:has(> :nth-child(3)) > .card { flex: 0 0 calc((100% - 16px) / 2); min-width: 0; scroll-snap-align: start; }
+}

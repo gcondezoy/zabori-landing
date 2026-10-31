@@ -1,4 +1,4 @@
-import { Children, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Check, Plus, Minus, ArrowCounterClockwise, Barbell } from '@phosphor-icons/react'
 import { useMenu } from '../context/MenuContext'
 import { useCart } from '../context/CartContext'
@@ -6,6 +6,7 @@ import { chosen, buildPrice, missingGroup, cartKey, parseId, sizeId, hasSizes, f
 import { money } from '../config/site'
 import Reveal from './Reveal'
 import TaperView from './TaperView'
+import SwipeRail from './SwipeRail'
 
 const hint = (g, sized) =>
   g.min === 1 && g.max === 1 ? (sized ? 'Elige 1 y su porción' : 'Elige 1') : g.min === 0 ? `Opcional · hasta ${g.max}` : `Elige de ${g.min} a ${g.max}`
@@ -28,54 +29,6 @@ function SizedOption({ o, selected, onPick }) {
           )
         })}
       </div>
-    </div>
-  )
-}
-
-// En celular las opciones con porciones van en carrusel: son tarjetas altas y en columna ocupan casi dos pantallas.
-// En pantallas grandes es una cuadrícula normal (los puntos se ocultan por CSS).
-function SwipeRail({ className, label, children }) {
-  const ref = useRef(null)
-  const [index, setIndex] = useState(0)
-  const n = Children.count(children)
-
-  const stepOf = (el) => (el.children[1] ? el.children[1].offsetLeft - el.children[0].offsetLeft : el.clientWidth)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return undefined
-    let frame = 0
-    const onScroll = () => {
-      if (frame) return
-      frame = requestAnimationFrame(() => {
-        frame = 0
-        setIndex(Math.min(n - 1, Math.round(el.scrollLeft / stepOf(el))))
-      })
-    }
-    el.addEventListener('scroll', onScroll, { passive: true })
-    return () => { el.removeEventListener('scroll', onScroll); cancelAnimationFrame(frame) }
-  }, [n])
-
-  const go = (i) => {
-    const el = ref.current
-    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    el.scrollTo({ left: i * stepOf(el), behavior: smooth ? 'smooth' : 'auto' })
-  }
-
-  return (
-    <div className="b-rail-wrap">
-      <div ref={ref} className={`${className} b-rail`} role="group" aria-label={label}>{children}</div>
-      {n > 1 && (
-        <div className="b-rail-nav">
-          <div className="b-rail-dots">
-            {Array.from({ length: n }, (_, i) => (
-              <button key={i} type="button" className={i === index ? 'on' : ''} onClick={() => go(i)}
-                aria-label={`Ver opción ${i + 1} de ${n}`} aria-current={i === index} />
-            ))}
-          </div>
-          <span>Desliza para ver más</span>
-        </div>
-      )}
     </div>
   )
 }
