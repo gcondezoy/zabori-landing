@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { ShoppingBag, User } from '@phosphor-icons/react'
 import { site } from '../config/site'
 import { useCart } from '../context/CartContext'
@@ -6,8 +7,18 @@ import { useAuth } from '../context/AuthContext'
 export default function Header() {
   const { count, setOpen } = useCart()
   const { user, setModal } = useAuth()
+  const [scrolled, setScrolled] = useState(false)
+
+  // Al bajar, la cabecera gana una sombra para separarse del contenido
+  useEffect(() => {
+    const check = () => setScrolled(window.scrollY > 8)
+    check()
+    window.addEventListener('scroll', check, { passive: true })
+    return () => window.removeEventListener('scroll', check)
+  }, [])
+
   return (
-    <header className="header">
+    <header className={`header${scrolled ? ' scrolled' : ''}`}>
       <div className="wrap header-in">
         <a href="#top" className="brand" aria-label="Zabori, inicio"><img src="/logo-zabori.png" alt="Zabori" width="120" height="35" /></a>
         <nav className="nav" aria-label="Principal">
@@ -24,7 +35,7 @@ export default function Header() {
           </button>
           <button className="cart-btn" onClick={() => setOpen(true)} aria-label={`Abrir carrito, ${count} productos`}>
             <ShoppingBag size={22} weight="bold" />
-            {count > 0 && <span className="badge">{count}</span>}
+            {count > 0 && <span key={count} className="badge bump">{count}</span>}
           </button>
         </div>
       </div>

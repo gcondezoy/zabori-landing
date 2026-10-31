@@ -77,6 +77,7 @@ export default function Menu() {
             </button>
           ))}
         </div>
+        <div key={cat} className="tab-panel">
         {cat === 'menu' && !hasMenus && (
           <div className="menu-empty">
             <p>Aún no publicamos los menús de este día.</p>
@@ -97,6 +98,7 @@ export default function Menu() {
             {items.filter((i) => i.cat === cat).map((i, k) => <Card key={cat + i.id} item={i} index={k} />)}
           </div>
         )}
+        </div>
       </div>
     </section>
   )

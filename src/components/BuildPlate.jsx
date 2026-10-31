@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Children, useEffect, useMemo, useRef, useState } from 'react'
 import { Check, Plus, Minus, ShoppingBag, ArrowCounterClockwise, Barbell } from '@phosphor-icons/react'
 import { useMenu } from '../context/MenuContext'
 import { useCart } from '../context/CartContext'
@@ -28,6 +28,54 @@ function SizedOption({ o, selected, onPick }) {
           )
         })}
       </div>
+    </div>
+  )
+}
+
+// En celular las opciones con porciones van en carrusel: son tarjetas altas y en columna ocupan casi dos pantallas.
+// En pantallas grandes es una cuadrícula normal (los puntos se ocultan por CSS).
+function SwipeRail({ className, label, children }) {
+  const ref = useRef(null)
+  const [index, setIndex] = useState(0)
+  const n = Children.count(children)
+
+  const stepOf = (el) => (el.children[1] ? el.children[1].offsetLeft - el.children[0].offsetLeft : el.clientWidth)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return undefined
+    let frame = 0
+    const onScroll = () => {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        setIndex(Math.min(n - 1, Math.round(el.scrollLeft / stepOf(el))))
+      })
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => { el.removeEventListener('scroll', onScroll); cancelAnimationFrame(frame) }
+  }, [n])
+
+  const go = (i) => {
+    const el = ref.current
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    el.scrollTo({ left: i * stepOf(el), behavior: smooth ? 'smooth' : 'auto' })
+  }
+
+  return (
+    <div className="b-rail-wrap">
+      <div ref={ref} className={`${className} b-rail`} role="group" aria-label={label}>{children}</div>
+      {n > 1 && (
+        <div className="b-rail-nav">
+          <div className="b-rail-dots">
+            {Array.from({ length: n }, (_, i) => (
+              <button key={i} type="button" className={i === index ? 'on' : ''} onClick={() => go(i)}
+                aria-label={`Ver opción ${i + 1} de ${n}`} aria-current={i === index} />
+            ))}
+          </div>
+          <span>Desliza para ver más</span>
+        </div>
+      )}
     </div>
   )
 }
@@ -123,7 +171,9 @@ export default function BuildPlate() {
                   <h4 className="b-subtitle">{sub}</h4>
                   <div className={gridClass}>{opts.filter((o) => (o.sub || '') === sub).map(renderOpt)}</div>
                 </div>
-              )) : <div className={gridClass}>{opts.map(renderOpt)}</div>}
+              )) : sized
+                ? <SwipeRail className={gridClass} label={g.label}>{opts.map(renderOpt)}</SwipeRail>
+                : <div className={gridClass}>{opts.map(renderOpt)}</div>}
             </Reveal>
           )
         })}
@@ -138,7 +188,7 @@ export default function BuildPlate() {
 
         <div className="b-total">
           <span>{protein ? `${protein.baseName} ${protein.g} g · ${money(protein.price)}${price > protein.price ? ` + extras ${money(price - protein.price)}` : ''}` : `Desde ${money(fromPrice(build))}`}</span>
-          <strong>{protein ? money(price * qty) : "—"}</strong>
+          <strong key={price * qty} className="bump">{protein ? money(price * qty) : "—"}</strong>
         </div>
 
         <div className="b-actions">

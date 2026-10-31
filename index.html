@@ -29,8 +29,34 @@
     <meta name="twitter:title" content="Zabori | El sabor de elegir bien" />
     <meta name="twitter:description" content="Menú casero del día o arma tu plato fit, en táper. Delivery en Lima." />
     <meta name="twitter:image" content="https://zabori-landing.vercel.app/og-image.jpg" />
+    <link rel="preload" as="image" href="/logo-zabori.png" />
+    <style>
+      /* Va aquí para verse antes de que cargue la web. Mismo amarillo de la portada: el telón sube y la revela. */
+      #splash { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #fdc52a; transition: transform .55s cubic-bezier(.77, 0, .175, 1), opacity .3s ease; animation: splash-guard .01s 6s forwards; }
+      #splash img { display: block; width: min(58vw, 280px); height: auto; opacity: 0; }
+      #splash img.in { animation: splash-logo .55s cubic-bezier(.23, 1, .32, 1) forwards; }
+      #splash.out { transform: translateY(-100%); }
+      @keyframes splash-logo { from { opacity: 0; transform: scale(.92) translateY(8px); } to { opacity: 1; transform: none; } }
+      @keyframes splash-guard { to { visibility: hidden; } }
+      @media (prefers-reduced-motion: reduce) {
+        #splash.out { transform: none; opacity: 0; }
+        #splash img.in { animation: none; opacity: 1; }
+      }
+    </style>
   </head>
   <body>
+    <div id="splash" aria-hidden="true"><img src="/logo-zabori.png" alt="" width="900" height="259" fetchpriority="high" onload="this.classList.add('in')" /></div>
+    <script>
+      // Solo la primera vez en cada visita, y nunca en pantallas directas (panel, seguimiento, cuenta)
+      (function () {
+        var el = document.getElementById('splash'), skip = location.hash.indexOf('#/') === 0
+        try { skip = skip || sessionStorage.getItem('zabori-splash') === '1'; sessionStorage.setItem('zabori-splash', '1') } catch (e) {}
+        if (skip) { el.remove(); return }
+        document.body.classList.add('splash-on')
+        var img = el.firstChild
+        if (img.complete) img.classList.add('in')
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
