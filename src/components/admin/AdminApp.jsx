@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useMenu } from '../../context/MenuContext'
 import { seedDemoOrders, clearDemoOrders } from '../../lib/demoData'
 import { supabaseConfigurado } from '../../lib/supabase'
-import { listOrders, isOpen, changesSince, mergeOrders } from '../../lib/admin'
+import { listOrders, isOpen, changesSince, mergeOrders, RECENT_DAYS } from '../../lib/admin'
 import Gate, { DEMO_SESSION } from './Gate'
 import Dashboard from './Dashboard'
 import Orders from './Orders'
@@ -45,6 +45,7 @@ function useOrders(enabled) {
   const [fresh, setFresh] = useState(0)
   const known = useRef(null)
   const current = useRef(null) // la última lista, para pedir solo lo que cambió
+  const [history, setHistory] = useState('recent') // 'recent' | 'loading' | 'all'
 
   const refresh = useCallback(async () => {
     try {
@@ -53,7 +54,8 @@ function useOrders(enabled) {
       const list = changedSince ? mergeOrders(current.current, rows) : rows
       current.current = list
       if (known.current) {
-        const n = list.filter((o) => !known.current.has(o.code)).length
+        // Un pedido antiguo que cambió de estado también llega por primera vez, pero no es nuevo
+        const n = list.filter((o) => !known.current.has(o.code) && Date.now() - new Date(o.createdAt) < 864e5).length
         if (n > 0) { setFresh((x) => x + n); beep() }
       }
       known.current = new Set(list.map((o) => o.code))
@@ -72,9 +74,24 @@ function useOrders(enabled) {
   }, [enabled, refresh])
 
   // Recarga sin tratar los pedidos como nuevos (al cargar o borrar datos de ejemplo)
-  const reload = useCallback(async () => { known.current = null; current.current = null; setFresh(0); await refresh() }, [refresh])
+  const reload = useCallback(async () => { known.current = null; current.current = null; setFresh(0); setHistory('recent'); await refresh() }, [refresh])
 
-  return { orders, error, refresh, reload, fresh, clearFresh: () => setFresh(0) }
+  // Todo el historial solo cuando se pide: descargarlo cada vez que se abre el panel gastaría mucho tráfico
+  const loadHistory = useCallback(async () => {
+    setHistory('loading')
+    try {
+      const list = mergeOrders(current.current || [], await listOrders({ all: true }))
+      current.current = list
+      known.current = new Set(list.map((o) => o.code))
+      setOrders(list)
+      setHistory('all')
+    } catch (e) {
+      setError(e.message)
+      setHistory('recent')
+    }
+  }, [])
+
+  return { orders, error, refresh, reload, fresh, clearFresh: () => setFresh(0), history, loadHistory }
 }
 
 export default function AdminApp() {
@@ -158,6 +175,15 @@ export default function AdminApp() {
               <button onClick={loadDemo}><Database size={15} /> Cargar pedidos de ejemplo</button>
               {(data.orders || []).length > 0 && <button onClick={clearDemo}><Trash size={15} /> Borrar</button>}
             </span>
+          </div>
+        )}
+
+        {supabaseConfigurado && data.history !== 'all' && ['resumen', 'pedidos', 'clientes'].includes(section) && (
+          <div className="history-bar">
+            <span>Se muestran los pedidos de los últimos {RECENT_DAYS} días. Para ver "Todo", buscar pedidos antiguos o exportarlos, carga el historial.</span>
+            <button className="btn ghost small" disabled={data.history === 'loading'} onClick={data.loadHistory}>
+              {data.history === 'loading' ? 'Cargando…' : 'Cargar todo el historial'}
+            </button>
           </div>
         )}
 

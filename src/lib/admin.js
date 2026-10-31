@@ -55,25 +55,42 @@ export async function isAdmin() {
 // Pedido normalizado:
 // { id, code, userId, name, phone, email, mode, address, notes, subtotal, fee, total,
 //   status, payment, paymentRef, createdAt, history: [{ type, value, at }], items: [{ name, qty, price }] }
-// Sin `changedSince` trae los últimos 120 días; con `changedSince` solo lo que cambió desde esa hora,
-// para que actualizar el panel cada pocos segundos casi no gaste tráfico.
-export async function listOrders({ changedSince } = {}) {
+export const RECENT_DAYS = 35 // cubre los reportes de 30 días sin descargar todo el historial
+const PAGE_SIZE = 1000 // Supabase devuelve como máximo 1000 filas por consulta
+
+// Trae todas las páginas. Termina con una página vacía (no con una corta) por si el proyecto tiene un máximo menor.
+export async function allPages(fetchPage) {
+  const rows = []
+  for (;;) {
+    const page = await fetchPage(rows.length, rows.length + PAGE_SIZE - 1)
+    if (!page.length) return rows
+    rows.push(...page)
+  }
+}
+
+// Por defecto trae los últimos RECENT_DAYS días; `all` trae todo el historial y `changedSince` solo lo que
+// cambió desde esa hora, para que actualizar el panel cada pocos segundos casi no gaste tráfico.
+export async function listOrders({ changedSince, all } = {}) {
   if (supabaseConfigurado) {
-    const since = new Date(Date.now() - 120 * 864e5).toISOString() // últimos 120 días
-    let query = supabase
-      .from('orders')
-      .select('id, code, user_id, customer_name, phone, email, mode, address, lat, lng, notes, subtotal, delivery_fee, total, status, payment_status, payment_method, payment_ref, history, created_at, updated_at, order_items(name, detail, qty, price)')
-      .gte('created_at', since)
-    if (changedSince) query = query.gt('updated_at', changedSince)
-    const { data, error } = await query.order('created_at', { ascending: false }).limit(2000)
-    if (error) throw new Error(error.message)
-    return data.map((o) => ({
+    const since = new Date(Date.now() - RECENT_DAYS * 864e5).toISOString()
+    const fetchPage = async (from, to) => {
+      let query = supabase
+        .from('orders')
+        .select('id, code, user_id, customer_name, phone, email, mode, address, lat, lng, notes, subtotal, delivery_fee, total, status, payment_status, payment_method, payment_ref, history, created_at, updated_at, order_items(name, detail, qty, price)')
+      if (changedSince) query = query.gt('updated_at', changedSince)
+      else if (!all) query = query.gte('created_at', since)
+      const { data, error } = await query.order('created_at', { ascending: false }).order('id').range(from, to)
+      if (error) throw new Error(error.message)
+      return data
+    }
+    // Si entra un pedido mientras se pagina, uno puede repetirse entre páginas: mergeOrders lo deja una vez
+    return mergeOrders([], (await allPages(fetchPage)).map((o) => ({
       id: o.id, code: o.code, userId: o.user_id, name: o.customer_name, phone: o.phone, email: o.email,
       mode: o.mode, address: o.address, lat: o.lat != null ? Number(o.lat) : null, lng: o.lng != null ? Number(o.lng) : null, notes: o.notes, subtotal: Number(o.subtotal),
       fee: Number(o.delivery_fee), total: Number(o.total), status: o.status, payment: o.payment_status, method: o.payment_method || 'tarjeta',
       paymentRef: o.payment_ref, createdAt: o.created_at, updatedAt: o.updated_at, history: o.history || [],
       items: o.order_items.map((i) => ({ name: i.name, detail: i.detail || '', qty: i.qty, price: Number(i.price) })),
-    }))
+    })))
   }
   return readLocal().map((o) => ({
     id: o.code, code: o.code, userId: o.userId, name: o.name, phone: o.phone, email: o.email,
