@@ -112,6 +112,12 @@ function MyData() {
     setErr('')
     try { await saveProfile(f); setSaved(true) } catch (error) { setErr(error.message) }
   }
+  // El permiso se guarda al instante: retirarlo no debe depender de completar el resto del formulario
+  const toggleMarketing = async (e) => {
+    const accepts_marketing = e.target.checked
+    setErr('')
+    try { await saveProfile({ accepts_marketing }) } catch (error) { setErr(error.message) }
+  }
   return (
     <form className="acc-data" onSubmit={save}>
       <label>Nombre<input value={f.name} onChange={set('name')} autoComplete="name" /></label>
@@ -119,6 +125,10 @@ function MyData() {
       <AddressPicker address={f.address} lat={f.lat} lng={f.lng}
         onChange={(a) => { setF((cur) => ({ ...cur, ...a })); setSaved(false) }} />
       <p className="muted small">Correo: {user.email}</p>
+      <label className="consent">
+        <input type="checkbox" checked={user.accepts_marketing === true} onChange={toggleMarketing} />
+        <span>Quiero recibir promociones y novedades de Zabori por correo</span>
+      </label>
       {err && <p className="form-err" role="alert">{err}</p>}
       <button className="btn primary">{saved ? 'Guardado ✓' : 'Guardar mis datos'}</button>
     </form>

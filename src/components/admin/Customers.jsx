@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { MagnifyingGlass, WhatsappLogo, CaretDown, CaretUp } from '@phosphor-icons/react'
-import { customers, timeAgo, fmtDateTime } from '../../lib/stats'
+import { customers, timeAgo, fmtDateTime, contactsCSV, download } from '../../lib/stats'
+import { marketingContacts } from '../../lib/admin'
 import { money } from '../../config/site'
 import { StatusPill } from './ui'
 
@@ -20,6 +21,18 @@ export default function Customers({ orders, onOpen }) {
   const [sort, setSort] = useState('reciente')
   const [openKey, setOpenKey] = useState(null)
   const all = useMemo(() => customers(orders || []), [orders])
+  const [exporting, setExporting] = useState(false)
+  const [notice, setNotice] = useState('')
+
+  // Solo clientes registrados que marcaron la casilla de promociones
+  const exportContacts = async () => {
+    setExporting(true); setNotice('')
+    try {
+      const list = await marketingContacts()
+      if (list.length) download(`zabori-contactos-${new Date().toISOString().slice(0, 10)}.csv`, contactsCSV(list))
+      setNotice(list.length ? `${list.length} contacto${list.length === 1 ? '' : 's'} con permiso exportado${list.length === 1 ? '' : 's'}.` : 'Todavía ningún cliente aceptó recibir promociones.')
+    } catch (e) { setNotice(e.message) } finally { setExporting(false) }
+  }
 
   const shown = all
     .filter((c) => !q || `${c.name} ${c.phone} ${c.email}`.toLowerCase().includes(q.toLowerCase()))
@@ -34,7 +47,11 @@ export default function Customers({ orders, onOpen }) {
       <div className="section-head">
         <h2>Clientes</h2>
         <p className="muted">{all.length} cliente{all.length === 1 ? '' : 's'} · {repeat} volvieron a pedir</p>
+        <button className="btn ghost small" disabled={exporting} onClick={exportContacts}>
+          {exporting ? 'Exportando…' : 'Exportar contactos para promociones'}
+        </button>
       </div>
+      {notice && <p className="muted" role="status">{notice}</p>}
 
       <div className="toolbar">
         <label className="search">

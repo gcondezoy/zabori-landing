@@ -13,7 +13,7 @@ const STATUS = {
 function AuthForm({ mode }) {
   const { signIn, signUp, setModal } = useAuth()
   const registro = mode === 'registro'
-  const [f, setF] = useState({ name: '', phone: '', email: '', password: '' })
+  const [f, setF] = useState({ name: '', phone: '', email: '', password: '', marketing: false })
   const [err, setErr] = useState('')
   const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
@@ -56,6 +56,12 @@ function AuthForm({ mode }) {
         <input required type="password" minLength={6} value={f.password} onChange={set('password')}
           autoComplete={registro ? 'new-password' : 'current-password'} />
       </label>
+      {registro && (
+        <label className="consent">
+          <input type="checkbox" checked={f.marketing} onChange={(e) => setF({ ...f, marketing: e.target.checked })} />
+          <span>Quiero recibir promociones y novedades de Zabori por correo. Puedo dejar de recibirlas cuando quiera.</span>
+        </label>
+      )}
       {err && <p className="form-err" role="alert">{err}</p>}
       {info && <p className="form-ok" role="status">{info}</p>}
       <button className="btn primary block" disabled={busy}>

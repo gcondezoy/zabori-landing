@@ -12,10 +12,13 @@ const write = (k, v) => {
   try { localStorage.setItem(k, JSON.stringify(v)) } catch {}
 }
 
-// Usuario normalizado: { id, email, name, phone, address }
+// Correo de bienvenida: se activa en Vercel cuando ya están el dominio y la función welcome-email
+const WELCOME_EMAIL = import.meta.env.VITE_CORREO_BIENVENIDA === '1'
+
+// Usuario normalizado: { id, email, name, phone, address, accepts_marketing }
 async function fetchProfile(authUser) {
-  const base = { id: authUser.id, email: authUser.email, name: '', phone: '', address: '', lat: null, lng: null }
-  const { data } = await supabase.from('profiles').select('name, phone, address, lat, lng').eq('id', authUser.id).maybeSingle()
+  const base = { id: authUser.id, email: authUser.email, name: '', phone: '', address: '', lat: null, lng: null, accepts_marketing: false }
+  const { data } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle()
   if (!data) return base
   // numeric llega como texto desde Supabase
   return { ...base, ...data, lat: data.lat != null ? Number(data.lat) : null, lng: data.lng != null ? Number(data.lng) : null }
@@ -34,25 +37,31 @@ export function AuthProvider({ children }) {
       return
     }
     let alive = true
+    let welcomed = false
     const apply = async (session) => {
       const next = session?.user ? await fetchProfile(session.user) : null
       if (alive) setUser(next)
+      // La función envía el correo una sola vez; si falla, se reintenta en la próxima visita
+      if (WELCOME_EMAIL && next && next.welcomed_at === null && !welcomed) {
+        welcomed = true
+        supabase.functions.invoke('welcome-email').catch(() => {})
+      }
     }
     supabase.auth.getSession().then(({ data }) => apply(data.session)).finally(() => alive && setReady(true))
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => { apply(session) })
     return () => { alive = false; sub.subscription.unsubscribe() }
   }, [])
 
-  const signUp = useCallback(async ({ email, password, name, phone }) => {
+  const signUp = useCallback(async ({ email, password, name, phone, marketing }) => {
     if (supabaseConfigurado) {
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name, phone } } })
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name, phone, accepts_marketing: marketing === true } } })
       if (error) throw new Error(error.message)
       // Si el proyecto exige confirmar el correo, aún no hay sesión
       return { needsConfirm: !data.session }
     }
     const users = read(DEMO_USERS, [])
     if (users.some((u) => u.email === email)) throw new Error('Ese correo ya está registrado.')
-    const u = { id: 'u' + Date.now(), email, password, name, phone, address: '', lat: null, lng: null }
+    const u = { id: 'u' + Date.now(), email, password, name, phone, address: '', lat: null, lng: null, accepts_marketing: marketing === true, marketing_at: marketing ? new Date().toISOString() : null }
     write(DEMO_USERS, [...users, u])
     write(DEMO_SESSION, u.id)
     setUser(u)
@@ -84,7 +93,8 @@ export function AuthProvider({ children }) {
       const { error } = await supabase.from('profiles').update(fields).eq('id', user.id)
       if (error) throw new Error(error.message)
     } else {
-      write(DEMO_USERS, read(DEMO_USERS, []).map((u) => (u.id === user.id ? { ...u, ...fields } : u)))
+      const stamp = 'accepts_marketing' in fields ? { marketing_at: new Date().toISOString() } : {}
+      write(DEMO_USERS, read(DEMO_USERS, []).map((u) => (u.id === user.id ? { ...u, ...fields, ...stamp } : u)))
     }
     setUser(next)
   }, [user])

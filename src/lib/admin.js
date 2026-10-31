@@ -52,6 +52,18 @@ export async function isAdmin() {
   return !error && data === true
 }
 
+// Clientes que aceptaron recibir publicidad: [{ name, email, acceptedAt }]
+export async function marketingContacts() {
+  if (supabaseConfigurado) {
+    const { data, error } = await supabase.rpc('marketing_contacts')
+    if (error) throw new Error(error.message)
+    return data.map((c) => ({ name: c.name, email: c.email, acceptedAt: c.accepted_at }))
+  }
+  let users = []
+  try { users = JSON.parse(localStorage.getItem('zabori-demo-users')) || [] } catch { /* sin cuentas de demo */ }
+  return users.filter((u) => u.accepts_marketing).map((u) => ({ name: u.name, email: u.email, acceptedAt: u.marketing_at }))
+}
+
 // Pedido normalizado:
 // { id, code, userId, name, phone, email, mode, address, notes, subtotal, fee, total,
 //   status, payment, paymentRef, createdAt, history: [{ type, value, at }], items: [{ name, qty, price }] }

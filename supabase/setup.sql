@@ -504,3 +504,58 @@ drop policy if exists "admin sube fotos menu" on storage.objects;
 create policy "admin sube fotos menu" on storage.objects for insert with check (bucket_id = 'menu' and public.is_admin());
 drop policy if exists "admin borra fotos menu" on storage.objects;
 create policy "admin borra fotos menu" on storage.objects for delete using (bucket_id = 'menu' and public.is_admin());
+
+-- =============================================================
+--  ETAPA 7 · Permiso para publicidad y correo de bienvenida
+-- =============================================================
+alter table public.profiles add column if not exists accepts_marketing boolean not null default false;
+alter table public.profiles add column if not exists marketing_at timestamptz; -- cuándo dio (o retiró) su permiso
+alter table public.profiles add column if not exists welcomed_at timestamptz;  -- lo marca la función welcome-email
+
+-- El permiso se toma de la casilla del registro (sin marcar = no acepta)
+create or replace function public.handle_new_user() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  v_ok boolean := coalesce(new.raw_user_meta_data->>'accepts_marketing', '') = 'true';
+begin
+  insert into public.profiles (id, name, phone, accepts_marketing, marketing_at)
+  values (new.id,
+          coalesce(new.raw_user_meta_data->>'name', ''),
+          coalesce(new.raw_user_meta_data->>'phone', ''),
+          v_ok,
+          case when v_ok then now() end)
+  on conflict (id) do nothing;
+  return new;
+end $$;
+
+-- Registra cuándo cambió el permiso. El cliente no puede tocar welcomed_at (se reenviaría el correo).
+create or replace function public.profiles_guard() returns trigger
+language plpgsql as $$
+begin
+  if new.accepts_marketing is distinct from old.accepts_marketing then
+    new.marketing_at := now();
+  end if;
+  if current_user not in ('service_role', 'postgres') then
+    new.welcomed_at := old.welcomed_at;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists profiles_guard_trg on public.profiles;
+create trigger profiles_guard_trg before update on public.profiles
+  for each row execute function public.profiles_guard();
+
+-- Lista para el panel: solo administradores, solo quienes aceptaron
+create or replace function public.marketing_contacts()
+returns table (name text, email text, accepted_at timestamptz)
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'No autorizado'; end if;
+  return query
+    select p.name, u.email::text, p.marketing_at
+    from public.profiles p join auth.users u on u.id = p.id
+    where p.accepts_marketing and u.email is not null
+    order by p.marketing_at desc nulls last;
+end $$;
+revoke execute on function public.marketing_contacts() from public, anon;
+grant execute on function public.marketing_contacts() to authenticated;

@@ -124,6 +124,13 @@ export function ordersCSV(orders, STATUS, PAYMENT) {
   return '﻿' + [head.map(esc).join(';'), ...rows].join('\r\n')
 }
 
+// Lista para importar en el servicio de correo: solo quienes dieron su permiso
+export function contactsCSV(contacts) {
+  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const rows = contacts.map((c) => [c.email, c.name, c.acceptedAt ? new Date(c.acceptedAt).toLocaleDateString('es-PE') : ''].map(esc).join(';'))
+  return '\ufeff' + [['email', 'nombre', 'acepto_el'].map(esc).join(';'), ...rows].join('\r\n')
+}
+
 export function download(name, text, type = 'text/csv;charset=utf-8') {
   const url = URL.createObjectURL(new Blob([text], { type }))
   const a = document.createElement('a')

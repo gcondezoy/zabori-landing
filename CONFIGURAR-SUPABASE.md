@@ -36,7 +36,7 @@ Sin la llave de Culqi la web solo ofrece Yape y Plin; la opción **Tarjeta** apa
    supabase login
    supabase link --project-ref TU_PROJECT_REF
    supabase secrets set CULQI_SECRET_KEY=sk_test_xxxxxxxx
-   supabase functions deploy pay-order
+   supabase functions deploy pay-order --no-verify-jwt
    ```
 4. Reiniciar `npm run dev` y probar con las tarjetas de prueba de Culqi (docs.culqi.com → Pruebas).
 5. Para producción: cambiar a `pk_live_` / `sk_live_` cuando Culqi apruebe la cuenta.
@@ -93,3 +93,23 @@ Las políticas RLS (`is_admin()`) permiten ver/actualizar pedidos y editar la ca
 - "Usar mi ubicación" necesita HTTPS (funciona en Vercel y en localhost).
 - Las coordenadas se guardan en `orders.lat` / `orders.lng` (solo si están dentro del Perú) y el panel abre el punto exacto en Google Maps.
 - Si más adelante se quiere Google Maps (mejores resultados en Lima), solo se cambia `src/lib/geo.js` y el mapa; el resto queda igual.
+
+# Correos: bienvenida y publicidad
+
+Hace falta un **dominio propio** y una cuenta en [Resend](https://resend.com) (de preferencia a nombre del cliente).
+
+1. **Volver a ejecutar `supabase/setup.sql`** (agrega el permiso de publicidad). Hacerlo antes de publicar la casilla.
+2. En Resend → Domains, agregar el dominio y copiar sus registros DNS donde se compró. Esperar a que quede verificado.
+3. En Resend → API Keys, crear una clave. **Nunca va en Vercel ni en el código**, solo como secreto de la función:
+   ```
+   supabase secrets set RESEND_API_KEY=re_xxxxxxxx MAIL_FROM="Zabori <hola@tu-dominio.pe>" SITE_URL=https://tu-dominio.pe
+   supabase functions deploy welcome-email --no-verify-jwt
+   ```
+4. En Vercel, agregar `VITE_CORREO_BIENVENIDA=1` y volver a desplegar.
+5. Conectar Resend como SMTP en Supabase (Authentication → Emails → SMTP Settings). Así se quita el límite de 2 correos por hora y conviene **reactivar "Confirm email"**: sin confirmar, cualquiera podría registrar el correo de otra persona y hacer que le llegue la bienvenida.
+
+**Bienvenida:** llega una sola vez después del registro. Las cuentas con más de 7 días al activarla no la reciben.
+
+**Publicidad:** en el panel → Clientes → **Exportar contactos para promociones** se descarga la lista de quienes marcaron la casilla. Se importa en Resend y desde ahí se envía la campaña. Antes de la primera, revisar con el contador o abogado del cliente la Ley 28493 (correo comercial) y la Ley 29733 (datos personales). Cada campaña debe permitir darse de baja: **no volver a importar a quien se dio de baja en Resend** sin revisar esa lista.
+
+El cliente puede cambiar su permiso en Mi cuenta → Mis datos; la fecha queda en `profiles.marketing_at`.
