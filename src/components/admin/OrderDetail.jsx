@@ -13,8 +13,10 @@ export default function OrderDetail({ order: o, onClose, refresh }) {
   const [notify, setNotify] = useState(false) // tras cambiar el estado, sugerir avisar al cliente
   const [pushes, setPushes] = useState(null) // dispositivos con avisos activos en este pedido
   const [pushSent, setPushSent] = useState(false)
-  const next = nextStatus(o)
   const closed = o.status === 'entregado' || o.status === 'cancelado'
+  const unpaid = o.payment !== 'pagado' && o.status !== 'cancelado' // un pedido entregado sin pagar aún se puede cobrar
+  const next = unpaid ? null : nextStatus(o) // primero se confirma el pago, luego avanza el pedido
+  const wallet = { yape: 'Yape', plin: 'Plin' }[o.method]
 
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
@@ -61,16 +63,18 @@ export default function OrderDetail({ order: o, onClose, refresh }) {
         <div className="detail-body">
           <div className="pills-row"><StatusPill status={o.status} /><PayPill payment={o.payment} method={o.method} /></div>
 
-          {!closed && (
+          {(!closed || unpaid) && (
             <div className="o-actions">
-              {next && <button className="btn primary small" disabled={busy} onClick={() => act({ status: next })}>Pasar a: {STATUS[next]}</button>}
-              {o.payment !== 'pagado' && <button className="btn ghost small" disabled={busy} onClick={() => act({ payment: 'pagado' })}>
-                {o.method === 'yape' || o.method === 'plin' ? `Confirmar pago ${o.method === 'yape' ? 'Yape' : 'Plin'}` : 'Marcar pagado'}
+              {unpaid && <button className="btn primary small" disabled={busy}
+                onClick={() => window.confirm(`¿Ya recibiste ${money(o.total)}${wallet ? ` por ${wallet}` : ''}?`) && act({ payment: 'pagado' })}>
+                {wallet ? `Confirmar pago ${wallet}` : 'Marcar pagado'}
               </button>}
-              <button className="btn ghost small danger" disabled={busy}
-                onClick={() => window.confirm(`¿Cancelar el pedido ${o.code}?`) && act({ status: 'cancelado' })}>Cancelar</button>
+              {next && <button className="btn primary small" disabled={busy} onClick={() => act({ status: next })}>Pasar a: {STATUS[next]}</button>}
+              {!closed && <button className="btn ghost small danger" disabled={busy}
+                onClick={() => window.confirm(`¿Cancelar el pedido ${o.code}?`) && act({ status: 'cancelado' })}>Cancelar</button>}
             </div>
           )}
+          {unpaid && !closed && <p className="muted">Primero confirma el pago. Después podrás pasarlo a {STATUS[nextStatus(o)]}.</p>}
           {err && <p className="form-err" role="alert">{err}</p>}
           {pushConfigurado && pushes !== null && !closed && (
             <p className={`push-state${pushes > 0 ? ' on' : ''}`}>

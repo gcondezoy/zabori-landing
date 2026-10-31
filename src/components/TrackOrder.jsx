@@ -99,7 +99,7 @@ export default function TrackOrder() {
                 <h2>{order.code}</h2>
               </div>
               <div className="track-total">
-                <small>{order.mode === 'delivery' ? 'Delivery' : 'Recojo'} · {METHODS[order.method] || order.method}</small>
+                <small>{order.mode === 'delivery' ? 'Delivery' : 'Recojo'} · {METHODS[order.method] || order.method}{order.payment === 'pagado' && ' · Pagado'}</small>
                 <strong>{money(order.total)}</strong>
               </div>
             </header>

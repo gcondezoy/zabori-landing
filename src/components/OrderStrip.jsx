@@ -45,7 +45,8 @@ export default function OrderStrip() {
   }, [])
 
   if (!order) return null
-  const label = order.status === 'pendiente' && order.payment !== 'pagado' ? 'Confirmando tu pago' : LABELS[order.status]
+  const paid = order.payment === 'pagado'
+  const label = order.status === 'pendiente' ? (paid ? 'Pago confirmado' : 'Confirmando tu pago') : LABELS[order.status]
   return (
     <a href="#/seguir" className="order-strip" aria-label={`Tu pedido ${order.code}: ${label}. Ver cómo va`}>
       <span className="wrap order-strip-in">
