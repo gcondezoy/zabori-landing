@@ -11,6 +11,7 @@ import AuthModal from './components/AuthModal'
 import CartBar from './components/CartBar'
 import WhatsAppFab from './components/WhatsAppFab'
 import MenuPicker from './components/MenuPicker'
+import OrderStrip from './components/OrderStrip'
 // Páginas que no son la portada: se descargan solo cuando se abren (la portada carga más rápido)
 const Admin = lazy(() => import('./components/admin/AdminApp'))
 const TrackOrder = lazy(() => import('./components/TrackOrder'))
@@ -65,6 +66,7 @@ export default function App() {
         : route === 'cuenta' ? <Suspense fallback={<Loading />}><AccountPage /></Suspense>
         : route === 'terminos' || route === 'privacidad' ? <Suspense fallback={<Loading />}><LegalPage page={route} /></Suspense> : (
         <main>
+          <OrderStrip />
           <Hero />
           <BuildPromo />
           <Menu />

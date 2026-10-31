@@ -9,11 +9,18 @@ export const METHODS = {
   plin: 'Plin',
 }
 
-// Para la página "Sigue tu pedido": se guarda en la sesión (no en la URL) el pedido recién hecho
+// Para "Sigue tu pedido": este navegador recuerda el último pedido por un día (no va en la URL),
+// así se puede volver a verlo aunque se cierre la pestaña. Del celular solo se guardan los últimos 4 dígitos.
 export const TRACK_KEY = 'zabori-track'
+export const TRACK_EVENT = 'zabori-track-change'
+const TRACK_MS = 24 * 60 * 60 * 1000
 export function rememberOrder(code, phone) {
-  try { sessionStorage.setItem(TRACK_KEY, JSON.stringify({ code, phone })) } catch {}
+  try { localStorage.setItem(TRACK_KEY, JSON.stringify({ code, phone: (phone || '').replace(/\D/g, '').slice(-4), at: Date.now() })) } catch {}
+  window.dispatchEvent(new Event(TRACK_EVENT))
 }
 export function lastOrder() {
-  try { return JSON.parse(sessionStorage.getItem(TRACK_KEY)) } catch { return null }
+  try {
+    const o = JSON.parse(localStorage.getItem(TRACK_KEY))
+    return o && Date.now() - o.at < TRACK_MS ? o : null
+  } catch { return null }
 }

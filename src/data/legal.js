@@ -3,7 +3,7 @@
 // Al cambiar un texto, subir LEGAL_VERSION: cada pedido y cuenta guarda la versión que aceptó.
 import { money, site } from '../config/site'
 
-export const LEGAL_VERSION = '2026-10-31-borrador-2'
+export const LEGAL_VERSION = '2026-10-31-borrador-3'
 
 const data = site.legal
 const pending = (value, label) => value || `[[${label}]]`
@@ -117,7 +117,7 @@ export const LEGAL_PAGES = {
       ] },
       { title: 'Seguridad y datos en tu navegador', blocks: [
         'La web usa conexión cifrada y el acceso al panel está restringido a administradores.',
-        'Tu navegador guarda tu carrito y tu sesión para que no los pierdas. No usamos herramientas de publicidad ni de medición de visitas.',
+        'Tu navegador guarda tu carrito y tu sesión para que no los pierdas y, por un día, el código de tu último pedido con los últimos 4 dígitos de tu celular, para que puedas ver cómo va. No usamos herramientas de publicidad ni de medición de visitas.',
       ] },
       { title: 'Menores de edad', blocks: [
         '[[Definir con el abogado la regla para menores de edad]]',

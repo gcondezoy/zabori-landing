@@ -1316,3 +1316,34 @@ html { overflow-x: clip; }
   .menu-rail:has(> :nth-child(3)) { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 2px; scrollbar-width: none; }
   .menu-rail:has(> :nth-child(3)) > .card { flex: 0 0 calc((100% - 16px) / 2); min-width: 0; scroll-snap-align: start; }
 }
+
+/* Menú del celular: "Sigue tu pedido" va primero porque es lo que se busca al volver a la web */
+.burger { display: none; width: 44px; height: 44px; place-items: center; border-radius: 50%; border: 2px solid var(--red); background: transparent; color: var(--red); transition: transform .14s var(--ease-out), background-color .2s ease; }
+.burger:active { transform: scale(.96); }
+.nav-scrim { position: fixed; inset: 64px 0 0; background: rgba(3, 50, 60, .35); animation: nav-fade .18s ease; }
+.nav-mobile { position: absolute; top: 100%; left: 0; right: 0; display: grid; padding: 6px 16px 10px; background: var(--card); border-radius: 0 0 16px 16px; box-shadow: var(--shadow); animation: nav-in .2s var(--ease-out); }
+.nav-mobile a { display: flex; align-items: center; gap: 12px; min-height: 50px; color: var(--red); font-weight: 700; text-decoration: none; border-bottom: 1px solid var(--line); }
+.nav-mobile a:last-child { border-bottom: 0; }
+.nav-mobile span { display: grid; line-height: 1.25; }
+.nav-mobile small { color: var(--muted); font-size: .8rem; font-weight: 600; }
+.nav-mobile .nav-track { min-height: 58px; }
+@keyframes nav-in { from { opacity: 0; transform: translateY(-6px); } }
+@keyframes nav-fade { from { opacity: 0; } }
+@media (max-width: 800px) { .burger { display: grid; } }
+@media (min-width: 801px) { .nav-mobile, .nav-scrim { display: none; } }
+
+/* Franja con el pedido en curso */
+.order-strip { display: block; background: var(--red); color: var(--yellow); text-decoration: none; }
+.order-strip-in { display: flex; align-items: center; gap: 10px; min-height: 48px; padding-block: 6px; }
+.order-strip-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #4ade80; }
+.order-strip-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; min-width: 0; line-height: 1.25; }
+.order-strip-text b { font-weight: 800; }
+.order-strip-text small { color: #fff; opacity: .85; font-size: .8rem; font-weight: 600; }
+.order-strip-go { flex: none; display: inline-flex; align-items: center; gap: 4px; margin-left: auto; font-weight: 800; font-size: .9rem; }
+.order-strip:focus-visible { outline-color: var(--yellow); outline-offset: -4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-mobile, .nav-scrim { animation: none; }
+  .burger { transition: none; }
+  .burger:active { transform: none; }
+}
