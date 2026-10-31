@@ -6,7 +6,7 @@ import { zaboriWhatsapp } from '../lib/whatsapp'
 export default function WhatsAppFab() {
   const ref = useRef(null)
 
-  // En celular, el resumen de "Arma tu plato" queda fijo abajo: el botón sube justo encima de él
+  // En celular, el resumen de "Arma tu plato" ocupa la parte de abajo: mientras se ve, el botón se oculta
   useEffect(() => {
     let frame = 0
     const place = () => {
@@ -15,8 +15,10 @@ export default function WhatsAppFab() {
       const sum = document.querySelector('.b-summary')
       if (!fab) return
       const r = sum && window.innerWidth <= 900 ? sum.getBoundingClientRect() : null
-      const lift = r && r.top < window.innerHeight && r.bottom > 0 ? window.innerHeight - r.top + 12 : 0
-      fab.style.bottom = lift ? `${Math.round(lift)}px` : ''
+      const own = fab.getBoundingClientRect()
+      const hide = Boolean(r && r.top < own.bottom + 12 && r.bottom > own.top - 12) // el resumen pasa por donde está el botón
+      fab.classList.toggle('is-hidden', hide)
+      fab.inert = hide
     }
     const queue = () => { if (!frame) frame = requestAnimationFrame(place) }
     window.addEventListener('scroll', queue, { passive: true })

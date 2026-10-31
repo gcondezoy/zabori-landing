@@ -146,7 +146,7 @@ export default function BuildPlate() {
             }
             const on = sel.includes(o.id)
             return (
-              <button key={o.id} type="button" className={`b-opt${on ? ' on' : ''}${o.img ? ' has-img' : ''}`}
+              <button key={o.id} type="button" className={`b-opt${on ? ' on' : ''}${o.img ? ' has-img' : ''}${g.max === 1 ? ' single' : ''}`}
                 aria-pressed={on} disabled={!on && full} onClick={() => toggle(g, o.id)}>
                 {o.img && <img className="b-thumb" src={o.img} alt="" width="160" height="120" loading="lazy" />}
                 <span className="b-check" aria-hidden="true">{on && <Check size={12} weight="bold" />}</span>

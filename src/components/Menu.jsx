@@ -10,7 +10,7 @@ import BuildPlate from './BuildPlate'
 import { needsPick } from '../lib/build'
 import { menuPrice } from '../lib/menu'
 import { DAY_NAMES } from '../lib/week'
-import { OPEN_BUILD_EVENT } from './BuildPromo'
+import { OPEN_BUILD_EVENT, OPEN_MENU_EVENT } from './BuildPromo'
 
 function Card({ item, index }) {
   const { qty, add, dec, requestAdd, countOf } = useCart()
@@ -58,8 +58,13 @@ export default function Menu() {
 
   useEffect(() => {
     const open = () => setCat('arma')
+    const openMenu = () => setCat('menu')
     window.addEventListener(OPEN_BUILD_EVENT, open)
-    return () => window.removeEventListener(OPEN_BUILD_EVENT, open)
+    window.addEventListener(OPEN_MENU_EVENT, openMenu)
+    return () => {
+      window.removeEventListener(OPEN_BUILD_EVENT, open)
+      window.removeEventListener(OPEN_MENU_EVENT, openMenu)
+    }
   }, [])
   return (
     <section className="section" id="menu">
@@ -86,10 +91,11 @@ export default function Menu() {
         )}
         {cat === 'menu' && hasMenus && (
           <div className="menu-price">
-            <span>Menú completo a</span>
             <strong>S/ {Number.isInteger(menuPrice(items)) ? menuPrice(items) : menuPrice(items).toFixed(2)}</strong>
-            <small>Eliges tu entrada y tu segundo · Bebida incluida: <b>{drink}</b></small>
-            {entradas.length > 0 && <small><b>Entradas:</b> {entradas.map((e) => e.name).join(' · ')}</small>}
+            <div>
+              <b>Entrada + segundo + {drink}</b>
+              {entradas.length > 0 && <small>Entradas: {entradas.map((e) => e.name).join(' · ')}</small>}
+            </div>
           </div>
         )}
         {cat === 'menu' && hasMenus && <h3 className="menu-step">Elige tu segundo</h3>}

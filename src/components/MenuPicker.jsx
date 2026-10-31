@@ -58,7 +58,7 @@ export default function MenuPicker() {
                 const on = pickedEntrada?.id === e.id
                 return (
                   <button key={e.id} type="button" role="radio" aria-checked={on}
-                    className={`b-opt${on ? ' on' : ''}`} onClick={() => setEntrada(e.id)}>
+                    className={`b-opt single${on ? ' on' : ''}`} onClick={() => setEntrada(e.id)}>
                     <span className="b-check" aria-hidden="true">{on && <Check size={12} weight="bold" />}</span>
                     <span className="b-name">{e.name}{e.desc && <small>{e.desc}</small>}</span>
                   </button>
@@ -78,7 +78,7 @@ export default function MenuPicker() {
                 const on = taper === t.id
                 return (
                   <button key={t.id} type="button" role="radio" aria-checked={on}
-                    className={`b-opt has-img${on ? ' on' : ''}`} onClick={() => setTaper(t.id)}>
+                    className={`b-opt has-img single${on ? ' on' : ''}`} onClick={() => setTaper(t.id)}>
                     {t.img && <img className="b-thumb" src={t.img} alt="" width="160" height="120" />}
                     <span className="b-check" aria-hidden="true">{on && <Check size={12} weight="bold" />}</span>
                     <span className="b-name">{t.name}</span>

@@ -9,6 +9,8 @@ import Reveal from './Reveal'
 const ICONS = { proteina: CookingPot, carbo: Grains, acomp: Carrot, crema: Drop, taper: Package }
 const INTERVAL = 3200
 
+// Eventos para que la carta abra una pestaña desde otra sección
+export const OPEN_MENU_EVENT = 'zabori:open-menu'
 // Evento para que la carta abra la pestaña "Arma tu plato"
 export const OPEN_BUILD_EVENT = 'zabori:open-build'
 
@@ -30,6 +32,13 @@ function randomCombo(build) {
   return ids
 }
 
+// Lleva a la carta con la pestaña indicada abierta
+export function openBuilder(e) {
+  e.preventDefault()
+  window.dispatchEvent(new Event(OPEN_BUILD_EVENT))
+  document.getElementById('menu')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth' })
+}
+
 export default function BuildPromo() {
   const { build } = useMenu()
   const [combo, setCombo] = useState([])
@@ -48,12 +57,6 @@ export default function BuildPromo() {
 
   const picked = useMemo(() => chosen(build, combo), [build, combo])
   const protein = picked.find((o) => o.grp === 'proteina')
-
-  const openBuilder = (e) => {
-    e.preventDefault()
-    window.dispatchEvent(new Event(OPEN_BUILD_EVENT))
-    document.getElementById('menu')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth' })
-  }
 
   if (!build.available || !build.options.length) return null
 

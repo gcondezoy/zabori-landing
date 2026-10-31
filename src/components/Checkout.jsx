@@ -176,6 +176,7 @@ export default function Checkout() {
           <p className="empty">Tu carrito está vacío.</p>
         ) : (
           <form onSubmit={pay}>
+            <div className="co-col">
             <h3>Finalizar pedido</h3>
             {user ? (
               <p className="guest">Pides como <strong>{user.name || user.email}</strong>.</p>
@@ -209,7 +210,9 @@ export default function Checkout() {
               <textarea rows={2} value={f.notes} onChange={set('notes')}
                 placeholder={f.mode === 'delivery' ? 'Ej. portón negro, 2.º piso, tocar timbre' : ''} />
             </label>
+            </div>
 
+            <div className="co-col">
             <fieldset className="paymethod">
               <legend>¿Cómo pagas?</legend>
               <div className="pm-options">
@@ -251,6 +254,7 @@ export default function Checkout() {
             <button className="btn primary block" disabled={paying}>
               {paying ? 'Procesando…' : card ? `Pagar ${money(total)}` : `Confirmar pedido · ${money(total)}`}
             </button>
+            </div>
           </form>
         )}
       </div>
