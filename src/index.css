@@ -822,9 +822,9 @@ h1, h2 { text-wrap: balance; }
 .track-in { max-width: 720px; }
 .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--red); font-weight: 700; text-decoration: none; margin-bottom: 18px; }
 .track h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; color: var(--ink); }
-.track-form { display: grid; grid-template-columns: 1.3fr 1fr auto; gap: 10px; align-items: end; margin: 22px 0 12px; }
-.track-form label { display: grid; gap: 5px; font-size: .85rem; font-weight: 700; }
-.track-form input { padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-size: 1rem; letter-spacing: .03em; }
+.track-form { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 10px; align-items: end; margin: 22px 0 12px; }
+.track-form label { display: grid; gap: 5px; min-width: 0; font-size: .85rem; font-weight: 700; }
+.track-form input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-size: 1rem; letter-spacing: .03em; }
 .track-form input:focus { outline: 2px solid var(--red); border-color: var(--red); }
 .track-card { margin-top: 18px; background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 22px; display: grid; gap: 18px; box-shadow: 0 12px 30px rgba(3, 50, 60, .08); }
 .track-card header { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
@@ -850,7 +850,7 @@ h1, h2 { text-wrap: balance; }
 .track-items small { color: var(--muted); font-size: .82rem; }
 .track-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 @media (max-width: 600px) {
-  .track-form { grid-template-columns: 1fr 1fr; }
+  .track-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .track-form .btn { grid-column: 1 / -1; }
   .track-total { text-align: left; }
 }
@@ -1263,3 +1263,20 @@ h1, h2 { text-wrap: balance; }
 .cart-extras small { color: var(--muted); font-size: .82rem; }
 .cart-extras .btn { flex: none; }
 .drawer-foot .btn.ghost { margin-top: -6px; }
+
+/* Los navegadores (sobre todo Safari en iPhone) dan a los campos un ancho propio grande: nunca deben ensanchar la página */
+input, select, textarea { min-width: 0; max-width: 100%; }
+html { overflow-x: clip; }
+.modal form { grid-template-columns: minmax(0, 1fr); }
+.modal label:not(.consent) { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.modal input:not([type=checkbox]):not([type=radio]), .modal textarea { width: 100%; }
+.acc-data { grid-template-columns: minmax(0, 1fr); }
+.acc-data > label:not(.consent) { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.acc-data > label:not(.consent) input { width: 100%; }
+.acc-data > * { min-width: 0; }
+.addr, .addr-row, .addr-input { min-width: 0; max-width: 100%; }
+.addr-input input { width: 100%; }
+.search { min-width: 0; max-width: 100%; }
+.search input { width: 100%; }
+/* Con letra menor a 16px, el iPhone acerca la pantalla al tocar un campo */
+@media (max-width: 800px) { input, select, textarea { font-size: 16px !important; } }
