@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CookingPot, Grains, Carrot, Drop, Package, Shuffle, ArrowRight } from '@phosphor-icons/react'
 import { useMenu } from '../context/MenuContext'
-import { chosen, buildPrice, hasSizes, sizeId, fromPrice } from '../lib/build'
+import { chosen, hasSizes, sizeId } from '../lib/build'
 import TaperView from './TaperView'
-import { money, site } from '../config/site'
+import { site } from '../config/site'
 import Reveal from './Reveal'
 
 const ICONS = { proteina: CookingPot, carbo: Grains, acomp: Carrot, crema: Drop, taper: Package }
@@ -64,7 +64,6 @@ export default function BuildPromo() {
   }, [tick, paused, shuffle])
 
   const picked = useMemo(() => chosen(build, combo), [build, combo])
-  const protein = picked.find((o) => o.grp === 'proteina')
 
   if (!build.available || !build.options.length) return null
 
@@ -76,7 +75,6 @@ export default function BuildPromo() {
           <h2 id="promo-title">Tú eliges, nosotros lo cocinamos.</h2>
           <p className="promo-lead">
             {site.slogan}: elige tu proteína por gramos, tu carbohidrato, vegetales cocidos y frescos, y el toque final.
-            Pagas según tu porción, desde <strong>{money(fromPrice(build))}</strong>.
           </p>
           <ol className="promo-steps">
             {build.groups.map((g, i) => {
@@ -95,18 +93,11 @@ export default function BuildPromo() {
 
         <Reveal className="promo-demo" delay={150}>
           <div className="combo" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-            <span className="combo-label">Así llega tu táper, por ejemplo…</span>
             <TaperView key={tick} picked={picked} className="combo-collage" />
             <p className="combo-list">{picked.filter((o) => o.grp !== 'taper').map((o) => o.name).join(' · ')}</p>
-            <div className="combo-foot">
-              <span className="combo-price" aria-live="polite">
-                <small>{protein ? `${protein.baseName} ${protein.g} g` : 'Tu combinación'}</small>
-                <strong>{money(buildPrice(build, combo))}</strong>
-              </span>
-              <button type="button" className="combo-shuffle" onClick={shuffle}>
-                <Shuffle size={18} weight="bold" /> Otra combinación
-              </button>
-            </div>
+            <button type="button" className="combo-shuffle" onClick={shuffle}>
+              <Shuffle size={18} weight="bold" /> Otra combinación
+            </button>
           </div>
         </Reveal>
       </div>

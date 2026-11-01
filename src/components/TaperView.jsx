@@ -100,7 +100,7 @@ export default function TaperView({ picked, small = false, className = '' }) {
           </span>
         )}
       </div>
-      {!small && dips.length > 0 && (
+      {dips.length > 0 && (
         <div className="tv-dips">
           {dips.map(({ it, leaving }) => (
             <span key={it.id} className={`tv-dip${leaving ? ' out' : ''}`} title={it.name}>
