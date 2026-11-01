@@ -1,6 +1,5 @@
 // "Arma tu plato" fit: opciones de EJEMPLO (nombres, gramajes y precios se editan en el panel → Arma tu plato).
 // - Proteínas: se elige la porción en gramos; cada porción tiene su precio (es el precio del plato).
-// - Otras opciones también pueden ir por gramos: ahí el precio de la porción es un adicional (0 = incluido).
 // - Demás opciones: price = adicional (0 = incluido).
 // - img = foto de la opción (fotos de referencia de Unsplash hasta tener las reales).
 // - Cada sección muestra 4 opciones; las demás quedan ocultas (active: false) para cambiarlas desde el panel.

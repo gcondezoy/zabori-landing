@@ -23,9 +23,9 @@ const PROTEIN = 'proteina'
 const FIXED_SUBS = { acomp: ['Cocidos', 'Frescos'] }
 const HELP = {
   proteina: 'Cada porción tiene su propio precio: es el precio del plato.',
-  carbo: 'S/ 0 es incluido; más de 0 se suma al plato. Con "Por gramos" das a elegir la cantidad.',
-  acomp: 'S/ 0 es incluido; más de 0 se suma al plato. Con "Por gramos" das a elegir la cantidad.',
-  crema: 'S/ 0 es incluido; más de 0 se suma al plato. Con "Por gramos" das a elegir la cantidad.',
+  carbo: 'S/ 0 es incluido; más de 0 se suma al plato.',
+  acomp: 'S/ 0 es incluido; más de 0 se suma al plato.',
+  crema: 'S/ 0 es incluido; más de 0 se suma al plato.',
 }
 
 // Veces pedida (30 días). Con porciones se suman todas: "Pechuga de pollo 100 g", "… 150 g"…
@@ -60,8 +60,7 @@ function OptionRow({ opt, uses, onSaved, withImg, subs }) {
   const [err, setErr] = useState('')
   const dirty = JSON.stringify(f) !== JSON.stringify(opt)
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
-  const sized = hasSizes(f)
-  const canToggle = f.grp !== PROTEIN && f.grp !== 'taper' // la proteína siempre va por gramos
+  const sized = hasSizes(f) // solo la proteína va por gramos
 
   const save = async () => {
     const grams = (f.sizes || []).map((s) => Math.round(Number(s.g) || 0))
@@ -79,9 +78,6 @@ function OptionRow({ opt, uses, onSaved, withImg, subs }) {
     try { await deleteBuildOption(opt.id); await onSaved() } catch (e) { setErr(e.message); setBusy(false) }
   }
 
-  // Pasar a gramos parte del adicional actual; volver a precio fijo toma el de la primera porción
-  const toGrams = () => setF({ ...f, sizes: [{ g: 100, price: Number(f.price) || 0 }] })
-  const toFixed = () => setF({ ...f, sizes: [], price: Number(f.sizes[0]?.price) || 0 })
   return (
     <div className={`bo-row${f.active ? '' : ' off'}${withImg ? ' with-img' : ''}`}>
       {withImg && (f.img ? <img className="bo-thumb" src={f.img} alt="" width="64" height="48" /> : <span className="bo-thumb empty" aria-hidden="true" />)}
@@ -100,9 +96,6 @@ function OptionRow({ opt, uses, onSaved, withImg, subs }) {
       {sized && <SizesEditor sizes={f.sizes || []} onChange={(sizes) => setF({ ...f, sizes })} />}
       <div className="bo-tools">
         {withImg && <PhotoField value={f.img} preview={false} onChange={(img) => setF((x) => ({ ...x, img }))} />}
-        {canToggle && (sized
-          ? <button type="button" className="btn ghost small" onClick={toFixed}>Sin gramaje</button>
-          : <button type="button" className="btn ghost small" onClick={toGrams}>Por gramos</button>)}
         <button type="button" className="m-delete" disabled={busy} onClick={remove}><Trash size={14} /> Eliminar</button>
       </div>
       {err && <span className="form-err">{err}</span>}
