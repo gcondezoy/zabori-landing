@@ -122,7 +122,7 @@ El envío sale del panel al cambiar el estado: si la pestaña del panel se cierr
 
 # Horarios de entrega y stock
 
-En el panel → **Horarios y stock** se cambia cuántos pedidos entran en cada rango y las unidades por día de cada segundo, entrada y shot. Hay que correr una vez `supabase/etapa-11-horarios-stock.sql`. El servidor valida el cupo y el stock al crear cada pedido; los rangos usan la hora de Lima y se cierran al empezar. Las horas de los rangos están en la tabla `delivery_slots`; si cambian, actualizar también `lastOrderHour` en `src/config/site.js`.
+En el panel → **Horarios y stock** se cambia cuántos pedidos entran en cada rango y las unidades por día de cada segundo, entrada y shot. Hay que correr una vez `supabase/etapa-11-horarios-stock.sql`. El servidor valida el cupo y el stock al crear cada pedido; los rangos usan la hora de Lima y se cierran cuando termina su horario (`end_at` en la tabla `delivery_slots`).
 
 # Promociones
 

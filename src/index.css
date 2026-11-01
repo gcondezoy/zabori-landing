@@ -1153,7 +1153,7 @@ h1, h2 { text-wrap: balance; }
   .eyebrow { margin-bottom: 8px; }
   .lead { font-size: 1rem; margin: 10px 0 16px; }
   .cta-row { gap: 8px; }
-  .cta-row .btn { flex: 1 1 0; padding-inline: 12px; white-space: nowrap; }
+  .cta-row .btn { flex: 1 1 auto; padding-inline: 12px; white-space: nowrap; }
   .facts { margin-top: 18px; gap: 6px 18px; font-size: .88rem; }
 
   .promo { padding: 96px 0 56px; }
@@ -1536,3 +1536,6 @@ html { overflow-x: clip; }
 }
 .slot-cell { font-size: .84rem; white-space: nowrap; }
 .d-slot { display: block; margin-top: 2px; font-size: .9rem; font-weight: 700; color: var(--red); }
+
+/* Los tres botones de la portada caben en una fila también en pantallas muy angostas */
+@media (max-width: 340px) { .cta-row { gap: 6px; } .cta-row .btn { padding-inline: 9px; font-size: .9rem; } }

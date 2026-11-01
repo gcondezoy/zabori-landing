@@ -11,7 +11,7 @@ import SwipeRail from './SwipeRail'
 import { needsPick } from '../lib/build'
 import { menuPrice } from '../lib/menu'
 import { DAY_NAMES } from '../lib/week'
-import { OPEN_BUILD_EVENT, OPEN_MENU_EVENT } from './BuildPromo'
+import { OPEN_BUILD_EVENT, OPEN_MENU_EVENT, OPEN_SHOTS_EVENT } from './BuildPromo'
 
 // Solo se oculta la foto que aún está cargando: visible por defecto, nunca queda en blanco si algo falla
 const markLoading = (img) => { if (img && !img.complete) img.classList.add('loading') }
@@ -87,11 +87,14 @@ export default function Menu() {
   useEffect(() => {
     const open = () => setCat('arma')
     const openMenu = () => setCat('menu')
+    const openShotsTab = () => setCat('shots')
     window.addEventListener(OPEN_BUILD_EVENT, open)
     window.addEventListener(OPEN_MENU_EVENT, openMenu)
+    window.addEventListener(OPEN_SHOTS_EVENT, openShotsTab)
     return () => {
       window.removeEventListener(OPEN_BUILD_EVENT, open)
       window.removeEventListener(OPEN_MENU_EVENT, openMenu)
+      window.removeEventListener(OPEN_SHOTS_EVENT, openShotsTab)
     }
   }, [])
   return (

@@ -16,7 +16,6 @@ import PushOptIn from './PushOptIn'
 const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', lat: null, lng: null, notes: '', terms: false, delivery_slot: '' }
 const SLOT_NOTE = { full: 'Lleno', past: 'Ya pasó', closed: 'Cerrado' }
 const AVAIL_MS = 30000
-const FEW_LEFT = 5
 
 // La tarjeta solo se ofrece con las llaves de Culqi: sin ellas no se puede cobrar
 const PAY_OPTIONS = [
@@ -43,7 +42,7 @@ function SlotPicker({ mode, value, onChange, avail, onRetry }) {
                 <label key={s.id} className={`slot${on ? ' on' : ''}${off ? ' off' : ''}`}>
                   <input type="radio" name="delivery_slot" required value={s.id} checked={on} disabled={off} onChange={() => onChange(s.id)} />
                   <b>{slotLabel(s.id)}</b>
-                  <small>{off ? SLOT_NOTE[s.status] : s.left <= FEW_LEFT ? `Quedan ${s.left}` : 'Disponible'}</small>
+                  {off && <small>{SLOT_NOTE[s.status]}</small>}
                 </label>
               )
             })}

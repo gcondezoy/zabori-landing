@@ -1,17 +1,12 @@
 import { payText } from '../lib/culqi'
 import { ArrowRight, Clock, Motorcycle } from '@phosphor-icons/react'
 import { site } from '../config/site'
-import { useMenu } from '../context/MenuContext'
-import { menuPrice } from '../lib/menu'
 import PlateCarousel from './PlateCarousel'
 import { useTodayStatus } from './TodayBadge'
-import { openBuilder, OPEN_MENU_EVENT } from './BuildPromo'
+import { openBuilder, openShots, OPEN_MENU_EVENT } from './BuildPromo'
 
 export default function Hero() {
-  const { items } = useMenu()
   const status = useTodayStatus()
-  const price = menuPrice(items)
-  const priceText = `S/ ${Number.isInteger(price) ? price : price.toFixed(2)}`
   return (
     <section className="hero" id="top">
       <div className="wrap hero-in">
@@ -23,9 +18,10 @@ export default function Hero() {
           </p>
           <div className="cta-row">
             <a href="#menu" className="btn primary" onClick={() => window.dispatchEvent(new Event(OPEN_MENU_EVENT))}>
-              Menú · {priceText} <ArrowRight weight="bold" />
+              Menú <ArrowRight weight="bold" />
             </a>
             <a href="#menu" className="btn ghost" onClick={openBuilder}>Arma tu plato</a>
+            <a href="#menu" className="btn ghost" onClick={openShots}>Shots</a>
           </div>
           <ul className="facts">
             <li><Clock size={18} weight="bold" /> {status.text}</li>

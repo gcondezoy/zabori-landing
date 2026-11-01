@@ -25,7 +25,7 @@ const parse = (key, fallback) => {
 }
 const localSlots = () => {
   const saved = parse(SLOTS_KEY, {})
-  return SLOT_IDS.map((id) => ({ id, start: saved[id]?.start ?? id.slice(0, 5), capacity: saved[id]?.capacity ?? 20, days: saved[id]?.days ?? OPEN_DAYS }))
+  return SLOT_IDS.map((id) => ({ id, end: saved[id]?.end ?? id.slice(6), capacity: saved[id]?.capacity ?? 20, days: saved[id]?.days ?? OPEN_DAYS }))
 }
 
 const nowLima = () => new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }).format(new Date())
@@ -50,13 +50,13 @@ async function localAvailability() {
   const time = nowLima()
   const slots = localSlots().map((s) => {
     const n = taken[s.id] || 0
-    const status = !s.days.includes(dayLima()) ? 'closed' : s.start <= time ? 'past' : n >= s.capacity ? 'full' : 'open'
-    return { id: s.id, left: Math.max(s.capacity - n, 0), status }
+    const status = !s.days.includes(dayLima()) ? 'closed' : s.end <= time ? 'past' : n >= s.capacity ? 'full' : 'open'
+    return { id: s.id, status }
   })
   return { slots, stock, admin: { taken, sold } }
 }
 
-// { slots: [{ id, left, status: 'open' | 'full' | 'past' | 'closed' }], stock: { idDelPlato: unidadesQueQuedan }, admin? }
+// { slots: [{ id, status: 'open' | 'full' | 'past' | 'closed' }], stock: { idDelPlato: unidadesQueQuedan }, admin? }
 export async function loadAvailability() {
   if (supabaseConfigurado) {
     const { data, error } = await supabase.rpc('availability')

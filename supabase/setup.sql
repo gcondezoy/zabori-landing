@@ -227,6 +227,9 @@ insert into public.delivery_slots (id, start_at) values
   ('12:00-12:30','12:00'), ('12:30-13:00','12:30'), ('13:00-13:30','13:00'),
   ('13:30-14:00','13:30'), ('14:00-14:30','14:00'), ('14:30-15:00','14:30')
 on conflict (id) do nothing;
+-- Un rango se puede elegir hasta que termina
+alter table public.delivery_slots add column if not exists end_at time;
+update public.delivery_slots set end_at = split_part(id, '-', 2)::time where end_at is null;
 
 create or replace function public.create_order(p jsonb) returns text
 language plpgsql security definer set search_path = public as $$
@@ -282,7 +285,7 @@ begin
 
   select * into sl from public.delivery_slots where id = v_slot;
   if not found then raise exception 'Elige tu horario de entrega'; end if;
-  if not (extract(dow from v_today)::int = any(sl.days)) or sl.start_at <= v_time then
+  if not (extract(dow from v_today)::int = any(sl.days)) or sl.end_at <= v_time then
     raise exception 'Ese horario ya no está disponible. Elige otro.';
   end if;
   if (select count(*) from public.orders o where o.delivery_date = v_today and o.delivery_slot = v_slot and o.status <> 'cancelado') >= sl.capacity then
@@ -738,9 +741,8 @@ begin
   select jsonb_build_object(
     'slots', (select coalesce(jsonb_agg(jsonb_build_object(
         'id', t.id,
-        'left', greatest(t.capacity - t.n, 0),
         'status', case when not (extract(dow from v_today)::int = any(t.days)) then 'closed'
-                       when t.start_at <= v_time then 'past'
+                       when t.end_at <= v_time then 'past'
                        when t.n >= t.capacity then 'full'
                        else 'open' end
       ) order by t.start_at), '[]'::jsonb) from taken t),

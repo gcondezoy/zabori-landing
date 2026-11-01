@@ -83,7 +83,7 @@ export default function CuposAdmin({ orders }) {
         <>
           <div className="panel-card cu-group">
             <h3 className="card-title">Rangos de entrega</h3>
-            <p className="muted bo-help">Cuántos pedidos recibes en cada rango. Se bloquea solo al llenarse y cuando llega su hora de inicio. Con 0 queda cerrado.</p>
+            <p className="muted bo-help">Cuántos pedidos recibes en cada rango. Se bloquea solo al llenarse y cuando termina su horario. Con 0 queda cerrado.</p>
             {data.avail.slots.map((s) => {
               const capacity = data.capacities.find((c) => c.id === s.id)?.capacity ?? 0
               return <SlotRow key={s.id + capacity} slot={s} capacity={capacity} taken={taken[s.id] || 0} onSaved={saved} />

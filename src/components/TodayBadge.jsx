@@ -3,7 +3,7 @@ import { site } from '../config/site'
 import { useMenu } from '../context/MenuContext'
 import { DAY_NAMES as DAYS } from '../lib/week'
 
-const hh = (h) => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.round((h % 1) * 60)).padStart(2, '0')}`
+const hh = (h) => `${String(h).padStart(2, '0')}:00`
 
 // Próximo día de atención a partir de mañana
 function nextOpenDay(from) {
@@ -19,7 +19,7 @@ export function todayStatus(now = new Date()) {
   const h = now.getHours() + now.getMinutes() / 60
   if (!site.openDays.includes(day)) return { open: false, text: `Hoy descansamos · volvemos ${nextOpenDay(day)} desde las ${hh(site.openHour)}` }
   if (h < site.openHour) return { open: false, text: `Abrimos hoy a las ${hh(site.openHour)}` }
-  if (h < site.lastOrderHour) return { open: true, text: `Abierto ahora · pedidos hasta las ${hh(site.lastOrderHour)}` }
+  if (h < site.closeHour) return { open: true, text: `Abierto ahora · pedidos hasta las ${hh(site.closeHour)}` }
   return { open: false, text: `Cerrado por hoy · volvemos ${nextOpenDay(day)} desde las ${hh(site.openHour)}` }
 }
 

@@ -13,6 +13,8 @@ const INTERVAL = 3200
 export const OPEN_MENU_EVENT = 'zabori:open-menu'
 // Evento para que la carta abra la pestaña "Arma tu plato"
 export const OPEN_BUILD_EVENT = 'zabori:open-build'
+// Evento para que la carta abra la pestaña "Shots"
+export const OPEN_SHOTS_EVENT = 'zabori:open-shots'
 
 const reducedMotion = () => {
   try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches } catch { return false }
@@ -36,6 +38,12 @@ function randomCombo(build) {
 export function openBuilder(e) {
   e.preventDefault()
   window.dispatchEvent(new Event(OPEN_BUILD_EVENT))
+  document.getElementById('menu')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth' })
+}
+
+export function openShots(e) {
+  e.preventDefault()
+  window.dispatchEvent(new Event(OPEN_SHOTS_EVENT))
   document.getElementById('menu')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth' })
 }
 
