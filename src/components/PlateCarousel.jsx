@@ -73,13 +73,6 @@ export default function PlateCarousel() {
           </>
         )}
       </div>
-      {/* Sello de precio: cambia con cada plato del carrusel */}
-      {current.price != null && (
-        <span className="price-sticker" key={current.id} aria-hidden="true">
-          <small>S/</small>
-          <b>{Number.isInteger(current.price) ? current.price : current.price.toFixed(2)}</b>
-        </span>
-      )}
       </div>
 
       {current.price != null && (
