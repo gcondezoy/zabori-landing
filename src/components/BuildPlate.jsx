@@ -33,7 +33,7 @@ function SizedOption({ o, selected, onPick }) {
   )
 }
 
-// Arma tu plato (fit): proteína por gramos, carbohidrato, verduras, aderezos y táper, con precio en vivo
+// Arma tu plato (fit): proteína por gramos, carbohidrato, verduras, el toque final y táper, con precio en vivo
 export default function BuildPlate() {
   const { build } = useMenu()
   const { add, setOpen } = useCart()

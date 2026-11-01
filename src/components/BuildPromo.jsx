@@ -26,7 +26,7 @@ function randomCombo(build) {
     // En el ejemplo siempre hay al menos una opción por grupo (para que el táper no luzca vacío)
     const lo = Math.max(g.min, 1)
     const n = lo + Math.floor(Math.random() * (Math.min(g.max, opts.length) - lo + 1))
-    // Las opciones con porción se eligen con un gramaje al azar ("p-pollo@180")
+    // Las opciones con porción se eligen con un gramaje al azar ("p-pollo@150")
     ids.push(...opts.slice(0, n).map((o) => (hasSizes(o) ? sizeId(o.id, o.sizes[Math.floor(Math.random() * o.sizes.length)].g) : o.id)))
   })
   return ids
@@ -67,7 +67,7 @@ export default function BuildPromo() {
           <p className="eyebrow">Arma tu plato fit</p>
           <h2 id="promo-title">Tú eliges, nosotros lo cocinamos.</h2>
           <p className="promo-lead">
-            {site.slogan}: elige tu proteína por gramos, tu carbohidrato, vegetales cocidos y frescos, y aderezos.
+            {site.slogan}: elige tu proteína por gramos, tu carbohidrato, vegetales cocidos y frescos, y el toque final.
             Pagas según tu porción, desde <strong>{money(fromPrice(build))}</strong>.
           </p>
           <ol className="promo-steps">

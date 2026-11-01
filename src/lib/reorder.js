@@ -8,7 +8,7 @@ const ENTRADA = 'Entrada: '
 export function reorderLines(items, catalog, build) {
   const lines = []
   const missing = []
-  // Nombre del detalle -> id de la opción (con porción: "Pechuga de pollo 180 g" -> "p-pollo@180")
+  // Nombre del detalle -> id de la opción (con porción: "Pechuga de pollo 150 g" -> "p-pollo@150")
   const idFor = (name) => {
     const plain = build.options.find((o) => o.name === name && !hasSizes(o))
     if (plain) return plain.id

@@ -29,7 +29,7 @@ export const items = [
   { id: 'e2', cat: 'entrada', name: 'Ensalada fresca', desc: '', price: 0, tone: '#1f6f5c' },
   { id: 'e3', cat: 'entrada', name: 'Papa a la huancaína', desc: '', price: 0, tone: '#a87400' },
   { id: 'e4', cat: 'entrada', name: 'Tequeños', desc: '', price: 0, tone: '#b3541e' },
-  { id: 'arma', cat: 'arma', name: 'Arma tu plato', desc: 'Fit: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y aderezos.', price: 0, tone: '#034d5b' },
+  { id: 'arma', cat: 'arma', name: 'Arma tu plato', desc: 'Fit: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y el toque final.', price: 0, tone: '#034d5b' },
   // Shots de EJEMPLO (nombres, ingredientes y precios por confirmar con el cliente)
   { id: 's1', img: '/img/platos/s1.webp', cat: 'shots', name: 'Shot de jengibre y limón', desc: 'Jengibre fresco, limón y una pizca de miel.', price: 5, tone: '#a87400' },
   { id: 's2', img: '/img/platos/s2.webp', cat: 'shots', name: 'Shot verde', desc: 'Espinaca, manzana verde y apio.', price: 5, tone: '#1f6f5c', tag: 'Detox' },

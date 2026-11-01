@@ -3,7 +3,7 @@
 import { supabase, supabaseConfigurado } from './supabase'
 import { buildSeed } from '../data/build'
 
-const KEY = 'zabori-build-v5' // v4: vegetales cocidos y frescos en un solo paso (máx. 2 en total)
+const KEY = 'zabori-build-v6' // v5: vegetales cocidos y frescos en un solo paso · v6: porciones 100/150/200 g y 4 opciones por sección
 export const BUILD_ID = 'arma'
 export const CART_PREFIX = 'arma|'
 

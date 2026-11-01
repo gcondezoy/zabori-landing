@@ -27,7 +27,7 @@ insert into public.menu_items (id, cat, name, descr, price) values
   ('e2','entrada','Ensalada fresca','',0),
   ('e3','entrada','Papa a la huancaína','',0),
   ('e4','entrada','Tequeños','',0),
-  ('arma','arma','Arma tu plato','Fit: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y aderezos.',0),
+  ('arma','arma','Arma tu plato','Fit: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y el toque final.',0),
   ('s1','shots','Shot de jengibre y limón','Jengibre fresco, limón y una pizca de miel.',5),
   ('s2','shots','Shot verde','Espinaca, manzana verde y apio.',5),
   ('s3','shots','Shot de cúrcuma y naranja','Cúrcuma, naranja y pimienta negra.',5)
@@ -120,28 +120,24 @@ alter table public.build_options add column if not exists sub text not null defa
 
 insert into public.build_groups (id, label, min_sel, max_sel, sort) values
   ('proteina','Proteína',1,1,1), ('carbo','Carbohidrato',1,1,2),
-  ('acomp','Vegetales',0,2,3), ('crema','Aderezos',0,2,4),
+  ('acomp','Vegetales',0,2,3), ('crema','El toque final',0,2,4),
   ('taper','Táper',1,1,5)
 on conflict (id) do nothing;
 
 -- Opciones fit de EJEMPLO (se editan en el panel). Proteínas con porción en gramos y precio por porción.
 insert into public.build_options (id, grp, name, price, sort, img, sizes, sub) values
-  ('p-pollo','proteina','Pechuga de pollo',0,1,'/img/arma/pollo.webp','[{"g":120,"price":15},{"g":180,"price":18},{"g":250,"price":22}]',''),
-  ('p-res','proteina','Lomo fino de res',0,2,'/img/arma/res.webp','[{"g":120,"price":18},{"g":180,"price":22},{"g":250,"price":27}]',''),
-  ('p-pescado','proteina','Filete de pescado',0,3,'/img/arma/pescado.webp','[{"g":120,"price":17},{"g":180,"price":21},{"g":250,"price":25}]',''),
-  ('p-pavita','proteina','Pavita al horno',0,4,'/img/arma/pavita.webp','[{"g":120,"price":16},{"g":180,"price":19},{"g":250,"price":23}]',''),
+  ('p-pollo','proteina','Pechuga de pollo',0,1,'/img/arma/pollo.webp','[{"g":100,"price":15},{"g":150,"price":18},{"g":200,"price":22}]',''),
+  ('p-res','proteina','Lomo fino de res',0,2,'/img/arma/res.webp','[{"g":100,"price":18},{"g":150,"price":22},{"g":200,"price":27}]',''),
+  ('p-pescado','proteina','Filete de pescado',0,3,'/img/arma/pescado.webp','[{"g":100,"price":17},{"g":150,"price":21},{"g":200,"price":25}]',''),
+  ('p-pavita','proteina','Pavita al horno',0,4,'/img/arma/pavita.webp','[{"g":100,"price":16},{"g":150,"price":19},{"g":200,"price":23}]',''),
   ('c-arroz','carbo','Arroz graneado',0,1,'/img/arma/arroz.webp','[]',''),
   ('c-quinua','carbo','Quinua',1.5,2,'/img/arma/quinua.webp','[]',''),
   ('c-camote','carbo','Camote al horno',1,3,'/img/arma/camote.webp','[]',''),
   ('c-papa','carbo','Papa sancochada',0,4,'/img/arma/papa.webp','[]',''),
-  ('c-sin','carbo','Sin carbohidrato (doble ensalada)',0,5,'/img/arma/sin-carbo.webp','[]',''),
   ('a-brocoli','acomp','Brócoli al vapor',0,1,'/img/arma/brocoli.webp','[]','Cocidos'),
   ('a-vainitas','acomp','Vainitas salteadas',0,2,'/img/arma/vainitas.webp','[]','Cocidos'),
-  ('a-zanahoria','acomp','Zanahoria salteada',0,3,'/img/arma/zanahoria.webp','[]','Cocidos'),
-  ('a-choclo','acomp','Choclo',0,4,'/img/arma/choclo.webp','[]','Cocidos'),
   ('f-ensalada','acomp','Ensalada verde',0,5,'/img/arma/ensalada.webp','[]','Frescos'),
   ('f-tomate','acomp','Tomate y pepino',0,6,'/img/arma/tomate-pepino.webp','[]','Frescos'),
-  ('f-palta','acomp','Palta',2,7,'/img/arma/palta.webp','[]','Frescos'),
   ('k-vinagreta','crema','Vinagreta de limón',0,1,'/img/arma/vinagreta.webp','[]',''),
   ('k-yogur','crema','Yogur con hierbas',0,2,'/img/arma/yogur.webp','[]',''),
   ('k-huacatay','crema','Crema de huacatay',0,3,'/img/arma/huacatay.webp','[]',''),
@@ -149,6 +145,14 @@ insert into public.build_options (id, grp, name, price, sort, img, sizes, sub) v
   ('t-bagazo','taper','Táper de bagazo (biodegradable)',0.5,1,'/img/taper/bagazo-foto.webp','[]',''),
   ('t-kraft','taper','Bowl kraft con tapa',1,2,'/img/taper/kraft.svg','[]',''),
   ('t-reutilizable','taper','Táper reutilizable hermético',2,3,'/img/taper/reutilizable-foto.webp','[]','')
+on conflict (id) do nothing;
+
+-- Cada sección muestra 4 opciones: estas quedan de reserva, ocultas, para cambiarlas desde el panel
+insert into public.build_options (id, grp, name, price, sort, img, sizes, sub, active) values
+  ('c-sin','carbo','Sin carbohidrato (doble ensalada)',0,5,'/img/arma/sin-carbo.webp','[]','',false),
+  ('a-zanahoria','acomp','Zanahoria salteada',0,3,'/img/arma/zanahoria.webp','[]','Cocidos',false),
+  ('a-choclo','acomp','Choclo',0,4,'/img/arma/choclo.webp','[]','Cocidos',false),
+  ('f-palta','acomp','Palta',2,7,'/img/arma/palta.webp','[]','Frescos',false)
 on conflict (id) do nothing;
 
 -- Ubicación exacta de entrega (opcional, desde el mapa del checkout)

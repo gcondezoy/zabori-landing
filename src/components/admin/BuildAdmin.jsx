@@ -17,7 +17,7 @@ function optionCounts(orders) {
   return counts
 }
 
-const DEFAULT_SIZES = [{ g: 120, price: 15 }, { g: 180, price: 18 }, { g: 250, price: 22 }]
+const DEFAULT_SIZES = [{ g: 100, price: 15 }, { g: 150, price: 18 }, { g: 200, price: 22 }]
 const PROTEIN = 'proteina'
 // Subgrupos fijos: siguen disponibles aunque se elimine la última opción de uno
 const FIXED_SUBS = { acomp: ['Cocidos', 'Frescos'] }
@@ -28,7 +28,7 @@ const HELP = {
   crema: 'S/ 0 es incluido; más de 0 se suma al plato. Con "Por gramos" das a elegir la cantidad.',
 }
 
-// Veces pedida (30 días). Con porciones se suman todas: "Pechuga de pollo 120 g", "… 180 g"…
+// Veces pedida (30 días). Con porciones se suman todas: "Pechuga de pollo 100 g", "… 150 g"…
 function usesOf(o, counts) {
   if (!hasSizes(o)) return counts[o.name] || 0
   return o.sizes.reduce((sum, s) => sum + (counts[`${o.name} ${s.g} g`] || 0), 0)
@@ -131,7 +131,7 @@ function NewOption({ grp, sort, onSaved, sized, subs }) {
         </select>
       )}
       {sized
-        ? <span className="bo-uses">Con porciones 120 / 180 / 250 g (editables)</span>
+        ? <span className="bo-uses">Con porciones 100 / 150 / 200 g (editables)</span>
         : <label className="bo-price">+ S/<input type="number" min="0" step="0.5" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} aria-label="Adicional" /></label>}
       <button className="btn ghost small"><Plus size={14} weight="bold" /> Agregar</button>
       {err && <span className="form-err">{err}</span>}
@@ -139,7 +139,7 @@ function NewOption({ grp, sort, onSaved, sized, subs }) {
   )
 }
 
-// Editor de Arma tu plato: proteínas y su gramaje, carbohidratos, vegetales, aderezos y tápers
+// Editor de Arma tu plato: proteínas y su gramaje, carbohidratos, vegetales, el toque final y tápers
 export default function BuildAdmin({ orders }) {
   const { reload } = useMenu()
   const [build, setBuild] = useState(null)
