@@ -1000,7 +1000,6 @@ h1, h2 { text-wrap: balance; }
 .combo-list { font-size: .85rem; color: var(--muted); text-align: center; min-height: 2.6em; }
 
 /* ---------- Proteína con porciones ---------- */
-.b-options.sized { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important; }
 .b-opt.has-sizes { grid-template-columns: 1fr; grid-template-areas: "img" "name" "sizes"; cursor: default; }
 .b-opt.has-sizes .b-name { grid-area: name; font-weight: 700; }
 .b-sizes { grid-area: sizes; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px; }
@@ -1029,9 +1028,6 @@ h1, h2 { text-wrap: balance; }
 .bo-size small { color: var(--muted); font-weight: 700; }
 .bo-size .bo-price input { width: 64px !important; padding: 6px 8px !important; }
 @media (max-width: 860px) { .bo-sizes { grid-column: 1 / -1; } }
-.b-subnote { font-size: .85rem; color: var(--muted); margin: -4px 0 10px; }
-.b-sub + .b-sub { margin-top: 14px; }
-.b-subtitle { font-family: "Nunito Variable", sans-serif; font-size: .92rem; font-weight: 800; color: var(--red); margin: 0 0 8px; text-transform: uppercase; letter-spacing: .06em; }
 .bo-sub { padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; font-size: .85rem; }
 .bo-row:has(.bo-sub) { grid-template-columns: 64px minmax(0, 1fr) 110px 120px 110px auto auto; }
 .bo-new:has(.bo-sub) { grid-template-columns: minmax(0, 1fr) 110px 120px auto; }
@@ -1158,14 +1154,6 @@ h1, h2 { text-wrap: balance; }
 .grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
 .grid > :only-child { max-width: 400px; }
 @media (min-width: 641px) { .card-img { height: 210px; } }
-
-/* Proteínas en escritorio: dos columnas, sin una tarjeta suelta */
-@media (min-width: 641px) { .b-options.sized { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
-@media (min-width: 1180px) {
-  .b-opt.has-sizes { grid-template-columns: 104px minmax(0, 1fr); grid-template-areas: "img name" "img sizes"; column-gap: 12px; align-items: center; }
-  .b-opt.has-sizes .b-thumb { aspect-ratio: 1; object-fit: cover; margin-bottom: 0; height: 100%; }
-  .b-opt.has-sizes .b-sizes { margin-top: 0; }
-}
 
 /* Botones táctiles */
 @media (max-width: 800px), (pointer: coarse) { .stepper button { width: 38px; height: 38px; } }
@@ -1468,6 +1456,20 @@ html { overflow-x: clip; }
   .acc-stats > button:active { transform: none; }
 }
 
-/* Armador en celular: la etiqueta dice a qué subgrupo pertenece cada tarjeta del carrusel */
+/* Armador: la etiqueta dice a qué subgrupo pertenece cada tarjeta */
 .b-tag { position: absolute; top: 18px; left: 18px; z-index: 1; padding: 3px 9px; border-radius: 999px; background: var(--yellow); color: var(--red); font-size: .72rem; font-weight: 800; line-height: 1.3; }
 .b-opt:not(.has-img) .b-tag { position: static; flex: none; }
+
+/* Armador: la misma tarjeta en todas las secciones. Foto, nombre y lo que se elige, con el precio siempre abajo. */
+.b-steps .b-opt.has-img { grid-template-rows: auto 1fr auto; }
+.b-steps .b-opt.has-sizes { grid-template-rows: auto auto 1fr; }
+@media (min-width: 641px) {
+  .b-steps { container-type: inline-size; }
+  .b-steps .b-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Con la tarjeta angosta, los gramajes van uno debajo del otro */
+  .b-steps .b-sizes { grid-template-columns: minmax(0, 1fr); align-self: end; }
+  .b-steps .b-sizes button { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; padding: 6px 10px; }
+}
+@container (min-width: 680px) {
+  .b-steps .b-options { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
