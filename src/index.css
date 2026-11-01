@@ -60,7 +60,6 @@ button { cursor: pointer; }
 .hero-in { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; }
 .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: .8rem; font-weight: 800; color: var(--red); opacity: .8; margin-bottom: 14px; }
 h1 { font-size: clamp(2.4rem, 5.6vw, 4.2rem); font-weight: 900; }
-.lead { margin: 20px 0 28px; font-size: 1.12rem; color: #1d4a54; max-width: 46ch; }
 .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
 .facts { list-style: none; padding: 0; margin-top: 28px; display: flex; flex-wrap: wrap; gap: 8px 24px; color: var(--red); font-weight: 600; font-size: .95rem; }
 .facts li { display: flex; align-items: center; gap: 8px; }
@@ -97,21 +96,6 @@ h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 900; }
 .stepper { display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--line); border-radius: 999px; padding: 3px; background: #fff; }
 .stepper button { width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--bg-alt); display: grid; place-items: center; }
 .stepper span { min-width: 24px; text-align: center; font-weight: 700; }
-
-.steps { list-style: none; padding: 0; margin-top: 32px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
-.steps li { position: relative; }
-.steps li:not(:last-child)::before { content: ''; position: absolute; left: 56px; right: -16px; top: 21px; height: 2px; background: rgba(3, 77, 91, .25); }
-.steps h3 { margin: 14px 0 6px; font-size: 1.25rem; color: var(--ink); }
-.steps p { color: var(--muted); max-width: 32ch; }
-.step-n { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--red); color: var(--yellow); font-family: 'Nunito Variable', sans-serif; font-size: 1.2rem; font-weight: 900; }
-@media (max-width: 720px) {
-  .steps { grid-template-columns: 1fr; gap: 0; }
-  .steps li { padding: 0 0 24px 60px; }
-  .steps li:last-child { padding-bottom: 0; }
-  .steps li:not(:last-child)::before { left: 21px; right: auto; top: 48px; bottom: 4px; width: 2px; height: auto; }
-  .step-n { position: absolute; left: 0; top: 0; }
-  .steps h3 { margin-top: 8px; }
-}
 
 /* Footer */
 .footer { background: var(--red); color: #d8ecee; padding: 48px 0 20px; margin-top: -1px; }
@@ -1146,7 +1130,6 @@ h1, h2 { text-wrap: balance; }
   .plate-nav.prev { left: 6px; }
   .plate-nav.next { right: 6px; }
   .eyebrow { margin-bottom: 8px; }
-  .lead { font-size: 1rem; margin: 10px 0 16px; }
   .cta-row { gap: 8px; }
   .cta-row .btn { flex: 1 1 auto; padding-inline: 12px; white-space: nowrap; }
   .facts { margin-top: 18px; gap: 6px 18px; font-size: .88rem; }
@@ -1534,3 +1517,25 @@ html { overflow-x: clip; }
 
 /* Los tres botones de la portada caben en una fila también en pantallas muy angostas */
 @media (max-width: 340px) { .cta-row { gap: 6px; } .cta-row .btn { padding-inline: 9px; font-size: .9rem; } }
+
+/* Portada: los tres pasos, con el color que tenía la sección "Pedir es simple" */
+.hero-steps { container-type: inline-size; margin: 20px 0 24px; padding: 16px 18px 18px; border-radius: 16px; background: var(--bg-alt); color: var(--ink); scroll-margin-top: 88px; }
+.hero-steps h2 { margin: 0 0 12px; font-size: 1.05rem; color: var(--red); }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.steps li { position: relative; min-width: 0; }
+.steps li:not(:last-child)::before { content: ''; position: absolute; left: 40px; right: -10px; top: 15px; height: 2px; background: rgba(3, 77, 91, .25); }
+.step-n { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--red); color: var(--yellow); font-family: 'Nunito Variable', sans-serif; font-size: .95rem; font-weight: 900; }
+.steps h3 { margin: 8px 0 3px; font-size: .95rem; color: var(--ink); }
+.steps p { margin: 0; font-size: .82rem; line-height: 1.35; color: var(--muted); }
+/* Con poco ancho, solo los títulos: los botones de pedir deben seguir a la vista */
+@container (max-width: 440px) {
+  .steps { gap: 8px; }
+  .steps li { display: grid; justify-items: center; text-align: center; }
+  .steps li:not(:last-child)::before { left: calc(50% + 22px); right: calc(-50% + 18px); }
+  .steps h3 { margin-bottom: 0; font-size: .84rem; line-height: 1.2; }
+  .steps p { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+}
+@media (max-width: 800px) {
+  .hero-steps { margin: 12px 0 16px; padding: 12px 12px 14px; }
+  .hero-steps h2 { margin-bottom: 8px; font-size: .95rem; text-align: center; }
+}

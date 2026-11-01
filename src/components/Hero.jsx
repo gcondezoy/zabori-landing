@@ -1,7 +1,7 @@
-import { payText } from '../lib/culqi'
 import { ArrowRight, Clock, Motorcycle } from '@phosphor-icons/react'
 import { site } from '../config/site'
 import PlateCarousel from './PlateCarousel'
+import HowItWorks from './HowItWorks'
 import { useTodayStatus } from './TodayBadge'
 import { openBuilder, openShots, OPEN_MENU_EVENT } from './BuildPromo'
 
@@ -12,10 +12,7 @@ export default function Hero() {
       <div className="wrap hero-in">
         <div>
           <h1>{site.slogan}.</h1>
-          <p className="lead">
-            Cada día un menú casero distinto, o tu propio plato con lo que más te gusta.
-            Pide en minutos y paga con {payText}.
-          </p>
+          <HowItWorks />
           <div className="cta-row">
             <a href="#menu" className="btn primary" onClick={() => window.dispatchEvent(new Event(OPEN_MENU_EVENT))}>
               Menú <ArrowRight weight="bold" />

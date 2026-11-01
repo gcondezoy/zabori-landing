@@ -1,4 +1,3 @@
-import Reveal from './Reveal'
 import { payText } from '../lib/culqi'
 
 const steps = [
@@ -7,21 +6,20 @@ const steps = [
   { t: 'Recíbelo', d: 'Te avisamos cuando tu pedido salga o esté listo para recoger.' },
 ]
 
+// Cómo pedir: va en la portada, debajo del eslogan
 export default function HowItWorks() {
   return (
-    <section className="section alt" id="como">
-      <div className="wrap">
-        <Reveal as="h2">Pedir es simple</Reveal>
-        <ol className="steps">
-          {steps.map(({ t, d }, i) => (
-            <Reveal as="li" key={t} delay={i * 110}>
-              <span className="step-n">{i + 1}</span>
-              <h3>{t}</h3>
-              <p>{d}</p>
-            </Reveal>
-          ))}
-        </ol>
-      </div>
-    </section>
+    <div className="hero-steps" id="como">
+      <h2>Pídelo en 3 pasos</h2>
+      <ol className="steps">
+        {steps.map(({ t, d }, i) => (
+          <li key={t}>
+            <span className="step-n" aria-hidden="true">{i + 1}</span>
+            <h3>{t}</h3>
+            <p>{d}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
   )
 }

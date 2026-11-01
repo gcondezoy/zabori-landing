@@ -3,7 +3,6 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import Menu from './components/Menu'
 import BuildPromo from './components/BuildPromo'
-import HowItWorks from './components/HowItWorks'
 import Footer from './components/Footer'
 import CartDrawer from './components/CartDrawer'
 import Checkout from './components/Checkout'
@@ -71,7 +70,6 @@ export default function App() {
           <Hero />
           <BuildPromo />
           <Menu />
-          <HowItWorks />
         </main>
       )}
       </div>
