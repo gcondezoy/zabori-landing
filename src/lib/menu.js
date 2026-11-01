@@ -22,7 +22,7 @@ const imgFor = (id) => seed.find((s) => s.id === id)?.img || ''
 // Fila de la base -> plato de la interfaz
 const fromRow = (r) => ({
   id: r.id, cat: r.cat, name: r.name, desc: r.descr, price: Number(r.price),
-  active: r.active, tag: r.tag || '', sort: r.sort ?? 0, tone: toneFor(r.id), img: r.img || imgFor(r.id),
+  active: r.active, tag: r.tag || '', sort: r.sort ?? 0, tone: toneFor(r.id), img: r.img || imgFor(r.id), dailyStock: r.daily_stock ?? null,
 })
 
 const readLocal = () => {
@@ -104,6 +104,17 @@ export async function uploadMenuPhoto(file) {
     r.onerror = () => rej(new Error('No pudimos leer esa imagen.'))
     r.readAsDataURL(blob)
   })
+}
+
+// Unidades por día de un plato: vacío = sin límite
+export async function saveItemStock(id, value) {
+  const dailyStock = value === '' || value == null ? null : Math.max(0, Math.round(Number(value) || 0))
+  if (supabaseConfigurado) {
+    const { error } = await supabase.from('menu_items').update({ daily_stock: dailyStock }).eq('id', id)
+    if (error) throw new Error(error.message)
+    return
+  }
+  writeLocal(localMenu().map((i) => (i.id === id ? { ...i, dailyStock } : i)))
 }
 
 // Elimina un plato. Si ya tiene pedidos en el historial no se puede borrar: queda oculto (devuelve 'hidden').

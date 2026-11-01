@@ -8,10 +8,15 @@ import { zaboriWhatsapp, rememberOrder } from '../lib/whatsapp'
 import { money, site } from '../config/site'
 import { LEGAL_VERSION } from '../data/legal'
 import { useExit } from '../lib/useExit'
+import { slotLabel } from '../lib/availability'
+import { useMenu } from '../context/MenuContext'
 import AddressPicker from './AddressPicker'
 import PushOptIn from './PushOptIn'
 
-const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', lat: null, lng: null, notes: '', terms: false }
+const empty = { name: '', phone: '', email: '', mode: 'delivery', address: '', lat: null, lng: null, notes: '', terms: false, delivery_slot: '' }
+const SLOT_NOTE = { full: 'Lleno', past: 'Ya pasó', closed: 'Cerrado' }
+const AVAIL_MS = 30000
+const FEW_LEFT = 5
 
 // La tarjeta solo se ofrece con las llaves de Culqi: sin ellas no se puede cobrar
 const PAY_OPTIONS = [
@@ -19,6 +24,36 @@ const PAY_OPTIONS = [
   { id: 'plin', label: 'Plin', logo: site.wallets.plin.logo },
   ...(culqiConfigurado ? [{ id: 'tarjeta', label: 'Tarjeta', icon: CreditCard }] : []),
 ]
+
+// Rangos de entrega: los llenos y los que ya pasaron se ven pero no se pueden elegir
+function SlotPicker({ mode, value, onChange, avail, onRetry }) {
+  const anyOpen = avail.slots.some((s) => s.status === 'open')
+  return (
+    <fieldset className="slots">
+      <legend>{mode === 'recojo' ? '¿A qué hora lo recoges?' : '¿A qué hora te lo llevamos?'}</legend>
+      {avail.failed && !avail.slots.length ? (
+        <p className="form-err" role="alert">No pudimos cargar los horarios. <button type="button" className="link" onClick={onRetry}>Reintentar</button></p>
+      ) : !avail.ready ? <p className="muted">Cargando horarios…</p> : (
+        <>
+          <div className="slot-options">
+            {avail.slots.map((s) => {
+              const on = value === s.id
+              const off = s.status !== 'open'
+              return (
+                <label key={s.id} className={`slot${on ? ' on' : ''}${off ? ' off' : ''}`}>
+                  <input type="radio" name="delivery_slot" required value={s.id} checked={on} disabled={off} onChange={() => onChange(s.id)} />
+                  <b>{slotLabel(s.id)}</b>
+                  <small>{off ? SLOT_NOTE[s.status] : s.left <= FEW_LEFT ? `Quedan ${s.left}` : 'Disponible'}</small>
+                </label>
+              )
+            })}
+          </div>
+          {!anyOpen && <p className="slot-none" role="status">Por hoy ya no hay horarios disponibles. Revisa nuestro horario de atención.</p>}
+        </>
+      )}
+    </fieldset>
+  )
+}
 
 // Datos para pagar con Yape o Plin + botón para enviar la captura
 function WalletPay({ done }) {
@@ -52,6 +87,7 @@ function WalletPay({ done }) {
 export default function Checkout() {
   const { checkout, setCheckout, lines, subtotal, deliveryFor, clear } = useCart()
   const { user, setModal, saveProfile } = useAuth()
+  const { avail, refreshAvail } = useMenu()
   const [f, setF] = useState(empty)
   const [method, setMethod] = useState('yape')
   const [paying, setPaying] = useState(false)
@@ -80,6 +116,21 @@ export default function Checkout() {
   useEffect(() => {
     if (!shown) { setDone(null); setErr(''); setPending(null) }
   }, [shown])
+
+  // Con el pago abierto los horarios se revisan más seguido: se van llenando y van pasando
+  const choosing = checkout && !done
+  useEffect(() => {
+    if (!choosing) return undefined
+    refreshAvail()
+    const t = setInterval(() => { if (!document.hidden) refreshAvail() }, AVAIL_MS)
+    return () => clearInterval(t)
+  }, [choosing, refreshAvail])
+
+  // Si el rango elegido se bloqueó mientras tanto, hay que elegir otro
+  useEffect(() => {
+    if (!f.delivery_slot || !avail.slots.length) return
+    if (avail.slots.find((s) => s.id === f.delivery_slot)?.status !== 'open') setF((cur) => ({ ...cur, delivery_slot: '' }))
+  }, [avail.slots, f.delivery_slot])
 
   // El botón de confirmar queda abajo: se sube para ver la confirmación
   useEffect(() => { if (done) box.current?.scrollTo(0, 0) }, [done])
@@ -130,7 +181,8 @@ export default function Checkout() {
       if (user && f.mode === 'delivery' && f.address && f.address !== user.address) {
         saveProfile({ address: f.address, lat: f.lat, lng: f.lng }).catch(() => {})
       }
-      const order = { code: res.code, total: res.total, mode: f.mode, email: f.email, phone: f.phone, method }
+      const order = { code: res.code, total: res.total, mode: f.mode, email: f.email, phone: f.phone, method, slot: f.delivery_slot }
+      refreshAvail()
       if (!card) {
         // Yape/Plin: se paga fuera y se confirma en el panel
         finish(order)
@@ -141,6 +193,7 @@ export default function Checkout() {
       }
     } catch (error) {
       setErr(error.message || 'No pudimos registrar tu pedido. Inténtalo de nuevo.')
+      refreshAvail() // pudo llenarse el horario o agotarse un plato
     } finally {
       setPaying(false)
     }
@@ -160,6 +213,7 @@ export default function Checkout() {
             </svg>
             <h3>{wallet ? '¡Pedido registrado!' : '¡Pedido recibido!'}</h3>
             <p>Código <strong>{done.code}</strong> · {money(done.total)}</p>
+            <p className="done-slot">{done.mode === 'recojo' ? 'Recoges' : 'Entrega'}: <strong>{slotLabel(done.slot)}</strong></p>
 
             {done.mode === 'recojo' && (
               <p className="pickup-note"><Storefront size={20} /> <span>Recoges en <b>{site.address}</b><br />{site.schedule}</span></p>
@@ -231,6 +285,9 @@ export default function Checkout() {
             </div>
 
             <div className="co-col">
+            <SlotPicker mode={f.mode} value={f.delivery_slot} avail={avail} onRetry={refreshAvail}
+              onChange={(delivery_slot) => setF((cur) => ({ ...cur, delivery_slot }))} />
+
             <fieldset className="paymethod">
               <legend>¿Cómo pagas?</legend>
               <div className="pm-options">
@@ -273,7 +330,7 @@ export default function Checkout() {
               <span>Acepto los <a href="#/terminos" target="_blank" rel="noreferrer">Términos y Condiciones</a> y la <a href="#/privacidad" target="_blank" rel="noreferrer">Política de Privacidad</a>.</span>
             </label>
             {err && <p className="form-err" role="alert">{err}</p>}
-            <button className="btn primary block" disabled={paying}>
+            <button className="btn primary block" disabled={paying || !avail.slots.some((s) => s.status === 'open')}>
               {paying ? 'Procesando…' : card ? `Pagar ${money(total)}` : `Confirmar pedido · ${money(total)}`}
             </button>
             </div>

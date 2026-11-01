@@ -14,7 +14,7 @@ const reducedMotion = () => {
 // Plato giratorio de la portada: recorre los menús del día que tienen foto
 export default function PlateCarousel() {
   const { items } = useMenu()
-  const { requestAdd } = useCart()
+  const { requestAdd, room } = useCart()
   const slides = items.filter((i) => i.cat === 'menu' && i.img)
   const list = slides.length ? slides : FALLBACK
   const [index, setIndex] = useState(0)
@@ -89,7 +89,7 @@ export default function PlateCarousel() {
             <strong>{current.name}</strong>
           </span>
           <span className="sr-only">{money(current.price)}</span>
-          <button className={`pl-add${added === current.id ? ' ok' : ''}`} onClick={addCurrent}
+          <button className={`pl-add${added === current.id ? ' ok' : ''}`} onClick={addCurrent} disabled={room(current.id) <= 0}
             aria-label={`Agregar ${current.name} al carrito`}>
             {added === current.id ? <Check size={18} weight="bold" /> : <Plus size={18} weight="bold" />}
           </button>

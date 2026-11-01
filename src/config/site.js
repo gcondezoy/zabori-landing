@@ -16,6 +16,7 @@ export const site = {
   openDays: [1, 2, 3, 4, 5, 6], // 0 = domingo
   openHour: 11,
   closeHour: 15,
+  lastOrderHour: 14.5, // el último rango de entrega (14:30 a 15:00) se cierra al empezar
   menuPrice: 10, // S/ precio único de todos los menús del día (se cambia desde el panel, Carta)
   deliveryFee: 3, // S/ por delivery
   freeDeliveryFrom: 40, // S/ pedido mínimo para delivery gratis

@@ -1,5 +1,7 @@
 import { supabase, supabaseConfigurado } from './supabase'
 import { site } from '../config/site'
+import { assertAvailable } from './availability'
+import { todayLima } from './promos'
 
 const LOCAL_KEY = 'zabori-orders'
 
@@ -31,13 +33,15 @@ export async function createOrder(form, lines, userId) {
     return { code: data, total: subtotal + fee }
   }
 
+  await assertAvailable(form.delivery_slot, lines)
   const code = 'ZAB-' + Math.random().toString(36).slice(2, 7).toUpperCase()
   const order = {
-    code, userId: userId || null, ...form, terms_at: new Date().toISOString(), subtotal, fee, total: subtotal + fee,
+    code, userId: userId || null, ...form, deliveryDate: todayLima(), deliverySlot: form.delivery_slot, terms_at: new Date().toISOString(), subtotal, fee, total: subtotal + fee,
     status: 'pendiente', payment: 'pendiente', paymentMethod: form.payment_method || 'tarjeta', createdAt: new Date().toISOString(),
     history: [{ type: 'status', value: 'pendiente', at: new Date().toISOString() }],
     items: lines.map((l) => ({
       itemId: l.item.isCustom ? 'arma' : l.item.baseId || l.item.id, // para "Volver a pedir"
+      entradaId: l.item.entrada || null,
       name: l.item.name, detail: l.item.detail || '', price: l.item.price, qty: l.n,
     })),
   }
@@ -51,20 +55,20 @@ export async function listMyOrders(userId) {
   if (supabaseConfigurado) {
     const { data, error } = await supabase
       .from('orders')
-      .select('code, mode, total, status, payment_status, payment_method, phone, history, created_at, order_items(item_id, name, detail, qty)')
+      .select('code, mode, total, status, payment_status, payment_method, phone, history, created_at, delivery_slot, order_items(item_id, name, detail, qty)')
       .eq('user_id', userId) // un admin puede leer todos los pedidos; aquí solo los suyos
       .order('created_at', { ascending: false })
       .limit(50)
     if (error) throw new Error(error.message)
     return data.map((o) => ({
       code: o.code, mode: o.mode, total: Number(o.total), status: o.status, payment: o.payment_status,
-      method: o.payment_method, phone: o.phone, createdAt: o.created_at, history: o.history || [],
+      method: o.payment_method, phone: o.phone, createdAt: o.created_at, history: o.history || [], deliverySlot: o.delivery_slot,
       items: o.order_items.map((i) => ({ itemId: i.item_id, name: i.name, detail: i.detail || '', qty: i.qty })),
     }))
   }
   return readLocal().filter((o) => o.userId === userId).map((o) => ({
     code: o.code, mode: o.mode, total: o.total, status: o.status, payment: o.payment || 'pendiente',
-    method: o.paymentMethod || 'tarjeta', phone: o.phone, createdAt: o.createdAt, history: o.history || [],
+    method: o.paymentMethod || 'tarjeta', phone: o.phone, createdAt: o.createdAt, history: o.history || [], deliverySlot: o.deliverySlot || null,
     items: o.items.map((i) => ({ itemId: i.itemId || null, name: i.name, detail: i.detail || '', qty: i.qty })),
   }))
 }

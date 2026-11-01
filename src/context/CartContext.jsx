@@ -41,7 +41,7 @@ export function CartProvider({ children }) {
   const [open, setOpen] = useState(false)
   const [checkout, setCheckout] = useState(false)
   const [pickFor, setPickFor] = useState(null) // menú esperando que el cliente elija su táper
-  const { items: catalog, entradas, build } = useMenu()
+  const { items: catalog, entradas, build, stock } = useMenu()
 
   useEffect(() => {
     try {
@@ -78,12 +78,33 @@ export function CartProvider({ children }) {
         n,
       }))
       .filter((l) => l.item)
+    // Unidades de un plato o entrada en el carrito, sumando todas las líneas que lo usan
+    const inCart = (id) => Object.entries(qty).reduce((sum, [k, n]) => {
+      if (k === id) return sum + n
+      if (!k.includes(TAPER_SEP)) return sum
+      const [baseId, , entradaId] = k.split(TAPER_SEP)
+      return baseId === id || entradaId === id ? sum + n : sum
+    }, 0)
+    // Cuántas unidades más se pueden agregar (Infinity = sin límite)
+    const room = (id) => (stock[id] === undefined ? Infinity : stock[id] - inCart(id))
+    const usedIds = (item) => (item.isCustom ? [] : [item.baseId || item.id, item.entrada].filter(Boolean))
+    // Si el carrito ya pide más de lo que queda, se avisa antes de pagar
+    const lineIssue = (item) => {
+      for (const id of usedIds(item)) {
+        if (room(id) >= 0) continue
+        const name = id === item.entrada ? (item.detail || '').match(/Entrada: ([^·]+)/)?.[1]?.trim() : item.name
+        return stock[id] === 0 ? `Se agotó por hoy: ${name}` : `Solo quedan ${stock[id]} de ${name}`
+      }
+      return ''
+    }
+    const canAddLine = (item) => usedIds(item).every((id) => room(id) > 0)
     const subtotal = lines.reduce((s, l) => s + l.item.price * l.n, 0)
     const count = lines.reduce((s, l) => s + l.n, 0)
     const deliveryFor = (mode) =>
       mode === 'delivery' && subtotal > 0 && subtotal < site.freeDeliveryFrom ? site.deliveryFee : 0
     return {
-      qty, lines, subtotal, count, deliveryFor,
+      qty, lines, subtotal, count, deliveryFor, room, lineIssue, canAddLine,
+      hasIssues: lines.some((l) => lineIssue(l.item)),
       add: (id, times = 1) => { for (let i = 0; i < times; i++) dispatch({ type: 'add', id }) },
       dec: (id) => dispatch({ type: 'dec', id }),
       remove: (id) => dispatch({ type: 'remove', id }),
@@ -99,7 +120,7 @@ export function CartProvider({ children }) {
       pickFor, setPickFor,
       open, setOpen, checkout, setCheckout,
     }
-  }, [qty, open, checkout, catalog, entradas, build, pickFor])
+  }, [qty, open, checkout, catalog, entradas, build, pickFor, stock])
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

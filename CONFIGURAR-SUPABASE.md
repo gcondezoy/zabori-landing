@@ -120,6 +120,10 @@ Avisan al celular cuando cambia el estado o se confirma el pago, con o sin cuent
 
 El envío sale del panel al cambiar el estado: si la pestaña del panel se cierra justo en ese momento, el aviso puede no salir. La suscripción se borra cuando el pedido termina.
 
+# Horarios de entrega y stock
+
+En el panel → **Horarios y stock** se cambia cuántos pedidos entran en cada rango y las unidades por día de cada segundo, entrada y shot. Hay que correr una vez `supabase/etapa-11-horarios-stock.sql`. El servidor valida el cupo y el stock al crear cada pedido; los rangos usan la hora de Lima y se cierran al empezar. Las horas de los rangos están en la tabla `delivery_slots`; si cambian, actualizar también `lastOrderHour` en `src/config/site.js`.
+
 # Promociones
 
 Se publican en el panel → **Promociones** y se ven en Mi cuenta. Hay que correr `supabase/setup.sql` una vez (etapa 10). Solo informan: **no cambian el precio** del pedido. La descripción no debe prometer un descuento automático; si hay uno, se coordina con el cliente.

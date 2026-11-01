@@ -1,3 +1,4 @@
+import { slotLabel } from './availability'
 // Cálculos del panel a partir de la lista de pedidos normalizada (ver lib/admin.js).
 
 export const RANGES = [
@@ -109,12 +110,12 @@ export function customers(orders) {
 
 // CSV para abrir en Excel (separador ; y BOM para tildes)
 export function ordersCSV(orders, STATUS, PAYMENT) {
-  const head = ['Código', 'Fecha', 'Hora', 'Cliente', 'Celular', 'Correo', 'Modalidad', 'Dirección', 'Platos', 'Subtotal', 'Delivery', 'Total', 'Pago', 'Estado', 'Notas']
+  const head = ['Código', 'Fecha', 'Hora', 'Horario de entrega', 'Cliente', 'Celular', 'Correo', 'Modalidad', 'Dirección', 'Platos', 'Subtotal', 'Delivery', 'Total', 'Pago', 'Estado', 'Notas']
   const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
   const rows = orders.map((o) => {
     const d = new Date(o.createdAt)
     return [
-      o.code, d.toLocaleDateString('es-PE'), d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
+      o.code, d.toLocaleDateString('es-PE'), d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }), slotLabel(o.deliverySlot),
       o.name, o.phone, o.email, o.mode === 'delivery' ? 'Delivery' : 'Recojo', o.address,
       o.items.map((i) => `${i.qty}x ${i.name}`).join(', '),
       o.subtotal?.toFixed(2), o.fee?.toFixed(2), o.total.toFixed(2),

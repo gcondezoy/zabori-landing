@@ -17,18 +17,23 @@ import { OPEN_BUILD_EVENT, OPEN_MENU_EVENT } from './BuildPromo'
 const markLoading = (img) => { if (img && !img.complete) img.classList.add('loading') }
 const markLoaded = (e) => e.currentTarget.classList.remove('loading')
 
+const LOW_STOCK = 5 // desde aquí se avisa cuántas unidades quedan
+
 function Card({ item, index }) {
-  const { qty, add, dec, requestAdd, countOf } = useCart()
-  const { build, entradas } = useMenu()
+  const { qty, add, dec, requestAdd, countOf, room } = useCart()
+  const { build, entradas, stock } = useMenu()
+  const left = stock[item.id]
+  const soldOut = left === 0
+  const full = room(item.id) <= 0 // ya tiene en su pedido todo lo que queda
   const withTaper = needsPick(item, build, entradas) // los menús del día piden entrada y táper al agregar
   const n = withTaper ? countOf(item.id) : qty[item.id] || 0
   return (
-    <Reveal as="article" className="card" delay={Math.min(index, 2) * 70}>
+    <Reveal as="article" className={`card${soldOut ? ' sold-out' : ''}`} delay={Math.min(index, 2) * 70}>
       <div className="card-img" style={{ background: item.tone }}>
         {item.img
           ? <img src={item.img} alt={item.name} loading="lazy" width="720" height="540" ref={markLoading} onLoad={markLoaded} onError={markLoaded} />
           : <ForkKnife size={34} weight="duotone" />}
-        {item.tag && <span className="tag">{item.tag}</span>}
+        {soldOut ? <span className="tag sold">Agotado por hoy</span> : item.tag && <span className="tag">{item.tag}</span>}
       </div>
       <div className="card-body">
         <h3>{item.name}</h3>
@@ -38,16 +43,19 @@ function Card({ item, index }) {
           {item.cat !== 'menu' && <strong>{money(item.price)}</strong>}
           {withTaper ? (
             <span className="card-add">
-              {n > 0 && <span className="in-cart">{n} en tu pedido</span>}
-              <button className="btn small primary" onClick={() => requestAdd(item)}>Agregar</button>
+              {n > 0 ? <span className="in-cart">{n} en tu pedido</span> : left > 0 && left <= LOW_STOCK && <span className="in-cart low">Quedan {left}</span>}
+              <button className="btn small primary" disabled={full} onClick={() => requestAdd(item)}>{soldOut ? 'Agotado' : 'Agregar'}</button>
             </span>
           ) : n === 0 ? (
-            <button className="btn small primary" onClick={() => add(item.id)}>Agregar</button>
+            <span className="card-add">
+              {left > 0 && left <= LOW_STOCK && <span className="in-cart low">Quedan {left}</span>}
+              <button className="btn small primary" disabled={full} onClick={() => add(item.id)}>{soldOut ? 'Agotado' : 'Agregar'}</button>
+            </span>
           ) : (
             <div className="stepper">
               <button onClick={() => dec(item.id)} aria-label="Quitar uno"><Minus weight="bold" /></button>
               <span key={n} className="bump">{n}</span>
-              <button onClick={() => add(item.id)} aria-label="Agregar uno"><Plus weight="bold" /></button>
+              <button onClick={() => add(item.id)} disabled={full} aria-label="Agregar uno"><Plus weight="bold" /></button>
             </div>
           )}
         </div>

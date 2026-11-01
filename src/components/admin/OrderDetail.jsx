@@ -4,6 +4,7 @@ import { STATUS, PAYMENT, nextStatus, updateOrder, whatsappLink } from '../../li
 import { fmtDateTime } from '../../lib/stats'
 import { notifyOrder, pushConfigurado, pushCount } from '../../lib/push'
 import { mapsLink } from '../../lib/geo'
+import { slotLabel } from '../../lib/availability'
 import { money } from '../../config/site'
 import { StatusPill, PayPill } from './ui'
 
@@ -56,6 +57,7 @@ export default function OrderDetail({ order: o, onClose, refresh }) {
           <div>
             <h3>{o.code}</h3>
             <span className="muted">{fmtDateTime(o.createdAt)} · {o.mode === 'delivery' ? 'Delivery' : 'Recojo en local'}</span>
+            {o.deliverySlot && <span className="d-slot">{o.mode === 'delivery' ? 'Entrega' : 'Recojo'}: {slotLabel(o.deliverySlot)}</span>}
           </div>
           <button className="icon-btn" onClick={onClose} aria-label="Cerrar"><X size={22} /></button>
         </div>

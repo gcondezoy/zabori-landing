@@ -5,11 +5,11 @@ import { money } from '../config/site'
 import { useExit } from '../lib/useExit'
 
 export default function CartDrawer() {
-  const { open, setOpen, lines, subtotal, add, dec, remove, setCheckout, qty } = useCart()
+  const { open, setOpen, lines, subtotal, add, dec, remove, setCheckout, qty, room, lineIssue, canAddLine, hasIssues } = useCart()
   const { items } = useMenu()
   const { shown, leaving } = useExit(open)
   if (!shown) return null
-  const extras = items.filter((i) => i.cat === 'shots' && !qty[i.id]) // lo que aún no está en el pedido
+  const extras = items.filter((i) => i.cat === 'shots' && !qty[i.id] && room(i.id) > 0) // lo que aún no está en el pedido
   const go = () => { setOpen(false); setCheckout(true) }
   return (
     <div className={`overlay${leaving ? ' leaving' : ''}`} onClick={() => setOpen(false)}>
@@ -30,11 +30,12 @@ export default function CartDrawer() {
                     <strong>{item.name}</strong>
                     {item.detail && <small className="line-detail">{item.detail}</small>}
                     <span key={n} className="bump">{money(item.price * n)}</span>
+                    {lineIssue(item) && <small className="line-issue" role="alert">{lineIssue(item)}. Baja la cantidad o quítalo.</small>}
                   </div>
                   <div className="stepper">
                     <button onClick={() => dec(item.id)} aria-label="Quitar uno"><Minus weight="bold" /></button>
                     <span key={n} className="bump">{n}</span>
-                    <button onClick={() => add(item.id)} aria-label="Agregar uno"><Plus weight="bold" /></button>
+                    <button onClick={() => add(item.id)} disabled={!canAddLine(item)} aria-label="Agregar uno"><Plus weight="bold" /></button>
                   </div>
                   <button className="icon-btn" onClick={() => remove(item.id)} aria-label="Eliminar"><Trash size={18} /></button>
                 </li>
@@ -56,7 +57,7 @@ export default function CartDrawer() {
             </div>
             <div className="drawer-foot">
               <div className="row"><span>Subtotal</span><strong key={subtotal} className="bump">{money(subtotal)}</strong></div>
-              <button className="btn primary block" onClick={go}>Continuar</button>
+              <button className="btn primary block" disabled={hasIssues} onClick={go}>Continuar</button>
               <button className="btn ghost block" onClick={() => setOpen(false)}>Seguir pidiendo</button>
             </div>
           </>

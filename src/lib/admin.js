@@ -88,7 +88,7 @@ export async function listOrders({ changedSince, all } = {}) {
     const fetchPage = async (from, to) => {
       let query = supabase
         .from('orders')
-        .select('id, code, user_id, customer_name, phone, email, mode, address, lat, lng, notes, subtotal, delivery_fee, total, status, payment_status, payment_method, payment_ref, history, created_at, updated_at, order_items(name, detail, qty, price)')
+        .select('id, code, user_id, customer_name, phone, email, mode, address, lat, lng, notes, subtotal, delivery_fee, total, status, payment_status, payment_method, payment_ref, history, created_at, updated_at, delivery_date, delivery_slot, order_items(name, detail, qty, price)')
       if (changedSince) query = query.gt('updated_at', changedSince)
       else if (!all) query = query.gte('created_at', since)
       const { data, error } = await query.order('created_at', { ascending: false }).order('id').range(from, to)
@@ -101,6 +101,7 @@ export async function listOrders({ changedSince, all } = {}) {
       mode: o.mode, address: o.address, lat: o.lat != null ? Number(o.lat) : null, lng: o.lng != null ? Number(o.lng) : null, notes: o.notes, subtotal: Number(o.subtotal),
       fee: Number(o.delivery_fee), total: Number(o.total), status: o.status, payment: o.payment_status, method: o.payment_method || 'tarjeta',
       paymentRef: o.payment_ref, createdAt: o.created_at, updatedAt: o.updated_at, history: o.history || [],
+      deliveryDate: o.delivery_date, deliverySlot: o.delivery_slot,
       items: o.order_items.map((i) => ({ name: i.name, detail: i.detail || '', qty: i.qty, price: Number(i.price) })),
     })))
   }
@@ -108,7 +109,7 @@ export async function listOrders({ changedSince, all } = {}) {
     id: o.code, code: o.code, userId: o.userId, name: o.name, phone: o.phone, email: o.email,
     mode: o.mode, address: o.address, lat: o.lat ?? null, lng: o.lng ?? null, notes: o.notes, subtotal: o.subtotal, fee: o.fee, total: o.total,
     status: o.status, payment: o.payment || 'pendiente', method: o.paymentMethod || 'tarjeta', paymentRef: o.paymentRef || null,
-    createdAt: o.createdAt, history: o.history || [], items: o.items,
+    createdAt: o.createdAt, history: o.history || [], deliveryDate: o.deliveryDate || null, deliverySlot: o.deliverySlot || null, items: o.items,
   }))
 }
 

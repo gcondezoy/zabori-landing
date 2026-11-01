@@ -4,6 +4,7 @@ import { trackOrder } from '../lib/track'
 import { zaboriWhatsapp, lastOrder, METHODS } from '../lib/whatsapp'
 import { money } from '../config/site'
 import { onOrderPush, pushPhone } from '../lib/push'
+import { slotLabel } from '../lib/availability'
 import PushOptIn from './PushOptIn'
 
 const REFRESH_MS = 20000
@@ -103,6 +104,10 @@ export default function TrackOrder() {
                 <strong>{money(order.total)}</strong>
               </div>
             </header>
+
+            {order.deliverySlot && (
+              <p className="track-slot">{order.mode === 'recojo' ? 'Recoges' : 'Te llega'} entre las <b>{slotLabel(order.deliverySlot)}</b></p>
+            )}
 
             {waitingPay && (
               <p className="track-alert">

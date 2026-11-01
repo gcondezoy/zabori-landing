@@ -8,6 +8,7 @@ import { useMenu } from '../context/MenuContext'
 import { listMyOrders } from '../lib/orders'
 import { reorderLines } from '../lib/reorder'
 import { loadPromos } from '../lib/promos'
+import { slotLabel } from '../lib/availability'
 import { rememberOrder, METHODS } from '../lib/whatsapp'
 import { supabaseConfigurado } from '../lib/supabase'
 import { money } from '../config/site'
@@ -64,6 +65,7 @@ function LiveOrder({ o }) {
         <strong>{money(o.total)}</strong>
       </header>
       {unpaid && <p className="acc-pay">Pago por confirmar · {METHODS[o.method] || 'Tarjeta'}</p>}
+      {o.deliverySlot && <p className="acc-items">{o.mode === 'recojo' ? 'Recoges' : 'Te llega'} entre las <b>{slotLabel(o.deliverySlot)}</b></p>}
       <ol className="acc-steps" aria-label="Progreso del pedido">
         {steps.map((s, i) => (
           <li key={s} className={i < current ? 'is-done' : i === current ? 'is-now' : 'is-next'}>

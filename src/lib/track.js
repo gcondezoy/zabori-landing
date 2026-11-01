@@ -21,7 +21,7 @@ export async function trackOrder(code, phone) {
   if (!o) return null
   return {
     code: o.code, status: o.status, payment: o.payment || 'pendiente', method: o.paymentMethod || 'tarjeta',
-    mode: o.mode, total: o.total, createdAt: o.createdAt, history: o.history || [],
+    mode: o.mode, total: o.total, createdAt: o.createdAt, history: o.history || [], deliverySlot: o.deliverySlot || null, deliveryDate: o.deliveryDate || null,
     items: o.items.map((i) => ({ name: i.name, detail: i.detail || '', qty: i.qty })),
   }
 }

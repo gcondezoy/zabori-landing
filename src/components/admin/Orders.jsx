@@ -3,6 +3,7 @@ import { MagnifyingGlass, DownloadSimple, Motorcycle, Storefront } from '@phosph
 import { STATUS, PAYMENT, isOpen, isUnpaid } from '../../lib/admin'
 import { inRange, ordersCSV, download, timeAgo } from '../../lib/stats'
 import { money } from '../../config/site'
+import { slotLabel } from '../../lib/availability'
 import { RangeTabs, StatusPill, PayPill } from './ui'
 import OrderDetail from './OrderDetail'
 
@@ -21,6 +22,7 @@ export default function Orders({ orders, refresh, focusCode, onFocusDone }) {
   const [range, setRange] = useState('todo')
   const [q, setQ] = useState('')
   const [mode, setMode] = useState('todos')
+  const [slot, setSlot] = useState('todos')
   const [openCode, setOpenCode] = useState(null)
 
   // Llegar desde Resumen o Clientes con un pedido concreto
@@ -30,7 +32,9 @@ export default function Orders({ orders, refresh, focusCode, onFocusDone }) {
 
   const base = useMemo(() => (orders || []).filter((o) => inRange(o, range)
     && (mode === 'todos' || o.mode === mode)
-    && (!q || norm(`${o.code} ${o.name} ${o.phone} ${o.address}`).includes(norm(q)))), [orders, range, mode, q])
+    && (slot === 'todos' || o.deliverySlot === slot)
+    && (!q || norm(`${o.code} ${o.name} ${o.phone} ${o.address}`).includes(norm(q)))), [orders, range, mode, slot, q])
+  const slotList = useMemo(() => [...new Set((orders || []).map((o) => o.deliverySlot).filter(Boolean))].sort(), [orders])
 
   const shown = base.filter(VIEWS.find((v) => v.id === view).test)
   const current = (orders || []).find((o) => o.code === openCode)
@@ -59,6 +63,12 @@ export default function Orders({ orders, refresh, focusCode, onFocusDone }) {
           <option value="delivery">Solo delivery</option>
           <option value="recojo">Solo recojo</option>
         </select>
+        {slotList.length > 0 && (
+          <select value={slot} onChange={(e) => setSlot(e.target.value)} aria-label="Horario de entrega">
+            <option value="todos">Todos los horarios</option>
+            {slotList.map((s) => <option key={s} value={s}>{slotLabel(s)}</option>)}
+          </select>
+        )}
         <button className="btn ghost small" onClick={exportCSV} disabled={!shown.length}>
           <DownloadSimple size={16} weight="bold" /> Exportar a Excel
         </button>
@@ -76,7 +86,7 @@ export default function Orders({ orders, refresh, focusCode, onFocusDone }) {
         <div className="table-wrap">
           <table className="otable">
             <thead>
-              <tr><th>Pedido</th><th>Cliente</th><th>Modalidad</th><th>Detalle</th><th className="num">Total</th><th>Pago</th><th>Estado</th></tr>
+              <tr><th>Pedido</th><th>Cliente</th><th>Modalidad</th><th>Entrega</th><th>Detalle</th><th className="num">Total</th><th>Pago</th><th>Estado</th></tr>
             </thead>
             <tbody>
               {shown.map((o) => (
@@ -88,6 +98,7 @@ export default function Orders({ orders, refresh, focusCode, onFocusDone }) {
                   <td data-label="Modalidad">
                     <span className="mode">{o.mode === 'delivery' ? <><Motorcycle size={16} /> Delivery</> : <><Storefront size={16} /> Recojo</>}</span>
                   </td>
+                  <td data-label="Entrega" className="slot-cell">{o.deliverySlot ? slotLabel(o.deliverySlot) : '—'}</td>
                   <td data-label="Detalle" className="items-cell">{o.items.map((i) => `${i.qty}× ${i.name}`).join(', ')}</td>
                   <td data-label="Total" className="num"><b>{money(o.total)}</b></td>
                   <td data-label="Pago"><PayPill payment={o.payment} method={o.method} /></td>

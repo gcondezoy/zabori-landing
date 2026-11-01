@@ -202,12 +202,31 @@ create policy "lineas propias" on public.order_items for select
 
 -- ---------- Crear pedido (invitado o registrado) ----------
 -- Los precios SIEMPRE se leen de la base: el navegador nunca manda precios.
--- p = { name, phone, email, mode, address, notes, items: [{id, qty}] }
+-- p = { name, phone, email, mode, address, notes, delivery_slot, items: [{id, qty}] }
 -- Plato armado: { id: 'arma', qty, options: ['p-pollo','c-arroz',...] } (se validan los mínimos/máximos de cada grupo)
 -- Menú del día: { id: 'm1', qty, taper: 't-kraft', entrada: 'e1' } (el táper es obligatorio y suma su precio; la entrada va incluida)
 -- Constancia de que aceptó Términos y Privacidad en cada pedido
 alter table public.orders add column if not exists terms_version text;
 alter table public.orders add column if not exists terms_at timestamptz;
+
+-- Horario de entrega y stock del día (etapa 11)
+alter table public.orders add column if not exists delivery_date date;
+alter table public.orders add column if not exists delivery_slot text;
+create index if not exists orders_delivery_idx on public.orders (delivery_date, delivery_slot);
+alter table public.order_items add column if not exists entrada_id text;
+-- Unidades por día de cada plato; vacío = sin límite
+alter table public.menu_items add column if not exists daily_stock int check (daily_stock is null or daily_stock >= 0);
+
+create table if not exists public.delivery_slots (
+  id       text primary key,                  -- '12:00-12:30'
+  start_at time not null,
+  capacity int  not null default 20 check (capacity >= 0),
+  days     int[] not null default '{1,2,3,4,5,6}' -- 0 = domingo
+);
+insert into public.delivery_slots (id, start_at) values
+  ('12:00-12:30','12:00'), ('12:30-13:00','12:30'), ('13:00-13:30','13:00'),
+  ('13:30-14:00','13:30'), ('14:00-14:30','14:00'), ('14:30-15:00','14:30')
+on conflict (id) do nothing;
 
 create or replace function public.create_order(p jsonb) returns text
 language plpgsql security definer set search_path = public as $$
@@ -233,6 +252,13 @@ declare
   v_g text;
   v_sp numeric;
   v_parts jsonb;
+  v_today date := (now() at time zone 'America/Lima')::date;
+  v_time time := (now() at time zone 'America/Lima')::time;
+  v_slot text := p->>'delivery_slot';
+  v_need jsonb := '{}'::jsonb; -- unidades que pide este pedido de cada plato o entrada
+  v_entrada_id text;
+  v_left int;
+  sl public.delivery_slots;
   ob record;
   it jsonb;
   g record;
@@ -249,6 +275,18 @@ begin
   end if;
   if jsonb_typeof(p->'items') <> 'array' or jsonb_array_length(p->'items') = 0 then
     raise exception 'El pedido está vacío';
+  end if;
+
+  -- Uno a la vez por día: dos clientes no pueden tomar el último cupo o la última unidad
+  perform pg_advisory_xact_lock(hashtext('zabori-cupos'), (v_today - date '2000-01-01'));
+
+  select * into sl from public.delivery_slots where id = v_slot;
+  if not found then raise exception 'Elige tu horario de entrega'; end if;
+  if not (extract(dow from v_today)::int = any(sl.days)) or sl.start_at <= v_time then
+    raise exception 'Ese horario ya no está disponible. Elige otro.';
+  end if;
+  if (select count(*) from public.orders o where o.delivery_date = v_today and o.delivery_slot = v_slot and o.status <> 'cancelado') >= sl.capacity then
+    raise exception 'Ese horario ya se llenó. Elige otro.';
   end if;
 
   -- Cada línea se valida y se le pone precio desde la base
@@ -301,12 +339,16 @@ begin
       if not found then raise exception 'Un producto de tu pedido ya no está disponible'; end if;
       v_price := r.price;
       v_detail := '';
+      v_entrada_id := null;
+      v_need := v_need || jsonb_build_object(r.id, coalesce((v_need->>r.id)::int, 0) + v_qty);
 
       -- La entrada que eligió el cliente va incluida en el menú: queda en el detalle para la cocina
       if r.cat = 'menu' and coalesce(it->>'entrada', '') <> '' then
         select name into v_entrada from public.menu_items where id = it->>'entrada' and cat = 'entrada' and active;
         if not found then raise exception 'La entrada de tu % ya no está disponible', r.name; end if;
         v_detail := 'Entrada: ' || v_entrada;
+        v_entrada_id := it->>'entrada';
+        v_need := v_need || jsonb_build_object(v_entrada_id, coalesce((v_need->>v_entrada_id)::int, 0) + v_qty);
       end if;
 
       -- Los menús del día van con táper (si hay alguno disponible): se suma su precio
@@ -317,13 +359,26 @@ begin
         v_detail := concat_ws(' · ', nullif(v_detail, ''), g.name);
       end if;
 
-      v_lines := v_lines || jsonb_build_object('item_id', r.id, 'name', r.name, 'detail', v_detail, 'price', v_price, 'qty', v_qty);
+      v_lines := v_lines || jsonb_build_object('item_id', r.id, 'entrada_id', v_entrada_id, 'name', r.name, 'detail', v_detail, 'price', v_price, 'qty', v_qty);
     end if;
 
     v_subtotal := v_subtotal + v_price * v_qty;
   end loop;
 
   if v_subtotal <= 0 then raise exception 'Productos inválidos'; end if;
+
+  -- Stock del día: lo vendido hoy (sin cancelados) más este pedido no puede pasar del límite
+  for r in
+    select m.id, m.name, m.daily_stock, (n.value)::int as need
+    from jsonb_each_text(v_need) n join public.menu_items m on m.id = n.key
+    where m.daily_stock is not null
+  loop
+    select r.daily_stock - coalesce(sum(i.qty), 0) into v_left
+    from public.order_items i join public.orders o on o.id = i.order_id
+    where o.delivery_date = v_today and o.status <> 'cancelado' and (i.item_id = r.id or i.entrada_id = r.id);
+    if v_left <= 0 then raise exception 'Se agotó por hoy: %', r.name; end if;
+    if r.need > v_left then raise exception 'Solo quedan % de %', v_left, r.name; end if;
+  end loop;
   if v_mode = 'delivery' and v_subtotal < v_free_from then v_fee := v_fee_amount; end if;
 
   loop
@@ -348,16 +403,16 @@ begin
   end if;
 
   insert into public.orders (code, user_id, customer_name, phone, email, mode, address, notes,
-                             subtotal, delivery_fee, total, payment_method, lat, lng, terms_version, terms_at)
+                             subtotal, delivery_fee, total, payment_method, lat, lng, terms_version, terms_at, delivery_date, delivery_slot)
   values (v_code, auth.uid(), trim(p->>'name'), trim(p->>'phone'), coalesce(trim(p->>'email'), ''),
           v_mode, coalesce(trim(p->>'address'), ''), coalesce(trim(p->>'notes'), ''),
           v_subtotal, v_fee, v_subtotal + v_fee, coalesce(p->>'payment_method', 'tarjeta'), v_lat, v_lng,
-          left(trim(p->>'terms_version'), 40), now())
+          left(trim(p->>'terms_version'), 40), now(), v_today, v_slot)
   returning id into v_order;
 
-  insert into public.order_items (order_id, item_id, name, detail, price, qty)
-  select v_order, l.item_id, l.name, l.detail, l.price, l.qty
-  from jsonb_to_recordset(v_lines) as l(item_id text, name text, detail text, price numeric, qty int);
+  insert into public.order_items (order_id, item_id, entrada_id, name, detail, price, qty)
+  select v_order, l.item_id, l.entrada_id, l.name, l.detail, l.price, l.qty
+  from jsonb_to_recordset(v_lines) as l(item_id text, entrada_id text, name text, detail text, price numeric, qty int);
 
   return v_code;
 end $$;
@@ -458,6 +513,7 @@ begin
   return jsonb_build_object(
     'code', o.code, 'status', o.status, 'payment', o.payment_status, 'method', o.payment_method,
     'mode', o.mode, 'total', o.total, 'createdAt', o.created_at, 'history', o.history,
+    'deliverySlot', o.delivery_slot, 'deliveryDate', o.delivery_date,
     'items', (select coalesce(jsonb_agg(jsonb_build_object('name', i.name, 'detail', i.detail, 'qty', i.qty) order by i.id), '[]'::jsonb)
               from public.order_items i where i.order_id = o.id)
   );
@@ -651,3 +707,49 @@ create policy "promociones vigentes" on public.promotions for select using (
 );
 drop policy if exists "admin gestiona promociones" on public.promotions;
 create policy "admin gestiona promociones" on public.promotions for all using (public.is_admin()) with check (public.is_admin());
+
+-- =============================================================
+--  ETAPA 11 · Horarios de entrega y stock del día
+-- =============================================================
+alter table public.delivery_slots enable row level security;
+drop policy if exists "horarios publicos" on public.delivery_slots;
+create policy "horarios publicos" on public.delivery_slots for select using (true);
+drop policy if exists "admin gestiona horarios" on public.delivery_slots;
+create policy "admin gestiona horarios" on public.delivery_slots for all using (public.is_admin()) with check (public.is_admin());
+
+-- Lo que el cliente puede pedir ahora. Los números de venta solo los ve el administrador.
+create or replace function public.availability() returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare
+  v_today date := (now() at time zone 'America/Lima')::date;
+  v_time time := (now() at time zone 'America/Lima')::time;
+  v_result jsonb;
+begin
+  with taken as (
+    select s.*, (select count(*)::int from public.orders o
+                 where o.delivery_date = v_today and o.delivery_slot = s.id and o.status <> 'cancelado') as n
+    from public.delivery_slots s
+  ), sold as (
+    select m.id, m.daily_stock, (select coalesce(sum(i.qty), 0)::int
+                 from public.order_items i join public.orders o on o.id = i.order_id
+                 where o.delivery_date = v_today and o.status <> 'cancelado' and (i.item_id = m.id or i.entrada_id = m.id)) as n
+    from public.menu_items m where m.cat in ('menu', 'entrada', 'shots')
+  )
+  select jsonb_build_object(
+    'slots', (select coalesce(jsonb_agg(jsonb_build_object(
+        'id', t.id,
+        'left', greatest(t.capacity - t.n, 0),
+        'status', case when not (extract(dow from v_today)::int = any(t.days)) then 'closed'
+                       when t.start_at <= v_time then 'past'
+                       when t.n >= t.capacity then 'full'
+                       else 'open' end
+      ) order by t.start_at), '[]'::jsonb) from taken t),
+    'stock', (select coalesce(jsonb_object_agg(x.id, greatest(x.daily_stock - x.n, 0)), '{}'::jsonb) from sold x where x.daily_stock is not null),
+    'admin', case when public.is_admin() then jsonb_build_object(
+        'taken', (select coalesce(jsonb_object_agg(t.id, t.n), '{}'::jsonb) from taken t),
+        'sold', (select coalesce(jsonb_object_agg(x.id, x.n), '{}'::jsonb) from sold x)
+      ) end
+  ) into v_result;
+  return v_result;
+end $$;
+grant execute on function public.availability() to anon, authenticated;

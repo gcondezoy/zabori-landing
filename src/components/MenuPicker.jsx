@@ -8,7 +8,7 @@ import { useExit } from '../lib/useExit'
 
 // Al agregar un menú del día: el cliente elige su entrada y su táper; la bebida ya viene incluida
 export default function MenuPicker() {
-  const { pickFor, setPickFor, add, setOpen } = useCart()
+  const { pickFor, setPickFor, add, setOpen, room } = useCart()
   const { shown: item, leaving } = useExit(pickFor)
   const { build, entradas, drink } = useMenu()
   const [taper, setTaper] = useState(null)
@@ -28,14 +28,17 @@ export default function MenuPicker() {
   const options = taperOptions(build)
   const chosen = options.find((t) => t.id === taper)
   // Con una sola entrada no hay nada que elegir
-  const pickedEntrada = entradas.length === 1 ? entradas[0] : entradas.find((e) => e.id === entrada)
+  const pickedEntrada = [entradas.length === 1 ? entradas[0] : entradas.find((e) => e.id === entrada)].find((e) => e && room(e.id) > 0)
   const missing = entradas.length && !pickedEntrada ? 'Elige tu entrada' : options.length && !chosen ? 'Elige tu táper' : ''
+  // No se puede pedir más de lo que queda del segundo ni de la entrada elegida
+  const maxQty = Math.min(20, room(item.id), pickedEntrada ? room(pickedEntrada.id) : Infinity)
+  const units = Math.max(1, Math.min(qty, maxQty))
   const unit = item.price + (chosen?.price || 0)
   const close = () => setPickFor(null)
 
   const confirm = () => {
     if (missing) return
-    add(menuKey(item.id, chosen?.id, pickedEntrada?.id), qty)
+    add(menuKey(item.id, chosen?.id, pickedEntrada?.id), units)
     close()
     setOpen(true) // con el plato principal elegido, el siguiente paso suele ser pagar
   }
@@ -59,11 +62,12 @@ export default function MenuPicker() {
             <div className="b-options tp-entradas" role="radiogroup" aria-label="Entrada">
               {entradas.map((e) => {
                 const on = pickedEntrada?.id === e.id
+                const gone = room(e.id) <= 0
                 return (
-                  <button key={e.id} type="button" role="radio" aria-checked={on}
+                  <button key={e.id} type="button" role="radio" aria-checked={on} disabled={gone}
                     className={`b-opt single${on ? ' on' : ''}`} onClick={() => setEntrada(e.id)}>
                     <span className="b-check" aria-hidden="true">{on && <Check size={12} weight="bold" />}</span>
-                    <span className="b-name">{e.name}{e.desc && <small>{e.desc}</small>}</span>
+                    <span className="b-name">{e.name}{gone ? <small>Agotada</small> : e.desc && <small>{e.desc}</small>}</span>
                   </button>
                 )
               })}
@@ -95,12 +99,12 @@ export default function MenuPicker() {
 
         <div className="tp-foot">
           <div className="stepper" aria-label="Cantidad">
-            <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Uno menos"><Minus weight="bold" /></button>
-            <span key={qty} className="bump">{qty}</span>
-            <button type="button" onClick={() => setQty((q) => Math.min(20, q + 1))} aria-label="Uno más"><Plus weight="bold" /></button>
+            <button type="button" onClick={() => setQty(Math.max(1, units - 1))} aria-label="Uno menos"><Minus weight="bold" /></button>
+            <span key={units} className="bump">{units}</span>
+            <button type="button" disabled={units >= maxQty} onClick={() => setQty(units + 1)} aria-label="Uno más"><Plus weight="bold" /></button>
           </div>
           <button type="button" className="btn primary tp-add" disabled={Boolean(missing)} onClick={confirm}>
-            {missing || `Agregar · ${money(unit * qty)}`}
+            {missing || `Agregar · ${money(unit * units)}`}
           </button>
         </div>
       </div>

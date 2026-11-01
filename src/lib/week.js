@@ -17,7 +17,7 @@ export const weekDays = () => [...site.openDays].sort((a, b) => ((a + 6) % 7) - 
 // Día cuyo menú se muestra: hoy mientras se atiende; fuera de horario, el próximo día de atención
 export function menuDay(now = new Date()) {
   const h = now.getHours() + now.getMinutes() / 60
-  const today = site.openDays.includes(now.getDay()) && h < site.closeHour
+  const today = site.openDays.includes(now.getDay()) && h < site.lastOrderHour
   const date = new Date(now)
   if (!today) {
     for (let i = 0; i < 7; i++) {
