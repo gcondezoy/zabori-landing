@@ -27,7 +27,7 @@ insert into public.menu_items (id, cat, name, descr, price) values
   ('e2','entrada','Ensalada fresca','',0),
   ('e3','entrada','Papa a la huancaína','',0),
   ('e4','entrada','Tequeños','',0),
-  ('arma','arma','Arma tu plato','Fit: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y el toque final.',0),
+  ('arma','arma','Arma tu plato','Saludable: proteína por gramos, carbohidrato, vegetales cocidos y frescos, y el toque final.',0),
   ('s1','shots','Shot de jengibre y limón','Jengibre fresco, limón y una pizca de miel.',5),
   ('s2','shots','Shot verde','Espinaca, manzana verde y apio.',5),
   ('s3','shots','Shot de cúrcuma y naranja','Cúrcuma, naranja y pimienta negra.',5)
@@ -113,7 +113,7 @@ create table if not exists public.build_options (
   img    text not null default ''
 );
 alter table public.build_options add column if not exists img text not null default '';
--- Porciones (fit): [{ "g": 120, "price": 15 }, ...]. Si tiene porciones, el precio sale de la porción elegida.
+-- Porciones (saludable): [{ "g": 120, "price": 15 }, ...]. Si tiene porciones, el precio sale de la porción elegida.
 alter table public.build_options add column if not exists sizes jsonb not null default '[]'::jsonb;
 -- Subgrupo dentro de un paso (ej. vegetales "Cocidos" / "Frescos"); el máximo del paso cuenta todos juntos
 alter table public.build_options add column if not exists sub text not null default '';
@@ -124,7 +124,7 @@ insert into public.build_groups (id, label, min_sel, max_sel, sort) values
   ('taper','Táper',1,1,5)
 on conflict (id) do nothing;
 
--- Opciones fit de EJEMPLO (se editan en el panel). Proteínas con porción en gramos y precio por porción.
+-- Opciones saludables de EJEMPLO (se editan en el panel). Proteínas con porción en gramos y precio por porción.
 insert into public.build_options (id, grp, name, price, sort, img, sizes, sub) values
   ('p-pollo','proteina','Pechuga de pollo',0,1,'/img/arma/pollo.webp','[{"g":100,"price":15},{"g":150,"price":18},{"g":200,"price":22}]',''),
   ('p-res','proteina','Lomo fino de res',0,2,'/img/arma/res.webp','[{"g":100,"price":18},{"g":150,"price":22},{"g":200,"price":27}]',''),

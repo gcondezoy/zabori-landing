@@ -64,7 +64,7 @@ export default function BuildPromo() {
     <section className="promo" id="arma-tu-plato" aria-labelledby="promo-title">
       <div className="wrap promo-in">
         <Reveal className="promo-copy">
-          <p className="eyebrow">Arma tu plato fit</p>
+          <p className="eyebrow">Arma tu plato saludable</p>
           <h2 id="promo-title">Tú eliges, nosotros lo cocinamos.</h2>
           <p className="promo-lead">
             {site.slogan}: elige tu proteína por gramos, tu carbohidrato, vegetales cocidos y frescos, y el toque final.

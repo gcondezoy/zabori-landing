@@ -13,7 +13,7 @@ export function injectBusinessSchema() {
     '@type': 'Restaurant',
     name: site.name,
     slogan: site.slogan,
-    description: `${site.tagline} y arma tu plato fit, en táper. Delivery y recojo en Lima.`,
+    description: `${site.tagline} y arma tu plato saludable, en táper. Delivery y recojo en Lima.`,
     url,
     image: url + 'og-image.jpg',
     logo: url + 'icon-512.png',

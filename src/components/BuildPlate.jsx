@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Plus, Minus, ArrowCounterClockwise, Barbell } from '@phosphor-icons/react'
+import { Check, Plus, Minus, ArrowCounterClockwise, Leaf } from '@phosphor-icons/react'
 import { useMenu } from '../context/MenuContext'
 import { useCart } from '../context/CartContext'
 import { chosen, buildPrice, missingGroup, cartKey, parseId, sizeId, hasSizes, fromPrice } from '../lib/build'
@@ -33,7 +33,7 @@ function SizedOption({ o, selected, onPick }) {
   )
 }
 
-// Arma tu plato (fit): proteína por gramos, carbohidrato, verduras, el toque final y táper, con precio en vivo
+// Arma tu plato (saludable): proteína por gramos, carbohidrato, verduras, el toque final y táper, con precio en vivo
 export default function BuildPlate() {
   const { build } = useMenu()
   const { add, setOpen } = useCart()
@@ -90,7 +90,7 @@ export default function BuildPlate() {
   return (
     <div className="builder">
       <div className="b-steps">
-        <p className="b-intro"><Barbell size={18} weight="duotone" /><span>Fit y a tu medida: eliges la porción de proteína en gramos y todo llega en tu táper. Desde <b>{money(fromPrice(build))}</b>.</span></p>
+        <p className="b-intro"><Leaf size={18} weight="duotone" /><span>Saludable y a tu medida: eliges la porción de proteína en gramos y todo llega en tu táper. Desde <b>{money(fromPrice(build))}</b>.</span></p>
         {build.groups.map((g, gi) => {
           const opts = build.options.filter((o) => o.grp === g.id)
           if (!opts.length) return null
