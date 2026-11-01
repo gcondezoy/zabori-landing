@@ -681,17 +681,10 @@ h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 900; }
 .bo-price.big { font-size: 1.1rem; color: var(--ink); }
 .bo-price.big input { width: 100px !important; padding: 9px 11px; border: 1.5px solid var(--line); border-radius: 10px; font-size: 1.05rem; font-weight: 700; }
 .bo-uses { font-size: .8rem; color: var(--muted); white-space: nowrap; }
-.bo-new { grid-template-columns: minmax(0, 1fr) 120px auto; border-bottom: 0; }
 .bo-help { margin: 0 0 8px; font-size: .82rem; }
 .bo-subtitle { margin: 12px 0 2px; font-size: .9rem; color: var(--red); }
 .bo-tools { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .bo-tools .m-photo { gap: 6px; }
-@media (max-width: 860px) {
-  .bo-row { grid-template-columns: 1fr auto; }
-  .bo-row .bo-uses { grid-column: 1; }
-  .bo-new { grid-template-columns: 1fr auto; }
-  .bo-new .btn { grid-column: 1 / -1; }
-}
 @media (max-width: 900px) { body:has(.cart-bar.show) .b-summary { bottom: 92px; } }
 
 /* Opciones con miniatura (Táper) */
@@ -713,7 +706,6 @@ h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 900; }
 .bo-thumb { width: 64px; height: 48px; object-fit: contain; border-radius: 8px; background: #fbf6e6; }
 .bo-thumb.empty { display: block; border: 1.5px dashed var(--line); }
 .bo-img { grid-column: 2 / -1; font-size: .82rem; }
-@media (max-width: 860px) { .bo-row.with-img { grid-template-columns: 64px 1fr auto; } .bo-row.with-img .bo-img { grid-column: 1 / -1; } }
 
 /* Ventana de táper */
 .taper-modal { width: min(560px, 100%); display: grid; gap: 18px; }
@@ -1027,11 +1019,8 @@ h1, h2 { text-wrap: balance; }
 .bo-size > input { width: 64px !important; padding: 6px 8px !important; }
 .bo-size small { color: var(--muted); font-weight: 700; }
 .bo-size .bo-price input { width: 64px !important; padding: 6px 8px !important; }
-@media (max-width: 860px) { .bo-sizes { grid-column: 1 / -1; } }
 .bo-sub { padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; font-size: .85rem; }
 .bo-row:has(.bo-sub) { grid-template-columns: 64px minmax(0, 1fr) 110px 120px 110px auto auto; }
-.bo-new:has(.bo-sub) { grid-template-columns: minmax(0, 1fr) 110px 120px auto; }
-@media (max-width: 860px) { .bo-row:has(.bo-sub), .bo-new:has(.bo-sub) { grid-template-columns: 1fr auto; } }
 
 /* Sello de precio en el carrusel */
 .plate-wrap { position: relative; width: min(440px, 100%); display: grid; justify-items: center; }
@@ -1044,13 +1033,6 @@ h1, h2 { text-wrap: balance; }
 @media (max-width: 800px) { .plate-wrap { width: min(300px, 82vw); } .price-sticker { width: 68px; height: 68px; right: -2%; } .price-sticker b { font-size: 1.5rem; } }
 @media (prefers-reduced-motion: reduce) { .price-sticker { animation: none; } }
 .page-loading { min-height: 60vh; }
-/* Panel · Arma tu plato en celular: foto + nombre a lo ancho; debajo precio, uso, disponible y guardar */
-@media (max-width: 860px) {
-  .bo-row.with-img { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
-  .bo-row.with-img > input:not(.bo-img) { flex: 1 1 calc(100% - 76px); }
-  .bo-row.with-img > .btn { margin-left: auto; }
-  .bo-row.with-img > .bo-sizes, .bo-row.with-img > .bo-tools, .bo-row.with-img > .form-err { flex: 1 1 100%; }
-}
 .pickup-note { display: flex; gap: 10px; align-items: flex-start; margin: 0; padding: 12px 14px; border-radius: 12px; background: #e6f1f2; color: var(--red); font-size: .9rem; line-height: 1.4; }
 .pickup-note svg { flex: none; margin-top: 1px; }
 
@@ -1444,7 +1426,7 @@ html { overflow-x: clip; }
 .promo-status { padding: 3px 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; background: var(--bg-alt); color: var(--muted); }
 .promo-status.s-live { background: #dcf3e3; color: #145c2e; }
 .promo-status.s-soon { background: #fff1c4; color: #6b4a00; }
-@media (max-width: 760px) {
+@media (max-width: 860px) {
   .promo-card.m-card { grid-template-columns: minmax(0, 1fr); padding: 14px; }
   .promo-card .m-fields, .promo-card .m-side { grid-column: 1 / -1; min-width: 0; }
   .promo-card .m-side { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; }
@@ -1473,3 +1455,24 @@ html { overflow-x: clip; }
 @container (min-width: 680px) {
   .b-steps .b-options { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+/* Panel · Arma tu plato: porciones y herramientas alineadas con el nombre, no con la foto */
+.bo-row.with-img > .bo-sizes, .bo-row.with-img > .bo-tools { grid-column: 2 / -1; }
+.bo-row:not(.with-img) > .bo-sizes { grid-column: 1 / -1; }
+.bo-row > .form-err { grid-column: 1 / -1; }
+
+/* Si la tarjeta no da para una sola fila: foto y nombre arriba; debajo precio, uso, disponible y guardar */
+.bo-group { container-type: inline-size; }
+@container (max-width: 860px) {
+  .bo-row, .bo-row.with-img, .bo-row:has(.bo-sub) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .bo-row > input:not(.bo-img) { flex: 1 1 100%; }
+  .bo-row.with-img > input:not(.bo-img) { flex: 1 1 calc(100% - 76px); }
+  .bo-row > .btn { margin-left: auto; }
+  .bo-row > .bo-sizes, .bo-row > .bo-tools, .bo-row > .form-err { flex: 1 1 100%; }
+}
+
+/* Fila para agregar una opción: el texto de ayuda se acomoda y nunca pisa el botón */
+.bo-row.bo-new { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; border-bottom: 0; }
+.bo-row.bo-new > input { flex: 1 1 220px; }
+.bo-row.bo-new > .bo-uses { white-space: normal; }
+.bo-row.bo-new > .btn { flex: none; margin-left: auto; }
