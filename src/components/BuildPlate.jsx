@@ -11,6 +11,20 @@ import SwipeRail from './SwipeRail'
 const hint = (g, sized) =>
   g.min === 1 && g.max === 1 ? (sized ? 'Elige 1 y su porción' : 'Elige 1') : g.min === 0 ? `Opcional · hasta ${g.max}` : `Elige de ${g.min} a ${g.max}`
 
+// En celular cada paso es un solo carrusel; en computadora los subgrupos van separados con su título
+const PHONE = '(max-width: 640px)'
+function useIsPhone() {
+  const [phone, setPhone] = useState(() => window.matchMedia(PHONE).matches)
+  useEffect(() => {
+    const media = window.matchMedia(PHONE)
+    const update = () => setPhone(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+  return phone
+}
+
 // Opción con porciones: la tarjeta muestra la foto y un botón por gramaje con su precio.
 // En la proteína es el precio del plato; en lo demás, un adicional.
 function SizedOption({ o, selected, onPick }) {
@@ -40,6 +54,7 @@ export default function BuildPlate() {
   const [sel, setSel] = useState([])
   const [qty, setQty] = useState(1)
   const [passed, setPassed] = useState([]) // pasos opcionales por los que ya se pasó
+  const phone = useIsPhone()
 
   const optionOf = (full) => build.options.find((o) => o.id === parseId(full).id)
 
@@ -108,6 +123,7 @@ export default function BuildPlate() {
               <button key={o.id} type="button" className={`b-opt${on ? ' on' : ''}${o.img ? ' has-img' : ''}${g.max === 1 ? ' single' : ''}`}
                 aria-pressed={on} disabled={!on && full} onClick={() => toggle(g, o.id)}>
                 {o.img && <img className="b-thumb" src={o.img} alt="" width="160" height="120" loading="lazy" />}
+                {phone && subs.length > 1 && o.sub && <span className="b-tag">{o.sub}</span>}
                 <span className="b-check" aria-hidden="true">{on && <Check size={12} weight="bold" />}</span>
                 <span className="b-name">{o.name}</span>
                 <span className="b-price">{o.price ? `+${money(o.price)}` : 'Incluido'}</span>
@@ -125,14 +141,16 @@ export default function BuildPlate() {
                 <span className="b-hint">{hint(g, sized)}{g.max > 1 ? ` · ${count}/${g.max}` : ''}</span>
               </legend>
               {subs.length > 1 && <p className="b-subnote">Puedes combinar: hasta {g.max} en total entre {subs.join(' y ').toLowerCase()}.</p>}
-              {subs.length > 1 ? subs.map((sub) => (
+              {subs.length > 1 && !phone ? subs.map((sub) => (
                 <div key={sub} className="b-sub">
                   <h4 className="b-subtitle">{sub}</h4>
                   <div className={gridClass}>{opts.filter((o) => (o.sub || '') === sub).map(renderOpt)}</div>
                 </div>
-              )) : sized
-                ? <SwipeRail className={gridClass} label={g.label}>{opts.map(renderOpt)}</SwipeRail>
-                : <div className={gridClass}>{opts.map(renderOpt)}</div>}
+              )) : (
+                <SwipeRail className={gridClass} label={g.label}>
+                  {subs.flatMap((sub) => opts.filter((o) => (o.sub || '') === sub)).map(renderOpt)}
+                </SwipeRail>
+              )}
             </Reveal>
           )
         })}

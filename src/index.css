@@ -1117,11 +1117,11 @@ h1, h2 { text-wrap: balance; }
   .card:hover .card-img img, .b-opt.has-img:hover:not(:disabled) .b-thumb { transform: none; }
 }
 
-/* Carrusel de proteínas (celular) */
+/* Carrusel de cada paso del armador (celular) */
 .b-rail-nav { display: none; }
 @media (max-width: 640px) {
   .b-step:has(.b-rail) { overflow: hidden; }
-  .b-options.sized.b-rail {
+  .b-options.b-rail {
     display: flex; gap: 10px; margin-inline: -18px; padding: 2px 18px 4px;
     overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 18px;
     overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none;
@@ -1467,3 +1467,7 @@ html { overflow-x: clip; }
   .acc-stats > button { transition: border-color .2s ease; }
   .acc-stats > button:active { transform: none; }
 }
+
+/* Armador en celular: la etiqueta dice a qué subgrupo pertenece cada tarjeta del carrusel */
+.b-tag { position: absolute; top: 18px; left: 18px; z-index: 1; padding: 3px 9px; border-radius: 999px; background: var(--yellow); color: var(--red); font-size: .72rem; font-weight: 800; line-height: 1.3; }
+.b-opt:not(.has-img) .b-tag { position: static; flex: none; }
