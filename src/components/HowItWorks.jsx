@@ -3,7 +3,7 @@ import { payText } from '../lib/culqi'
 const steps = [
   { t: 'Elige tu menú', d: 'Agrega los platos al carrito y escoge delivery o recojo.' },
   { t: 'Paga en línea', d: `Con ${payText}, como invitado o con tu cuenta Zabori.` },
-  { t: 'Recíbelo', d: 'Te avisamos cuando tu pedido salga o esté listo para recoger.' },
+  { t: 'Recíbelo', d: 'Llega en el horario que elegiste y te avisamos cuando esté entregado.' },
 ]
 
 // Cómo pedir: va en la portada, debajo del eslogan

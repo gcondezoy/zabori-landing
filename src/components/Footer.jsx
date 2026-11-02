@@ -1,4 +1,4 @@
-import { WhatsappLogo, MapPin, Clock, MapTrifold } from '@phosphor-icons/react'
+import { WhatsappLogo, InstagramLogo, MapPin, Clock, MapTrifold } from '@phosphor-icons/react'
 import { site } from '../config/site'
 
 export default function Footer() {
@@ -17,6 +17,10 @@ export default function Footer() {
           <li>
             <WhatsappLogo size={18} />
             <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noreferrer">{site.whatsappLabel}</a>
+          </li>
+          <li>
+            <InstagramLogo size={18} />
+            <a href={site.instagram} target="_blank" rel="noreferrer">{site.instagramLabel}</a>
           </li>
         </ul>
       </div>

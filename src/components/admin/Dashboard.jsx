@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { isOpen, isUnpaid, STATUS } from '../../lib/admin'
+import { isOpen, isUnpaid } from '../../lib/admin'
 import { inRange, summarize, salesSeries, topItems, timeAgo } from '../../lib/stats'
 import { money } from '../../config/site'
 import { Kpi, RangeTabs, BarChart, RankBars, StatusPill, PayPill } from './ui'
@@ -13,7 +13,7 @@ export default function Dashboard({ orders, onOpen }) {
   const series = useMemo(() => salesSeries(list, range), [list, range])
   const top = useMemo(() => topItems(list, 8), [list])
   const open = (orders || []).filter(isOpen)
-  const byStatus = ['pendiente', 'preparando', 'en_camino', 'listo'].map((k) => [k, open.filter((o) => o.status === k).length])
+  const byStatus = [['Por confirmar pago', open.filter(isUnpaid).length], ['Por entregar', open.filter((o) => !isUnpaid(o)).length]]
 
   if (!orders) return <p className="muted">Cargando…</p>
 
@@ -42,8 +42,8 @@ export default function Dashboard({ orders, onOpen }) {
         <div className="panel-card">
           <h3 className="card-title">En curso ahora</h3>
           <div className="status-row">
-            {byStatus.map(([k, n]) => (
-              <div key={k} className="status-box"><strong>{n}</strong><span>{STATUS[k]}</span></div>
+            {byStatus.map(([label, n]) => (
+              <div key={label} className="status-box"><strong>{n}</strong><span>{label}</span></div>
             ))}
           </div>
           {open.length === 0 ? <p className="muted">No hay pedidos en curso.</p> : (

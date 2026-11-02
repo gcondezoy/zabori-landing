@@ -251,7 +251,7 @@ h2 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 900; }
 .rank-bar { display: block; height: 100%; background: var(--red); border-radius: 0 4px 4px 0; }
 .rank-val { font-weight: 800; text-align: right; white-space: nowrap; }
 .rank-val small { font-weight: 500; color: var(--muted); margin-left: 4px; }
-.status-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.status-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
 .status-box { background: #faf6e8; border-radius: 10px; padding: 10px; text-align: center; display: grid; }
 .status-box strong { font-family: 'Nunito Variable', sans-serif; font-size: 1.5rem; font-weight: 900; }
 .status-box span { font-size: .75rem; color: var(--muted); }
@@ -882,7 +882,7 @@ h1, h2 { text-wrap: balance; }
 .acc-live header b { font-family: 'Nunito Variable', sans-serif; font-size: 1.3rem; font-weight: 900; color: var(--red); }
 .acc-live header strong { font-size: 1.1rem; }
 .acc-pay { font-size: .85rem; font-weight: 600; color: #6b4a00; background: #fff1c4; padding: 6px 10px; border-radius: 10px; justify-self: start; }
-.acc-steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.acc-steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .acc-steps li { display: grid; justify-items: center; text-align: center; gap: 2px; font-size: .8rem; color: var(--muted); position: relative; }
 .acc-steps li.is-done, .acc-steps li.is-now { color: var(--red); }
 .acc-steps li.is-now span { font-weight: 800; }

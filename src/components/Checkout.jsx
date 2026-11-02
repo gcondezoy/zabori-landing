@@ -220,10 +220,10 @@ export default function Checkout() {
 
             {wallet ? <WalletPay done={done} /> : (
               <>
-                <p>{done.mode === 'delivery' ? 'Te avisaremos cuando salga tu delivery.' : 'Te avisaremos cuando esté listo para recoger.'}</p>
+                <p>Te avisaremos cuando tu pedido esté entregado.</p>
                 <p className="demo-note">Pago con tarjeta confirmado. Gracias por tu compra.</p>
                 <a className="btn wa block" target="_blank" rel="noreferrer"
-                  href={zaboriWhatsapp(`Hola, acabo de hacer el pedido ${done.code}. ¿Me avisan cuando esté ${done.mode === 'delivery' ? 'en camino' : 'listo para recoger'}?`)}>
+                  href={zaboriWhatsapp(`Hola, acabo de hacer el pedido ${done.code}. Les escribo por si necesitan algún dato.`)}>
                   <WhatsappLogo size={20} weight="fill" /> Seguir mi pedido por WhatsApp
                 </a>
               </>

@@ -4,12 +4,7 @@ import { lastOrder, TRACK_EVENT } from '../lib/whatsapp'
 import { trackOrder } from '../lib/track'
 import { onOrderPush } from '../lib/push'
 
-const LABELS = {
-  pendiente: 'Pedido recibido',
-  preparando: 'Preparando tu comida',
-  en_camino: 'En camino',
-  listo: 'Listo para recoger',
-}
+const isActive = (o) => o.status !== 'entregado' && o.status !== 'cancelado'
 const REFRESH_MS = 20000 // para quien no activó las notificaciones
 
 // Solo aparece con un pedido en curso en este navegador: de un toque se ve cómo va
@@ -25,7 +20,7 @@ export default function OrderStrip() {
       try {
         const o = await trackOrder(saved.code, saved.phone)
         if (!alive) return
-        const active = o && LABELS[o.status]
+        const active = o && isActive(o)
         if (!active) finished = saved.code
         setOrder(active ? o : null)
       } catch { /* sin conexión: se queda como estaba */ }
@@ -45,8 +40,7 @@ export default function OrderStrip() {
   }, [])
 
   if (!order) return null
-  const paid = order.payment === 'pagado'
-  const label = order.status === 'pendiente' ? (paid ? 'Pago confirmado' : 'Confirmando tu pago') : LABELS[order.status]
+  const label = order.payment === 'pagado' ? 'Pagado' : 'Confirmando tu pago'
   return (
     <a href="#/seguir" className="order-strip" aria-label={`Tu pedido ${order.code}: ${label}. Ver cómo va`}>
       <span className="wrap order-strip-in">

@@ -10,14 +10,9 @@ export const STATUS = {
 }
 export const PAYMENT = { pendiente: 'Por cobrar', procesando: 'Procesando', pagado: 'Pagado', fallido: 'Fallido' }
 
-// Siguiente paso del pedido según la modalidad
-export function nextStatus(order) {
-  const flow = order.mode === 'delivery'
-    ? ['pendiente', 'preparando', 'en_camino', 'entregado']
-    : ['pendiente', 'preparando', 'listo', 'entregado']
-  const i = flow.indexOf(order.status)
-  return i >= 0 && i < flow.length - 1 ? flow[i + 1] : null
-}
+// Siguiente paso del pedido: después de confirmar el pago solo queda entregarlo.
+// (Preparando, En camino y Listo ya no se usan; quedan en STATUS por los pedidos antiguos.)
+export const nextStatus = (order) => (order.status === 'entregado' || order.status === 'cancelado' ? null : 'entregado')
 
 export const isOpen = (o) => o.status !== 'entregado' && o.status !== 'cancelado'
 export const isUnpaid = (o) => o.payment !== 'pagado' && o.status !== 'cancelado'

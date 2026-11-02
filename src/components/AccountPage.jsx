@@ -9,6 +9,7 @@ import { listMyOrders } from '../lib/orders'
 import { reorderLines } from '../lib/reorder'
 import { loadPromos } from '../lib/promos'
 import { slotLabel } from '../lib/availability'
+import { PROGRESS, progressOf, reachedAt } from '../lib/progress'
 import { rememberOrder, METHODS } from '../lib/whatsapp'
 import { supabaseConfigurado } from '../lib/supabase'
 import { money } from '../config/site'
@@ -19,7 +20,6 @@ const STATUS = {
   pendiente: 'Recibido', preparando: 'Preparando', en_camino: 'En camino',
   listo: 'Listo para recoger', entregado: 'Entregado', cancelado: 'Cancelado',
 }
-const FLOW = { delivery: ['pendiente', 'preparando', 'en_camino', 'entregado'], recojo: ['pendiente', 'preparando', 'listo', 'entregado'] }
 const isOpen = (o) => o.status !== 'entregado' && o.status !== 'cancelado'
 const fecha = (iso) => new Date(iso).toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'short' })
 const hora = (iso) => new Date(iso).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
@@ -53,25 +53,23 @@ function Welcome() {
 
 /* ---------- Pedido en curso ---------- */
 function LiveOrder({ o }) {
-  const steps = FLOW[o.mode] || FLOW.delivery
-  const current = steps.indexOf(o.status)
-  const at = (s) => [...(o.history || [])].reverse().find((h) => h.type === 'status' && h.value === s)?.at || (s === 'pendiente' ? o.createdAt : null)
+  const current = progressOf(o)
   const track = () => { rememberOrder(o.code, o.phone); window.location.hash = '#/seguir' }
   const unpaid = o.payment !== 'pagado'
   return (
     <article className="acc-live">
       <header>
-        <span><small>Pedido {o.code}</small><b>{STATUS[o.status]}</b></span>
+        <span><small>Pedido {o.code}</small><b>{PROGRESS[current][1]}</b></span>
         <strong>{money(o.total)}</strong>
       </header>
       {unpaid && <p className="acc-pay">Pago por confirmar · {METHODS[o.method] || 'Tarjeta'}</p>}
       {o.deliverySlot && <p className="acc-items">{o.mode === 'recojo' ? 'Recoges' : 'Te llega'} entre las <b>{slotLabel(o.deliverySlot)}</b></p>}
       <ol className="acc-steps" aria-label="Progreso del pedido">
-        {steps.map((s, i) => (
+        {PROGRESS.map(([s, label], i) => (
           <li key={s} className={i < current ? 'is-done' : i === current ? 'is-now' : 'is-next'}>
             {i <= current ? <CheckCircle size={20} weight="fill" /> : <Circle size={20} />}
-            <span>{STATUS[s]}</span>
-            <small>{i <= current && at(s) ? hora(at(s)) : ''}</small>
+            <span>{label}</span>
+            <small>{i <= current && reachedAt(o, s) ? hora(reachedAt(o, s)) : ''}</small>
           </li>
         ))}
       </ol>

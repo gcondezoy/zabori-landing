@@ -5,26 +5,12 @@ import { zaboriWhatsapp, lastOrder, METHODS } from '../lib/whatsapp'
 import { money } from '../config/site'
 import { onOrderPush, pushPhone } from '../lib/push'
 import { slotLabel } from '../lib/availability'
+import { PROGRESS, progressOf, reachedAt } from '../lib/progress'
 import PushOptIn from './PushOptIn'
 
 const REFRESH_MS = 20000
 
-const STEPS = {
-  delivery: [
-    ['pendiente', 'Pedido recibido'], ['preparando', 'Preparando tu comida'], ['en_camino', 'En camino'], ['entregado', 'Entregado'],
-  ],
-  recojo: [
-    ['pendiente', 'Pedido recibido'], ['preparando', 'Preparando tu comida'], ['listo', 'Listo para recoger'], ['entregado', 'Entregado'],
-  ],
-}
-
 const hora = (iso) => new Date(iso).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
-
-// Hora en que el pedido llegó a cada estado (según el historial)
-function reachedAt(order, status) {
-  const h = (order.history || []).filter((x) => x.type === 'status' && x.value === status)
-  return h.length ? h[h.length - 1].at : status === 'pendiente' ? order.createdAt : null
-}
 
 // Al tocar una notificación se llega con #/seguir?codigo=ZAB-XXXXX
 function codeFromLink() {
@@ -73,8 +59,8 @@ export default function TrackOrder() {
   }, [order, phone, look])
 
   const submit = (e) => { e.preventDefault(); look() }
-  const steps = order ? STEPS[order.mode] || STEPS.delivery : []
-  const current = order ? steps.findIndex(([s]) => s === order.status) : -1
+  const steps = order ? PROGRESS : []
+  const current = order ? progressOf(order) : -1
   const cancelled = order?.status === 'cancelado'
   const waitingPay = order && order.payment !== 'pagado' && !cancelled
 

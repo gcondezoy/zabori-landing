@@ -61,11 +61,11 @@ export function seedDemoOrders(menu, days = 14) {
       const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0)
       const mode = Math.random() > 0.35 ? 'delivery' : 'recojo'
       const fee = mode === 'delivery' && subtotal < site.freeDeliveryFrom ? site.deliveryFee : 0
-      const flow = mode === 'delivery' ? ['preparando', 'en_camino', 'entregado'] : ['preparando', 'listo', 'entregado']
+      const flow = ['entregado']
 
       // Hoy hay pedidos en distintas etapas; los días anteriores casi todos entregados
       let status
-      if (d === 0) status = ['pendiente', 'preparando', flow[1], 'pendiente', 'preparando', 'entregado', flow[1]][k % 7]
+      if (d === 0) status = ['pendiente', 'pendiente', 'entregado', 'pendiente', 'entregado'][k % 5]
       else status = Math.random() < 0.12 ? 'cancelado' : 'entregado'
       const payment = status === 'cancelado' ? 'pendiente' : d === 0 && k % 3 === 0 ? 'pendiente' : 'pagado'
 

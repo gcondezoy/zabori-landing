@@ -3,8 +3,10 @@ export const site = {
   name: 'Zabori',
   slogan: 'El sabor de elegir bien',
   tagline: 'Menú casero del día',
-  whatsapp: '51900000000', // PLACEHOLDER
-  whatsappLabel: '900 000 000', // PLACEHOLDER
+  whatsapp: '51981108461',
+  whatsappLabel: '981 108 461',
+  instagram: 'https://www.instagram.com/zabori_darkkitchen/',
+  instagramLabel: '@zabori_darkkitchen',
   address: 'Lima, Perú (dirección por confirmar)', // PLACEHOLDER
   // Billeteras: el cliente paga y envía la captura por WhatsApp; se confirma en el panel ("Marcar pagado").
   // qr = ruta de la imagen del QR (p. ej. '/img/pagos/yape.png'); vacío = se muestra solo el número.

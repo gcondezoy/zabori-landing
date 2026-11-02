@@ -26,6 +26,7 @@ export function injectBusinessSchema() {
   }
   // El teléfono solo se publica cuando ya es el número real (no el de ejemplo)
   if (!/^51900000000$/.test(site.whatsapp)) data.telephone = `+${site.whatsapp}`
+  if (site.instagram) data.sameAs = [site.instagram]
 
   const el = document.createElement('script')
   el.type = 'application/ld+json'
