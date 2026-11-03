@@ -11,32 +11,135 @@ const STATUS = {
   listo: 'Listo para recoger', entregado: 'Entregado', cancelado: 'Cancelado',
 }
 
+// Botón para volver a enviar el correo de confirmación
+function ResendConfirm({ email }) {
+  const { resendConfirm } = useAuth()
+  const [state, setState] = useState('') // '' | 'busy' | 'sent' | mensaje de error
+  const send = async () => {
+    setState('busy')
+    try { await resendConfirm(email); setState('sent') } catch (e) { setState(e.message) }
+  }
+  if (state === 'sent') return <p className="form-ok" role="status">Te lo enviamos de nuevo a {email}.</p>
+  return (
+    <p className="auth-resend">
+      ¿No te llegó? <button type="button" className="link" disabled={state === 'busy'} onClick={send}>{state === 'busy' ? 'Enviando…' : 'Reenviar el correo'}</button>
+      {state && state !== 'busy' && <span className="form-err">{state}</span>}
+    </p>
+  )
+}
+
+// Pedir el enlace para cambiar la contraseña
+function ForgotForm() {
+  const { resetPassword, setModal } = useAuth()
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+  const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
+  const submit = async (e) => {
+    e.preventDefault()
+    setErr(''); setBusy(true)
+    try { await resetPassword(email.trim()); setSent(true) } catch (error) { setErr(error.message) } finally { setBusy(false) }
+  }
+  return (
+    <form onSubmit={submit}>
+      <h3>Recupera tu contraseña</h3>
+      {sent ? (
+        <p className="form-ok" role="status">Si {email} tiene una cuenta, te llegará un correo con un enlace para elegir una contraseña nueva. Revisa también la carpeta de spam.</p>
+      ) : (
+        <>
+          <p className="guest">Escribe el correo con el que te registraste y te enviamos un enlace.</p>
+          <label>Correo<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /></label>
+          {err && <p className="form-err" role="alert">{err}</p>}
+          <button className="btn primary block" disabled={busy}>{busy ? 'Enviando…' : 'Enviar enlace'}</button>
+        </>
+      )}
+      <p className="switch"><button type="button" className="link" onClick={() => setModal('login')}>Volver a iniciar sesión</button></p>
+    </form>
+  )
+}
+
+// Elegir la contraseña nueva (al llegar desde el correo)
+function NewPasswordForm() {
+  const { updatePassword, setModal, setNotice } = useAuth()
+  const [f, setF] = useState({ password: '', repeat: '' })
+  const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
+  const submit = async (e) => {
+    e.preventDefault()
+    if (f.password !== f.repeat) { setErr('Las dos contraseñas no coinciden.'); return }
+    setErr(''); setBusy(true)
+    try {
+      await updatePassword(f.password)
+      setNotice('Listo, tu contraseña quedó cambiada.')
+      setModal(null)
+      window.location.hash = '#/cuenta'
+    } catch (error) { setErr(error.message) } finally { setBusy(false) }
+  }
+  return (
+    <form onSubmit={submit}>
+      <h3>Elige tu nueva contraseña</h3>
+      <label>Contraseña nueva<input required type="password" minLength={6} value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} autoComplete="new-password" /></label>
+      <label>Repítela<input required type="password" minLength={6} value={f.repeat} onChange={(e) => setF({ ...f, repeat: e.target.value })} autoComplete="new-password" /></label>
+      {err && <p className="form-err" role="alert">{err}</p>}
+      <button className="btn primary block" disabled={busy}>{busy ? 'Guardando…' : 'Guardar contraseña'}</button>
+    </form>
+  )
+}
+
+// Aviso simple (por ejemplo, un enlace de correo vencido)
+function Notice() {
+  const { notice, setNotice, setModal } = useAuth()
+  const close = () => { setNotice(''); setModal('login') }
+  return (
+    <div className="auth-notice">
+      <h3>Aviso</h3>
+      <p>{notice}</p>
+      <button className="btn primary block" onClick={close}>Ir a iniciar sesión</button>
+    </div>
+  )
+}
+
 function AuthForm({ mode }) {
   const { signIn, signUp, setModal } = useAuth()
   const registro = mode === 'registro'
   const [f, setF] = useState({ name: '', phone: '', email: '', password: '', marketing: false, terms: false })
   const [err, setErr] = useState('')
-  const [info, setInfo] = useState('')
+  const [unconfirmed, setUnconfirmed] = useState(false)
+  const [sentTo, setSentTo] = useState('') // correo al que se envió la confirmación
   const [busy, setBusy] = useState(false)
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
 
   const submit = async (e) => {
     e.preventDefault()
-    setErr(''); setInfo(''); setBusy(true)
+    setErr(''); setUnconfirmed(false); setBusy(true)
     try {
       if (registro) {
-        const { needsConfirm } = await signUp(f)
-        if (needsConfirm) setInfo('Te enviamos un correo para confirmar tu cuenta. Luego podrás iniciar sesión.')
+        const { needsConfirm } = await signUp({ ...f, email: f.email.trim() })
+        if (needsConfirm) setSentTo(f.email.trim())
         else setModal(null)
       } else {
-        await signIn(f)
+        await signIn({ ...f, email: f.email.trim() })
         setModal(null)
       }
     } catch (error) {
       setErr(error.message)
+      setUnconfirmed(Boolean(error.unconfirmed))
     } finally {
       setBusy(false)
     }
+  }
+
+  // Cuenta creada: falta confirmar el correo
+  if (sentTo) {
+    return (
+      <div className="auth-sent">
+        <h3>Revisa tu correo</h3>
+        <p>Te enviamos un enlace a <b>{sentTo}</b> para confirmar tu cuenta. Ábrelo desde este celular o computadora y entrarás directo.</p>
+        <p className="muted">Si no lo ves en unos minutos, revisa la carpeta de spam o promociones.</p>
+        <ResendConfirm email={sentTo} />
+        <button type="button" className="btn ghost block" onClick={() => setModal(null)}>Entendido</button>
+      </div>
+    )
   }
 
   return (
@@ -57,6 +160,7 @@ function AuthForm({ mode }) {
         <input required type="password" minLength={6} value={f.password} onChange={set('password')}
           autoComplete={registro ? 'new-password' : 'current-password'} />
       </label>
+      {!registro && <button type="button" className="link auth-forgot" onClick={() => setModal('recuperar')}>¿Olvidaste tu contraseña?</button>}
       {registro && (
         <label className="consent">
           <input type="checkbox" required checked={f.terms} onChange={(e) => setF({ ...f, terms: e.target.checked })} />
@@ -70,7 +174,7 @@ function AuthForm({ mode }) {
         </label>
       )}
       {err && <p className="form-err" role="alert">{err}</p>}
-      {info && <p className="form-ok" role="status">{info}</p>}
+      {unconfirmed && <ResendConfirm email={f.email.trim()} />}
       <button className="btn primary block" disabled={busy}>
         {busy ? 'Un momento…' : registro ? 'Crear cuenta' : 'Entrar'}
       </button>
@@ -143,13 +247,19 @@ export default function AuthModal() {
   if (!shown) return null
   const close = () => setModal(null)
   // Mientras sale conserva lo que mostraba: al iniciar sesión no debe asomarse otra vista
-  if (!leaving) lastView.current = user ? 'cuenta' : modal === 'cuenta' ? 'login' : modal
+  // Cambiar la contraseña desde el correo deja una sesión abierta: esa vista va primero
+  const special = modal === 'nueva-clave' || modal === 'aviso'
+  if (!leaving) lastView.current = special ? modal : user ? 'cuenta' : modal === 'cuenta' ? 'login' : modal
   const view = lastView.current
   return (
     <div className={`overlay center${leaving ? ' leaving' : ''}`} onClick={close}>
       <div className="modal" role="dialog" aria-label="Cuenta" onClick={(e) => e.stopPropagation()}>
         <button className="icon-btn close" onClick={close} aria-label="Cerrar"><X size={22} /></button>
-        {view === 'cuenta' ? <Account /> : <AuthForm key={view} mode={view} />}
+        {view === 'cuenta' ? <Account />
+          : view === 'recuperar' ? <ForgotForm />
+          : view === 'nueva-clave' ? <NewPasswordForm />
+          : view === 'aviso' ? <Notice />
+          : <AuthForm key={view} mode={view} />}
       </div>
     </div>
   )

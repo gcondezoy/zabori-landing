@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ArrowLeft, ArrowClockwise, CheckCircle, Circle, MapTrifold, SignOut, UserCircle, Receipt, Heart, Gift, Star,
 } from '@phosphor-icons/react'
-import { useAuth } from '../context/AuthContext'
+import { useAuth, firstName } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { useMenu } from '../context/MenuContext'
 import { listMyOrders } from '../lib/orders'
@@ -173,7 +173,7 @@ function MyData() {
     <form className="acc-data" onSubmit={save}>
       <label>Nombre<input value={f.name} onChange={set('name')} autoComplete="name" /></label>
       <label>Celular<input type="tel" inputMode="tel" value={f.phone} onChange={set('phone')} autoComplete="tel" /></label>
-      <AddressPicker address={f.address} lat={f.lat} lng={f.lng}
+      <AddressPicker address={f.address} lat={f.lat} lng={f.lng} required={false}
         onChange={(a) => { setF((cur) => ({ ...cur, ...a })); setSaved(false) }} />
       <p className="muted small">Correo: {user.email}</p>
       <MarketingCheck />
@@ -185,7 +185,7 @@ function MyData() {
 
 /* ---------- Página ---------- */
 export default function AccountPage() {
-  const { user, ready, signOut } = useAuth()
+  const { user, ready, signOut, notice: authNotice, setNotice: setAuthNotice } = useAuth()
   const { add, setOpen } = useCart()
   const { items: catalog, build } = useMenu()
   const [orders, setOrders] = useState(null)
@@ -243,11 +243,27 @@ export default function AccountPage() {
           <>
             <header className="acc-head">
               <div>
-                <h1>Hola, {(user.name || 'cliente').split(' ')[0]}</h1>
-                <p className="sub">Aquí ves tus pedidos, promociones y datos.</p>
+                <h1>{firstName(user.name) ? `Hola, ${firstName(user.name)}` : 'Hola'}</h1>
+                <p className="sub">{user.email}</p>
               </div>
               <button className="link acc-out" onClick={signOut}><SignOut size={16} /> Cerrar sesión</button>
             </header>
+
+            {authNotice && (
+              <p className="acc-notice ok" role="status">
+                {authNotice} <button type="button" className="link" onClick={() => setAuthNotice('')}>Cerrar</button>
+              </p>
+            )}
+
+            {(!user.name || !user.phone || !user.address) && tab !== 'datos' && (
+              <div className="acc-complete">
+                <span>
+                  <b>Completa tus datos</b>
+                  <small>Guarda tu {[!user.name && 'nombre', !user.phone && 'celular', !user.address && 'dirección'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' y $1')} y tus próximos pedidos se llenarán solos.</small>
+                </span>
+                <button type="button" className="btn small primary" onClick={() => setTab('datos')}>Completar</button>
+              </div>
+            )}
 
             <div className="acc-stats">
               <div><Receipt size={22} weight="duotone" /><b>{stats.total}</b><small>{stats.total === 1 ? 'pedido' : 'pedidos'}</small></div>

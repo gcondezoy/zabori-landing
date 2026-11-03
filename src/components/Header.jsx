@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { List, MapTrifold, ShoppingBag, User, X } from '@phosphor-icons/react'
 import { site } from '../config/site'
 import { useCart } from '../context/CartContext'
-import { useAuth } from '../context/AuthContext'
+import { useAuth, firstName } from '../context/AuthContext'
 import { lastOrder } from '../lib/whatsapp'
 import { useExit } from '../lib/useExit'
 
@@ -51,7 +51,7 @@ export default function Header() {
           <button className="acct-btn" onClick={() => (user ? (window.location.hash = '#/cuenta') : setModal('login'))}
             aria-label={user ? 'Mi cuenta' : 'Iniciar sesión'}>
             <User size={20} weight="bold" />
-            <span>{user ? (user.name || 'Mi cuenta').split(' ')[0] : 'Ingresar'}</span>
+            <span>{user ? firstName(user.name) || 'Mi cuenta' : 'Ingresar'}</span>
           </button>
           <button className="cart-btn" onClick={() => setOpen(true)} aria-label={`Abrir carrito, ${count} productos`}>
             <ShoppingBag size={22} weight="bold" />

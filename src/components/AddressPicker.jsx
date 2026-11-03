@@ -7,7 +7,8 @@ const MiniMap = lazy(() => import('./MiniMap')) // el mapa se descarga solo si s
 const DEBOUNCE_MS = 450
 
 // Dirección de entrega: se puede escribir libre; las sugerencias y el mapa son opcionales
-export default function AddressPicker({ address, lat, lng, onChange }) {
+// required: en el pedido con delivery es obligatoria; en "Mis datos" se puede guardar sin dirección
+export default function AddressPicker({ address, lat, lng, onChange, required = true }) {
   const id = useId()
   const [list, setList] = useState([])
   const [open, setOpen] = useState(false)
@@ -75,7 +76,7 @@ export default function AddressPicker({ address, lat, lng, onChange }) {
       <div className="addr-row">
         <div className="addr-input">
           <MapPin size={18} aria-hidden="true" />
-          <input id={id} required value={address} onChange={type} onKeyDown={onKey} autoComplete="street-address"
+          <input id={id} required={required} value={address} onChange={type} onKeyDown={onKey} autoComplete="street-address"
             placeholder="Calle, número y distrito"
             role="combobox" aria-expanded={open && list.length > 0} aria-controls={`${id}-list`} aria-autocomplete="list"
             aria-activedescendant={active >= 0 ? `${id}-opt-${active}` : undefined}

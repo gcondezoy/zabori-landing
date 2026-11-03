@@ -6,4 +6,12 @@ const url = import.meta.env.VITE_SUPABASE_URL
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export const supabaseConfigurado = Boolean(url && anonKey)
+
+// Al volver desde un correo de Supabase (confirmar cuenta o cambiar contraseña) el enlace trae datos en el #.
+// Se leen antes de crear el cliente, porque este los borra al iniciar sesión.
+const linkParams = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.hash.replace(/^#/, ''))
+export const authLink = {
+  type: linkParams.get('type'), // 'signup' | 'recovery' | ...
+  error: linkParams.get('error_code') || linkParams.get('error'),
+}
 export const supabase = supabaseConfigurado ? createClient(url, anonKey) : null

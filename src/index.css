@@ -1548,3 +1548,15 @@ html { overflow-x: clip; }
   .tv-sm .tv-dips { right: -6px; bottom: -6px; flex-direction: row; gap: 3px; }
   .tv-sm .tv-dip { width: 30px; height: 30px; padding: 2px; }
 }
+
+/* ---------- Cuenta: acceso y datos ---------- */
+.auth-forgot { justify-self: end; margin-top: -4px; font-size: .86rem; }
+.auth-resend { margin: 0; font-size: .88rem; color: var(--muted); }
+.auth-resend .form-err { display: block; margin-top: 6px; }
+.auth-sent, .auth-notice { display: grid; gap: 12px; }
+.auth-sent p, .auth-notice p { margin: 0; line-height: 1.45; }
+.acc-notice.ok { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; background: #dcf3e3; color: #145c2e; }
+.acc-complete { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; padding: 12px 14px; border-radius: 14px; background: var(--bg-alt); }
+.acc-complete span { display: grid; gap: 2px; min-width: 0; }
+.acc-complete small { color: var(--muted); font-size: .84rem; line-height: 1.35; }
+.acc-complete .btn { flex: none; }

@@ -124,6 +124,15 @@ El envío sale del panel al cambiar el estado: si la pestaña del panel se cierr
 
 En el panel → **Horarios y stock** se cambia cuántos pedidos entran en cada rango y las unidades por día de cada segundo, entrada y shot. Hay que correr una vez `supabase/etapa-11-horarios-stock.sql`. El servidor valida el cupo y el stock al crear cada pedido; los rangos usan la hora de Lima y se cierran cuando termina su horario (`end_at` en la tabla `delivery_slots`).
 
+# Cuentas: correo de confirmación y cambio de contraseña
+
+La web ya está lista: al registrarse muestra "Revisa tu correo" con botón para reenviar, el enlace del correo vuelve a la web con la cuenta abierta, y "¿Olvidaste tu contraseña?" envía un enlace para elegir una nueva. Falta configurar Supabase:
+
+1. **Authentication → URL Configuration:** Site URL `https://zabori-landing.vercel.app` y, en Redirect URLs, `https://zabori-landing.vercel.app/**`. Sin esto los enlaces de los correos llevan a localhost.
+2. **Correo propio (SMTP):** el servicio de correo incluido en Supabase solo envía a los correos del equipo del proyecto, no a los clientes. En Authentication → Emails → SMTP Settings conectar Resend (con dominio propio) o una cuenta de Gmail con contraseña de aplicación.
+3. **Plantillas en español:** en Authentication → Emails → Templates pegar `supabase/correos/confirmar-cuenta.html` en "Confirm signup" y `supabase/correos/cambiar-contrasena.html` en "Reset password" (los asuntos sugeridos están al inicio de cada archivo).
+4. **Activar "Confirm email"** en Authentication → Providers → Email. Hasta entonces las cuentas se crean al instante, sin confirmar el correo.
+
 # Promociones
 
 Se publican en el panel → **Promociones** y se ven en Mi cuenta. Hay que correr `supabase/setup.sql` una vez (etapa 10). Solo informan: **no cambian el precio** del pedido. La descripción no debe prometer un descuento automático; si hay uno, se coordina con el cliente.
