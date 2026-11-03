@@ -16,6 +16,7 @@ const Admin = lazy(() => import('./components/admin/AdminApp'))
 const TrackOrder = lazy(() => import('./components/TrackOrder'))
 const AccountPage = lazy(() => import('./components/AccountPage'))
 const LegalPage = lazy(() => import('./components/LegalPage'))
+const ComplaintsBook = lazy(() => import('./components/ComplaintsBook'))
 
 const Loading = () => <main className="section page-loading" aria-busy="true"><div className="wrap"><p className="muted">Cargando…</p></div></main>
 
@@ -26,6 +27,7 @@ const routeOf = () => {
   if (h.startsWith('#/cuenta')) return 'cuenta'
   if (h.startsWith('#/terminos')) return 'terminos'
   if (h.startsWith('#/privacidad')) return 'privacidad'
+  if (h.startsWith('#/reclamaciones')) return 'reclamaciones'
   return 'home'
 }
 
@@ -64,6 +66,7 @@ export default function App() {
       <div key={route} className="page">
       {route === 'seguir' ? <Suspense fallback={<Loading />}><TrackOrder /></Suspense>
         : route === 'cuenta' ? <Suspense fallback={<Loading />}><AccountPage /></Suspense>
+        : route === 'reclamaciones' ? <Suspense fallback={<Loading />}><ComplaintsBook /></Suspense>
         : route === 'terminos' || route === 'privacidad' ? <Suspense fallback={<Loading />}><LegalPage page={route} /></Suspense> : (
         <main>
           <OrderStrip />

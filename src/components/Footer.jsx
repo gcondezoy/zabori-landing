@@ -1,4 +1,4 @@
-import { WhatsappLogo, InstagramLogo, MapPin, Clock, MapTrifold } from '@phosphor-icons/react'
+import { WhatsappLogo, InstagramLogo, MapPin, Clock, MapTrifold, BookOpenText } from '@phosphor-icons/react'
 import { site } from '../config/site'
 
 export default function Footer() {
@@ -27,9 +27,7 @@ export default function Footer() {
       <nav className="wrap footer-legal" aria-label="Información legal">
         <a href="#/terminos">Términos y Condiciones</a>
         <a href="#/privacidad">Política de Privacidad</a>
-        {site.legal.reclamosUrl
-          ? <a href={site.legal.reclamosUrl} target="_blank" rel="noreferrer">Libro de Reclamaciones</a>
-          : <span>Libro de Reclamaciones (por habilitar)</span>}
+        <a href="#/reclamaciones" className="lr-link"><BookOpenText size={18} weight="bold" aria-hidden="true" /> Libro de Reclamaciones</a>
       </nav>
       <p className="copy">© {new Date().getFullYear()} {site.name}. Todos los derechos reservados.</p>
     </footer>

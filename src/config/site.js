@@ -23,7 +23,7 @@ export const site = {
   freeDeliveryFrom: 40, // S/ pedido mínimo para delivery gratis
   // Datos para Términos y Privacidad. Lo que esté vacío se muestra como pendiente en esas páginas.
   // draft: mientras sea true, se avisa que los textos están pendientes de revisión legal.
-  legal: { draft: true, razonSocial: '', ruc: '', domicilio: '', email: '', bancoDatos: '', reclamosUrl: '' },
+  legal: { draft: true, razonSocial: '', ruc: '', domicilio: '', email: '', bancoDatos: '' },
   adminDemoPin: 'zabori', // solo para el panel en modo demo (sin Supabase); con Supabase se usa la tabla admins
 }
 

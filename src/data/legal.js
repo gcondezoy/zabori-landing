@@ -3,7 +3,7 @@
 // Al cambiar un texto, subir LEGAL_VERSION: cada pedido y cuenta guarda la versión que aceptó.
 import { money, site } from '../config/site'
 
-export const LEGAL_VERSION = '2026-10-31-borrador-3'
+export const LEGAL_VERSION = '2026-11-03-borrador-4'
 
 const data = site.legal
 const pending = (value, label) => value || `[[${label}]]`
@@ -53,9 +53,7 @@ export const LEGAL_PAGES = {
         'Crear una cuenta es opcional. Cuida tu contraseña y mantén tus datos actualizados. Puedes pedir que eliminemos tu cuenta escribiéndonos.',
       ] },
       { title: 'Reclamos', blocks: [
-        data.reclamosUrl
-          ? 'Puedes presentar un reclamo o queja en nuestro Libro de Reclamaciones, enlazado al pie de esta página.'
-          : 'Puedes presentar un reclamo o queja en nuestro Libro de Reclamaciones. [[Agregar el enlace al Libro de Reclamaciones virtual]]',
+        'Puedes presentar un reclamo o una queja en nuestro Libro de Reclamaciones virtual, enlazado al pie de esta página. Te enviamos una copia de la hoja a tu correo y te respondemos en un plazo máximo de 15 días hábiles.',
       ] },
       { title: 'Cambios y ley aplicable', blocks: [
         'Podemos actualizar estas condiciones. Cada pedido se rige por la versión aceptada al hacerlo.',

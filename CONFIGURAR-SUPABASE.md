@@ -98,7 +98,7 @@ Las políticas RLS (`is_admin()`) permiten ver/actualizar pedidos y editar la ca
 
 Los textos están en `src/data/legal.js` y son un **borrador**: debe revisarlos un abogado. Lo pendiente se ve resaltado en las páginas.
 
-1. Completar `site.legal` en `src/config/site.js`: razón social, RUC, domicilio, correo, número del banco de datos y enlace del Libro de Reclamaciones virtual ([Tu Libro de Reclamaciones](https://consumidor.indecopi.gob.pe/tulibro/)).
+1. Completar `site.legal` en `src/config/site.js`: razón social, RUC, domicilio, correo y número del banco de datos. La razón social, el RUC y el domicilio también salen en cada hoja del Libro de Reclamaciones.
 2. Cuando estén revisados, poner `draft: false` y cambiar `LEGAL_VERSION`.
 3. Cada pedido guarda `orders.terms_version` y `terms_at`, y cada cuenta `profiles.terms_version` y `terms_at`. Consulta:
    ```sql
@@ -156,3 +156,24 @@ Hace falta un **dominio propio** y una cuenta en [Resend](https://resend.com) (d
 **Publicidad:** en el panel → Clientes → **Exportar contactos para promociones** se descarga la lista de quienes marcaron la casilla. Se importa en Resend y desde ahí se envía la campaña. Antes de la primera, revisar con el contador o abogado del cliente la Ley 28493 (correo comercial) y la Ley 29733 (datos personales). Cada campaña debe permitir darse de baja: **no volver a importar a quien se dio de baja en Resend** sin revisar esa lista.
 
 El cliente puede cambiar su permiso en Mi cuenta → Mis datos; la fecha queda en `profiles.marketing_at`.
+
+# Libro de Reclamaciones
+
+La hoja virtual está en `#/reclamaciones` (enlace al pie de la web) y el negocio la responde en el panel → **Reclamaciones**.
+
+1. Correr una vez `supabase/etapa-12-libro-reclamaciones.sql` (ya está incluido al final de `setup.sql`).
+2. Completar en `src/config/site.js` → `legal`: razón social, RUC y domicilio. Mientras falten, la hoja los muestra resaltados.
+3. Copia por correo al consumidor (la norma la pide) y envío de la respuesta: usa Resend, igual que `welcome-email`.
+   ```
+   supabase secrets set RESEND_API_KEY=re_xxx MAIL_FROM="Zabori <hola@tu-dominio.pe>" SITE_URL=https://zabori-landing.vercel.app
+   supabase secrets set COMPLAINTS_BCC=correo@negocio.pe LEGAL_NAME="Razón social" LEGAL_RUC=20xxxxxxxxx LEGAL_ADDRESS="Domicilio"
+   supabase functions deploy complaint-email --no-verify-jwt
+   ```
+   Sin esto, la hoja se registra igual: el cliente ve su constancia con botón para imprimirla o guardarla en PDF, y el panel ofrece "Enviar desde mi correo" con la respuesta ya escrita.
+
+Reglas que aplica:
+- Número correlativo por año sin saltos: `LR-2026-00001`.
+- Plazo de respuesta: 15 días hábiles (el panel avisa cuando quedan 3 o menos; no descuenta feriados, así que el aviso llega antes, nunca tarde).
+- Las hojas no se pueden borrar desde la web ni el panel: la ley pide conservarlas al menos 2 años.
+- Máximo 5 hojas por correo al día, para frenar envíos repetidos.
+
