@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://zabori-landing.vercel.app/sitemap.xml
+Sitemap: https://zabori-dk.com/sitemap.xml

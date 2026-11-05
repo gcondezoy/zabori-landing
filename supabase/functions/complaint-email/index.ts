@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
   const key = Deno.env.get('RESEND_API_KEY')
   const from = Deno.env.get('MAIL_FROM')
   if (!key || !from) return json({ error: 'El correo no está configurado.' }, 500)
-  const site = (Deno.env.get('SITE_URL') || 'https://zabori-landing.vercel.app').replace(/\/$/, '')
+  const site = (Deno.env.get('SITE_URL') || 'https://zabori-dk.com').replace(/\/$/, '')
   const bcc = Deno.env.get('COMPLAINTS_BCC')
 
   let body

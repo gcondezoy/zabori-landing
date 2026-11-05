@@ -128,7 +128,7 @@ En el panel → **Horarios y stock** se cambia cuántos pedidos entran en cada r
 
 La web ya está lista: al registrarse muestra "Revisa tu correo" con botón para reenviar, el enlace del correo vuelve a la web con la cuenta abierta, y "¿Olvidaste tu contraseña?" envía un enlace para elegir una nueva. Falta configurar Supabase:
 
-1. **Authentication → URL Configuration:** Site URL `https://zabori-landing.vercel.app` y, en Redirect URLs, `https://zabori-landing.vercel.app/**`. Sin esto los enlaces de los correos llevan a localhost.
+1. **Authentication → URL Configuration:** Site URL `https://zabori-dk.com` y, en Redirect URLs, `https://zabori-dk.com/**` y `https://www.zabori-dk.com/**`. Sin esto los enlaces de los correos llevan a localhost.
 2. **Correo propio (SMTP):** el servicio de correo incluido en Supabase solo envía a los correos del equipo del proyecto, no a los clientes. En Authentication → Emails → SMTP Settings conectar Resend (con dominio propio) o una cuenta de Gmail con contraseña de aplicación.
 3. **Plantillas en español:** en Authentication → Emails → Templates pegar `supabase/correos/confirmar-cuenta.html` en "Confirm signup" y `supabase/correos/cambiar-contrasena.html` en "Reset password" (los asuntos sugeridos están al inicio de cada archivo).
 4. **Activar "Confirm email"** en Authentication → Providers → Email. Hasta entonces las cuentas se crean al instante, sin confirmar el correo.
@@ -145,7 +145,7 @@ Hace falta un **dominio propio** y una cuenta en [Resend](https://resend.com) (d
 2. En Resend → Domains, agregar el dominio y copiar sus registros DNS donde se compró. Esperar a que quede verificado.
 3. En Resend → API Keys, crear una clave. **Nunca va en Vercel ni en el código**, solo como secreto de la función:
    ```
-   supabase secrets set RESEND_API_KEY=re_xxxxxxxx MAIL_FROM="Zabori <hola@tu-dominio.pe>" SITE_URL=https://tu-dominio.pe
+   supabase secrets set RESEND_API_KEY=re_xxxxxxxx MAIL_FROM="Zabori <hola@zabori-dk.com>" SITE_URL=https://zabori-dk.com
    supabase functions deploy welcome-email --no-verify-jwt
    ```
 4. En Vercel, agregar `VITE_CORREO_BIENVENIDA=1` y volver a desplegar.
@@ -165,7 +165,7 @@ La hoja virtual está en `#/reclamaciones` (enlace al pie de la web) y el negoci
 2. Completar en `src/config/site.js` → `legal`: razón social, RUC y domicilio. Mientras falten, la hoja los muestra resaltados.
 3. Copia por correo al consumidor (la norma la pide) y envío de la respuesta: usa Resend, igual que `welcome-email`.
    ```
-   supabase secrets set RESEND_API_KEY=re_xxx MAIL_FROM="Zabori <hola@tu-dominio.pe>" SITE_URL=https://zabori-landing.vercel.app
+   supabase secrets set RESEND_API_KEY=re_xxx MAIL_FROM="Zabori <hola@zabori-dk.com>" SITE_URL=https://zabori-dk.com
    supabase secrets set COMPLAINTS_BCC=correo@negocio.pe LEGAL_NAME="Razón social" LEGAL_RUC=20xxxxxxxxx LEGAL_ADDRESS="Domicilio"
    supabase functions deploy complaint-email --no-verify-jwt
    ```

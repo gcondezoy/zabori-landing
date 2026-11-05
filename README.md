@@ -40,8 +40,9 @@ solo en el navegador, y el panel se abre con el PIN de `src/config/site.js`.
 - `public/robots.txt` y `public/sitemap.xml`.
 - Ficha de restaurante para Google (datos estructurados): `src/lib/seo.js`, se arma desde `site.js`;
   el teléfono se publica solo cuando el WhatsApp deja de ser el de ejemplo.
-- **Si se usa un dominio propio** (ej. zabori.pe), reemplazar `https://zabori-landing.vercel.app` en `index.html`,
-  `public/robots.txt` y `public/sitemap.xml`.
+- Dominio: `https://zabori-dk.com` (DNS en Hostinger apuntando a Vercel; `www` redirige al dominio sin www).
+  Si cambia, reemplazarlo en `index.html`, `public/robots.txt`, `public/sitemap.xml`, `vercel.json`,
+  `supabase/correos/*.html` y en el `SITE_URL` de las funciones.
 - Instalable en el celular ("Agregar a pantalla de inicio"): `public/manifest.webmanifest` + íconos `icon-192.png`,
   `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` (generados desde `favicon.png`).
 

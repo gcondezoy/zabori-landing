@@ -2,7 +2,7 @@
 // Solo le escribe al usuario de la sesión: el navegador no elige el destinatario ni el texto.
 //
 // Despliegue:  supabase functions deploy welcome-email --no-verify-jwt
-// Secretos:    supabase secrets set RESEND_API_KEY=re_xxx MAIL_FROM="Zabori <hola@tu-dominio.pe>" SITE_URL=https://tu-dominio.pe
+// Secretos:    supabase secrets set RESEND_API_KEY=re_xxx MAIL_FROM="Zabori <hola@zabori-dk.com>" SITE_URL=https://zabori-dk.com
 // (SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY ya los inyecta Supabase.)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
   const key = Deno.env.get('RESEND_API_KEY')
   const from = Deno.env.get('MAIL_FROM')
   if (!key || !from) return json({ error: 'El correo no está configurado.' }, 500)
-  const site = (Deno.env.get('SITE_URL') || 'https://zabori-landing.vercel.app').replace(/\/$/, '')
+  const site = (Deno.env.get('SITE_URL') || 'https://zabori-dk.com').replace(/\/$/, '')
 
   const db = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))
   const token = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
