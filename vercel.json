@@ -22,6 +22,16 @@
       ],
       "destination": "https://zabori-dk.com/$1",
       "permanent": true
+    },
+    {
+      "source": "/admin/:rest*",
+      "destination": "/#/admin",
+      "permanent": false
+    },
+    {
+      "source": "/admin",
+      "destination": "/#/admin",
+      "permanent": false
     }
   ],
   "rewrites": [
