@@ -24,12 +24,12 @@
       "permanent": true
     },
     {
-      "source": "/admin/:rest*",
+      "source": "/admin{/}?",
       "destination": "/#/admin",
       "permanent": false
     },
     {
-      "source": "/admin",
+      "source": "/admin/:rest+",
       "destination": "/#/admin",
       "permanent": false
     }
