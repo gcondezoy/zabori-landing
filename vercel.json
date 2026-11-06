@@ -11,6 +11,17 @@
       ],
       "destination": "https://zabori-dk.com/$1",
       "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "zabori-landing.vercel.app"
+        }
+      ],
+      "destination": "https://zabori-dk.com/$1",
+      "permanent": true
     }
   ],
   "rewrites": [
