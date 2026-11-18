@@ -1636,3 +1636,4 @@ html { overflow-x: clip; }
 .lr-adm-notice.ok { background: #dcebcf; }
 .lr-adm-notice a { color: var(--red); font-weight: 700; }
 .lr-provider .legal-todo { background: #fff; border: 1px dashed var(--yellow-dark); }
+.pickup-note a { color: var(--red); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }

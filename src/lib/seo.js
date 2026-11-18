@@ -21,7 +21,7 @@ export function injectBusinessSchema() {
     priceRange: 'S/ 10 - S/ 30',
     paymentAccepted: culqiConfigurado ? 'Yape, Plin, tarjeta de crédito y débito' : 'Yape, Plin',
     currenciesAccepted: 'PEN',
-    address: { '@type': 'PostalAddress', addressLocality: 'Lima', addressRegion: 'Lima', addressCountry: 'PE' },
+    address: { '@type': 'PostalAddress', streetAddress: site.street, addressLocality: site.district, addressRegion: 'Lima', addressCountry: 'PE' },
     openingHours: `${site.openDays.map((d) => DAYS[d]).join(',')} ${hh(site.openHour)}-${hh(site.closeHour)}`,
   }
   // El teléfono solo se publica cuando ya es el número real (no el de ejemplo)

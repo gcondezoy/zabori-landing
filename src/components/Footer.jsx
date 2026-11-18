@@ -11,7 +11,7 @@ export default function Footer() {
           <p>{site.tagline}</p>
         </div>
         <ul>
-          <li><MapPin size={18} /> {site.address}</li>
+          <li><MapPin size={18} /> <a href={site.mapsUrl} target="_blank" rel="noreferrer">{site.address}</a></li>
           <li><Clock size={18} /> {site.schedule}</li>
           <li><MapTrifold size={18} /> <a href="#/seguir">Sigue tu pedido</a></li>
           <li>

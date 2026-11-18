@@ -215,7 +215,7 @@ export default function Checkout() {
             <p className="done-slot">{done.mode === 'recojo' ? 'Recoges' : 'Entrega'}: <strong>{slotLabel(done.slot)}</strong></p>
 
             {done.mode === 'recojo' && (
-              <p className="pickup-note"><Storefront size={20} /> <span>Recoges en <b>{site.address}</b><br />{site.schedule}</span></p>
+              <p className="pickup-note"><Storefront size={20} /> <span>Recoges en <b>{site.address}</b><br />{site.schedule} · <a href={site.mapsUrl} target="_blank" rel="noreferrer">Cómo llegar</a></span></p>
             )}
 
             {wallet ? <WalletPay done={done} /> : (

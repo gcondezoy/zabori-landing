@@ -7,7 +7,9 @@ export const site = {
   whatsappLabel: '981 108 461',
   instagram: 'https://www.instagram.com/zabori_darkkitchen/',
   instagramLabel: '@zabori_darkkitchen',
-  address: 'Lima, Perú (dirección por confirmar)', // PLACEHOLDER
+  address: 'Av. Carlos Izaguirre 1036, Los Olivos',
+  street: 'Av. Carlos Izaguirre 1036', district: 'Los Olivos',
+  mapsUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Av. Carlos Izaguirre 1036, Los Olivos, Lima, Perú'),
   // Billeteras: el cliente paga y envía la captura por WhatsApp; se confirma en el panel ("Marcar pagado").
   // qr = ruta de la imagen del QR (p. ej. '/img/pagos/yape.png'); vacío = se muestra solo el número.
   wallets: {
